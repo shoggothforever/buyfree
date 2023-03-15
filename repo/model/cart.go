@@ -14,7 +14,7 @@ type Cart struct {
 	TotalCount  int64
 	TotalAmount float64
 	//存储
-	Products []OrderProduct `gorm:"foreignkey:UserID"`
+	Products []*OrderProduct `gorm:"foreignkey:UserID"`
 }
 
 //需要创建OrderProudct表
@@ -37,13 +37,14 @@ func (c *Cart) Account() float64 {
 	for _, v := range c.Products {
 		c.TotalAmount += v.GetAmount()
 	}
-
+	return c.TotalAmount
 }
 func (c *Cart) AccountWithChoose() float64 {
 	var sum float64 = 0
 	for _, v := range c.Products {
 		sum += v.GetChooseAmount()
 	}
+	return sum
 }
 
 // Account Chosen Products
