@@ -31,7 +31,9 @@ func InitPostgresSQL() {
 	} else {
 		logrus.Info("Open postgresSQL successfully")
 	}
-	DB.AutoMigrate(&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{},
-		&model.OrderProduct{})
+	//Create PassengerEnd TABLES
+	{
+		DB.AutoMigrate(&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{}, &model.OrderProduct{})
+	}
 	//&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{}, &model.Driver{}, model.Factory{}, model.Platform{}, model.VdMachine{}
 }
