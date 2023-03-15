@@ -1,0 +1,16 @@
+syntax="proto3";
+package grpc_gen.factory;
+option go_package="grpc_gen/factory";
+import "user.proto";
+message FactoryRequest{
+
+}
+message FactoryResponse{
+
+}
+message Factory{
+
+}
+service FactoryService{
+  rpc Replenish (FactoryRequest)returns (FactoryResponse);
+}

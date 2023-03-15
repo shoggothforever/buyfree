@@ -1,0 +1,19 @@
+syntax="proto3";
+package grpc_gen.product;
+option go_package="grpc_gen/driver";
+message DriverRequest{
+
+}
+
+message DriverResponse{
+
+}
+
+message Driver{
+  User u=1;
+  string licensePlate=2;
+}
+
+service DriverService{
+  rpc GetUserInfo(DriverRequest)returns(DriverResponse){}
+}
