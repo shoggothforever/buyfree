@@ -12,11 +12,11 @@ type DriverInfo struct {
 type Driver struct {
 	Location string
 	DriverInfo
-	mVdMachine []*VdMachine `gorm:"foreignKey:OwnerID"`
+	VdMachines []*VdMachine `gorm:"foreignKey:OwnerID"`
 	//购物车信息
-	Cart DriverCart `gorm:"foreignkey:DriverKey"`
+	Cart *DriverCart `gorm:"foreignKey:DriverID"`
 	//购物订单
-	DriverOrderForms DriverOrderForm `gorm:"foreignkey:DriverKey"`
+	DriverOrderForms *DriverOrderForm `gorm:"foreignKey:DriverID"`
 }
 type Replenish struct {
 	FactorID  uuid.UUID

@@ -10,11 +10,11 @@ type CartService interface {
 	AccountWithTicket(...Ticket)
 }
 type Cart struct {
-	CartID      int64 //需要联合查找了
+	CartID      uuid.UUID `gorm:"primaryKey"`
 	TotalCount  int64
 	TotalAmount float64
 	//存储
-	Products []*OrderProduct `gorm:"foreignkey:UserID"`
+	Products []*OrderProduct `gorm:"foreignKey:CartRefer"`
 }
 
 //需要创建OrderProudct表

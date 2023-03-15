@@ -35,5 +35,6 @@ func InitPostgresSQL() {
 	{
 		DB.AutoMigrate(&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{}, &model.OrderProduct{})
 	}
+
 	//&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{}, &model.Driver{}, model.Factory{}, model.Platform{}, model.VdMachine{}
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type Product struct {
-	ID   int64 `'gorm:"type:int;autoincrement"`
+	ID   int64 `gorm:"type:int;primaryKey;"`
 	Name string
 	//存货
 	inventory int64
@@ -17,10 +17,12 @@ type Product struct {
 	SupplyPrize float64
 }
 type OrderProduct struct {
-	UserID   uuid.UUID
-	IsChosen bool
-	Name     string `gorm:"primarykey"`
-	Count    int64
+	//外键
+	CartRefer  uuid.UUID
+	OrderRefer uuid.UUID
+	IsChosen   bool
+	Name       string
+	Count      int64
 	//添加到购物车时记得写入价格字段
 	Prize float64
 }
@@ -47,7 +49,7 @@ type RepoProduct struct {
 	//场站编号
 	FactoryID uuid.UUID
 
-	Subscribers map[uuid.UUID]*Driver
+	//Subscribers map[uuid.UUID]*Driver
 }
 
 //func newProduct(name string, in int64) *Product {
