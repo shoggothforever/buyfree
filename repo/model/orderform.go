@@ -15,6 +15,8 @@ const (
 
 //abstract
 type OrderForm struct {
+	//订单编码
+	OrderID uuid.UUID `gorm:"primarykey"`
 	//花费
 	Cost int
 	//订单状态
@@ -24,9 +26,7 @@ type OrderForm struct {
 	//支付时存储车主车牌号
 	DriverCarID string
 	//商品信息
-	ProductInfo []*OrderProduct
-	//订单编码
-	ID uuid.UUID
+	ProductInfo []*OrderProduct `gorm:"foreignKey:OrderRefer"`
 	//下单时间
 	Placetime time.Time
 	//支付时间

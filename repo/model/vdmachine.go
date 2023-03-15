@@ -9,10 +9,10 @@ type Chosen struct {
 
 //创建此表时还会创建VDProduct
 type VdMachine struct {
+	ID       uuid.UUID
 	OwnerID  uuid.UUID
-	Products []*Product `gorm:"foreignKey:VDID"`
+	Products []*VDProduct `gorm:"foreignKey:VDID"`
 
-	IsChosen       map[string]int64
-	Profit         float64 `gorm:"default:0.0"`
+	Profit         float64
 	Advertisements []*Advertisement
 }

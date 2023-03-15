@@ -1,5 +1,11 @@
 package model
 
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"time"
+)
+
 type ROLE int
 
 const (
@@ -22,7 +28,13 @@ const (
 )
 
 type User struct {
-	Model
+	//唯一标志符
+	ID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	//注册时间
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime:milli"`
+	//注销选项
+	DeletedAt gorm.DeletedAt
 	//用户头像
 	Pic string `gorm:""`
 	//用户昵称
@@ -34,7 +46,7 @@ type User struct {
 	Level LEVEL `gorm:"notnull;type:int"`
 }
 
-type Possesion struct {
-	UserName int64
-	Tickets  []Ticket
-}
+//type Possesion struct {
+//	UserName int64
+//	Tickets  []Ticket
+//}
