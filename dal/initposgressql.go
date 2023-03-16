@@ -33,8 +33,27 @@ func InitPostgresSQL() {
 	}
 	//Create PassengerEnd TABLES
 	{
-		DB.AutoMigrate(&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{}, &model.OrderProduct{})
+		DB.AutoMigrate(&model.Passenger{},
+			&model.PassengerCart{},
+			&model.PassengerOrderForm{},
+			&model.OrderProduct{})
+	}
+	//Create DriverEnd Tables
+	{
+		DB.AutoMigrate(&model.Driver{},
+			&model.DriverInfo{},
+			&model.DEVICE{},
+			&model.DriverCart{},
+			&model.DriverOrderForm{})
 	}
 
-	//&model.Passenger{}, &model.PassengerCart{}, &model.PassengerOrderForm{}, &model.Driver{}, model.Factory{}, model.Platform{}, model.VdMachine{}
+	//Create FactoryEnd TABLES
+	{
+		//model.Factory{},
+	}
+	//Create PlatFormEnd Tables
+	{
+		//model.Platform{}
+	}
+
 }

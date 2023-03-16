@@ -7,11 +7,11 @@ type Chosen struct {
 	Ischosen bool
 }
 
-//创建此表时还会创建VDProduct
-type VdMachine struct {
-	ID       uuid.UUID
-	OwnerID  uuid.UUID
-	Products []*VDProduct `gorm:"foreignKey:VDID"`
+//创建此表时还会创建DeviceProduct
+type DEVICE struct {
+	ID      uuid.UUID
+	OwnerID uuid.UUID
+	roducts []*DeviceProduct `gorm:"foreignKey:DeviceID"`
 
 	Profit         float64
 	Advertisements []*Advertisement

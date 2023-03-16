@@ -8,6 +8,6 @@ import (
 func main() {
 	config.Init()
 	dal.InitPostgresSQL()
-	dal.InitRedis()
-	initrouter()
+	//dal.InitRedis()
+	//initrouter()
 }

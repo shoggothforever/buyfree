@@ -8,3 +8,8 @@ type UserToken struct {
 	UserID uuid.UUID `gorm:"primaryKey"`
 	Role   string    `gorm:"not null;default:0"` // 用户角色
 }
+
+func (u *UserToken) Auth() bool {
+	//TODO AdminEnd and DriverEnd Login
+	return true
+}

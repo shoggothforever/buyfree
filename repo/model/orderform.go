@@ -52,3 +52,12 @@ type DriverOrderForm struct {
 	GetTime time.Time
 	OrderForm
 }
+
+type ReplenInfo struct {
+	DriverID        uuid.UUID
+	AllCount        int
+	WaitCount       int
+	FinishCount     int
+	WaitOrderForm   []*DriverOrderForm
+	FinishOrderForm []*DriverOrderForm
+}

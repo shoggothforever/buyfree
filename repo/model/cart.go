@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -25,26 +26,41 @@ type PassengerCart struct {
 }
 type DriverCart struct {
 	//外键 Driver.Uuid
-	DriverID    uuid.UUID
+	DriverID uuid.UUID
+
 	FactoryName string
 	//距离场站距离
 	Distance int64
 	Cart
 }
 
+//计算购物车中商品总价(可以与AllIn合并)
 func (c *Cart) Account() float64 {
+
 	c.TotalCount = int64(len(c.Products))
-	for _, v := range c.Products {
+	for k, v := range c.Products {
+		fmt.Println(k)
+		//c.Products[i].IsChosen=true
 		c.TotalAmount += v.GetAmount()
 	}
 	return c.TotalAmount
 }
+
+//计算购物车中选中的商品总价
 func (c *Cart) AccountWithChoose() float64 {
 	var sum float64 = 0
 	for _, v := range c.Products {
 		sum += v.GetChooseAmount()
 	}
 	return sum
+}
+
+func (c *Cart) AllIn() {
+	n := len(c.Products)
+	for i := 0; i < n; i++ {
+		c.Products[i].IsChosen = true
+	}
+	c.Account()
 }
 
 // Account Chosen Products

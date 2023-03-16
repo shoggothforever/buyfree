@@ -5,12 +5,17 @@ import (
 )
 
 type Product struct {
-	ID   int64 `gorm:"type:int;primaryKey;"`
-	Name string
+	ID int64 `gorm:"type:int;primaryKey;"`
 	//存货
 	inventory int64
 	//月销售量
 	MonthlySales int64
+	//库存单位
+	Sku string
+	//产品名称
+	Name string
+	//型号
+	Type string
 	//销售价
 	BuyPrize float64
 	//批发价
@@ -20,9 +25,10 @@ type OrderProduct struct {
 	//外键
 	CartRefer  uuid.UUID
 	OrderRefer uuid.UUID
-	IsChosen   bool
-	Name       string
-	Count      int64
+
+	IsChosen bool
+	Name     string
+	Count    int64
 	//添加到购物车时记得写入价格字段
 	Prize float64
 }
@@ -39,10 +45,10 @@ func (o *OrderProduct) GetChooseAmount() float64 {
 	return price
 }
 
-type VDProduct struct {
+type DeviceProduct struct {
 	Product
 	//售货机编号
-	VDID uuid.UUID
+	DeviceID uuid.UUID
 }
 type RepoProduct struct {
 	Product
