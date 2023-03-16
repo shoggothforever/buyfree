@@ -11,8 +11,9 @@ import "github.com/google/uuid"
 
 type Factory struct {
 	User
+	Address string
 	//供应的商品
-	Products map[string]RepoProduct
+	Products []*Product
 }
 
 func (f *Factory) deliver(pro_id uuid.UUID, d *Driver) {
