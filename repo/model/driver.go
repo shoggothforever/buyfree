@@ -3,20 +3,24 @@ package model
 import "github.com/google/uuid"
 
 type DriverInfo struct {
-	CarID  string
-	Mobile string
+	CarID  string `gorm:"comment:车牌号"`
+	Mobile string `gorm:"comment:手机号"`
+	IDCard string `gorm:"comment:身份证"`
+	IsAuth bool   `gorm:"comment:1为已认证，0为未认证"`
 	User
 }
 
 //Observer Driver
 type Driver struct {
-	Location string
+	PlatformID uuid.UUID
+	Location   string `gorm:"comment:地理位置"`
+
 	DriverInfo
-	Devices []*DEVICE `gorm:"foreignKey:OwnerID"`
+	Devices []*DEVICE `gorm:"foreignKey:OwnerID;comment:持有售货机"`
 	//购物车信息
-	Cart *DriverCart `gorm:"foreignKey:DriverID"`
+	Cart *DriverCart `gorm:"foreignKey:DriverID;comment:补货购物车"`
 	//购物订单
-	DriverOrderForms *DriverOrderForm `gorm:"foreignKey:DriverID"`
+	DriverOrderForms *DriverOrderForm `gorm:"foreignKey:DriverID;补货订单"`
 }
 type Replenish struct {
 	FactorID uuid.UUID

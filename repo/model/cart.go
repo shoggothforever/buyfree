@@ -12,8 +12,8 @@ type CartService interface {
 }
 type Cart struct {
 	CartID      uuid.UUID `gorm:"primaryKey"`
-	TotalCount  int64
-	TotalAmount float64
+	TotalCount  int64     `gorm:"comment:全选金额"`
+	TotalAmount float64   `gorm:"comment:全部商品数量"`
 	//存储
 	Products []*OrderProduct `gorm:"foreignKey:CartRefer"`
 }
@@ -28,9 +28,9 @@ type DriverCart struct {
 	//外键 Driver.Uuid
 	DriverID uuid.UUID
 
-	FactoryName string
+	FactoryName string `gorm:"comment:购物场站名称"`
 	//距离场站距离
-	Distance int64
+	Distance int64 `gorm:"comment:距离场站距离"`
 	Cart
 }
 

@@ -1,4 +1,4 @@
-package passenger
+package user
 
 import (
 	"buyfree/repo/model"

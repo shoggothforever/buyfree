@@ -10,10 +10,11 @@ import "github.com/google/uuid"
 //
 
 type Factory struct {
-	User
-	Address string
+	Admin
+	//场站地理位置
+	Address string `gorm:"comment:场站位置信息"`
 	//供应的商品
-	Products []*Product
+	Products []*Product `gorm:"foreignkey:FactoryRefer"`
 }
 
 func (f *Factory) deliver(pro_id uuid.UUID, d *Driver) {

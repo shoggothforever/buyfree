@@ -16,7 +16,7 @@ const (
 	REDIRECT      int    = 307
 )
 const (
-	Role_0 string = "Factory"
+	Role_0 string = "Factory.SQL"
 	Role_1 string = "Driver"
 	Role_2 string = "Passenger"
 )

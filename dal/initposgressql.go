@@ -3,9 +3,13 @@ package dal
 import (
 	"buyfree/config"
 	"buyfree/repo/model"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"gorm.io/driver/postgres"
+
+	//"github.com/jinzhu/gorm"
+	//_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gen"
+	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
@@ -25,7 +29,8 @@ func InitPostgresSQL() {
 	ReadPostgresSQLlinfo()
 	//fmt.Println(dsn)
 	var err error
-	DB, err = gorm.Open("postgres", dsn)
+	//DB, err = gorm.Open("postgres", dsn)
+	DB, err = gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"error": err}).Error("Open PostgresSQL failed")
 	} else {
@@ -33,27 +38,44 @@ func InitPostgresSQL() {
 	}
 	//Create PassengerEnd TABLES
 	{
-		DB.AutoMigrate(&model.Passenger{},
+		DB.AutoMigrate(
+			&model.LoginInfo{},
+			&model.Passenger{},
 			&model.PassengerCart{},
 			&model.PassengerOrderForm{},
-			&model.OrderProduct{})
-	}
-	//Create DriverEnd Tables
-	{
-		DB.AutoMigrate(&model.Driver{},
-			&model.DriverInfo{},
+			&model.Factory{},
+			&model.Platform{},
+			&model.Driver{},
+			&model.OrderProduct{},
 			&model.DEVICE{},
 			&model.DriverCart{},
-			&model.DriverOrderForm{})
-	}
+			&model.DriverOrderForm{},
+			&model.DeviceProduct{},
+			&model.Advertisement{},
+		)
 
-	//Create FactoryEnd TABLES
-	{
-		//model.Factory{},
 	}
-	//Create PlatFormEnd Tables
-	{
-		//model.Platform{}
-	}
+	////Create DriverEnd Tables
+	//{
+	//	DB.AutoMigrate(
+	//
+	//
+	//
+	//}
+	//
+	////Create FactoryEnd TABLES
+	//{
+	//	DB.AutoMigrate()
+	//}
+	////Create PlatFormEnd Tables
+	//{
+	//	DB.AutoMigrate(
+	//
+	//}
 
+	g := gen.NewGenerator(gen.Config{
+		OutPath: "../repo/gen",
+		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+	})
+	g.UseDB(DB)
 }
