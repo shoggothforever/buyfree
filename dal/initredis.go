@@ -11,13 +11,16 @@ var Ctx = context.Background()
 var Redisclient *redis.Client
 var addr, password string
 
+func Getrd() *redis.Client {
+	return Redisclient
+}
 func readRedisInfo() {
 	info := config.Reader.GetStringMapString("redis")
 	addr = info[config.Redisaddr]
 	password = info[config.Redispassword]
 }
 func CloseDB() {
-	DB.Close()
+	//DB.Close()
 	Redisclient.Close()
 }
 func InitRedis() {
