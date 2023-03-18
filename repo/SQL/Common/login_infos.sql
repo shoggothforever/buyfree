@@ -21,7 +21,7 @@
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."login_infos";
 CREATE TABLE "public"."login_infos" (
-  "user_id" text COLLATE "pg_catalog"."default",
+  "user_id" uuid,
   "password" text COLLATE "pg_catalog"."default",
   "salt" text COLLATE "pg_catalog"."default",
   "jwt" text COLLATE "pg_catalog"."default"
