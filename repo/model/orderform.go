@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"time"
 )
 
@@ -16,9 +15,9 @@ const (
 //abstract
 type OrderForm struct {
 	//订单编码
-	OrderID uuid.UUID `gorm:"primarykey"`
+	OrderID string `gorm:"primarykey"`
 	//花费
-	Cost int `gorm:"comment:花费"`
+	Cost int64 `gorm:"comment:花费"`
 	//订单状态
 	State ORDERSTATE `gorm:"type:smallint;comment:订单状态 2-已完成 1-待取货 0-未支付"`
 	//支付时存储位置(购物时获取车主位置）
@@ -36,14 +35,14 @@ type OrderForm struct {
 //需要关联创表
 type PassengerOrderForm struct {
 	//Passenger外键
-	PassengerID uuid.UUID
+	PassengerID int64
 	OrderForm
 }
 
 //需要关联创表
 type DriverOrderForm struct {
 	//Driver外键
-	DriverID uuid.UUID
+	DriverID int64
 	//车牌号
 	CarID string `gorm:"foreignKey:PassengerID"`
 	//备注
@@ -54,10 +53,10 @@ type DriverOrderForm struct {
 }
 
 type ReplenInfo struct {
-	DriverID        uuid.UUID
-	AllCount        int
-	WaitCount       int
-	FinishCount     int
+	DriverID        string
+	AllCount        int64
+	WaitCount       int64
+	FinishCount     int64
 	WaitOrderForm   []*DriverOrderForm
 	FinishOrderForm []*DriverOrderForm
 }

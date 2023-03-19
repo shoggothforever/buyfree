@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"time"
 )
 
@@ -13,9 +12,9 @@ const (
 )
 
 type Advertisement struct {
-	ID                string
+	ID                int64  `gorm:"primarykey"`
 	Description       string `gorm:"comment:广告描述"`
-	PlatformID        uuid.UUID
+	PlatformID        int64
 	ExpectedPlayTimes int64     `gorm:"comment:预期播放次数"`
 	NowPlayTimes      int64     `gorm:"comment:已经播放金额"`
 	InvestFund        float64   `gorm:"comment:投资金额"`

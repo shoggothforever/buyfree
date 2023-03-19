@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"time"
 )
 
@@ -12,9 +11,9 @@ type Chosen struct {
 
 //创建此表时还会创建DeviceProduct
 type DEVICE struct {
-	ID            uuid.UUID
-	OwnerID       uuid.UUID `gorm:"comment:车主ID"`
-	PlatformID    uuid.UUID
+	ID            int64 `gorm:"primaryKey"`
+	OwnerID       int64 `gorm:"comment:车主ID"`
+	PlatformID    int64
 	Products      []*DeviceProduct `gorm:"foreignKey:DeviceID;comment:供货情况"`
 	IsActivated   bool             `gorm:"comment:1为激活，0为未激活"`
 	ActivatedTime time.Time        `gorm:"comment:激活时间"`

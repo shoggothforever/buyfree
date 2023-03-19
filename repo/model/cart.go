@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 )
 
 type CartService interface {
@@ -11,9 +10,9 @@ type CartService interface {
 	AccountWithTicket(...Ticket)
 }
 type Cart struct {
-	CartID      uuid.UUID `gorm:"primaryKey"`
-	TotalCount  int64     `gorm:"comment:全选金额"`
-	TotalAmount float64   `gorm:"comment:全部商品数量"`
+	CartID      int64   `gorm:"primaryKey"`
+	TotalCount  int64   `gorm:"comment:全选金额"`
+	TotalAmount float64 `gorm:"comment:全部商品数量"`
 	//存储
 	Products []*OrderProduct `gorm:"foreignKey:CartRefer"`
 }
@@ -21,12 +20,12 @@ type Cart struct {
 //需要创建OrderProudct表
 type PassengerCart struct {
 	//外键 Passenger.Uuid
-	PassengerID uuid.UUID
+	PassengerID int64
 	Cart
 }
 type DriverCart struct {
 	//外键 Driver.Uuid
-	DriverID uuid.UUID
+	DriverID string
 
 	FactoryName string `gorm:"comment:购物场站名称"`
 	//距离场站距离

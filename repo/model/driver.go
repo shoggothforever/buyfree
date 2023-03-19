@@ -1,21 +1,19 @@
 package model
 
-import "github.com/google/uuid"
-
 type DriverInfo struct {
-	CarID  string `gorm:"comment:车牌号"`
-	Mobile string `gorm:"comment:手机号"`
-	IDCard string `gorm:"comment:身份证"`
-	IsAuth bool   `gorm:"comment:1为已认证，0为未认证"`
 	User
+	CarID      string `gorm:"comment:车牌号"`
+	Mobile     string `gorm:"comment:手机号"`
+	IDCard     string `gorm:"comment:身份证"`
+	PlatformID int64
+	IsAuth     bool `gorm:"comment:1为已认证，0为未认证"`
 }
 
 //Observer Driver
 type Driver struct {
-	PlatformID uuid.UUID
-	Location   string `gorm:"comment:地理位置"`
-
 	DriverInfo
+	Location string `gorm:"comment:地理位置"`
+
 	Devices []*DEVICE `gorm:"foreignKey:OwnerID;comment:持有售货机"`
 	//购物车信息
 	Cart *DriverCart `gorm:"foreignKey:DriverID;comment:补货购物车"`
@@ -23,9 +21,9 @@ type Driver struct {
 	DriverOrderForms *DriverOrderForm `gorm:"foreignKey:DriverID;补货订单"`
 }
 type Replenish struct {
-	FactorID uuid.UUID
+	FactorID int64
 	//TODO 携带补货需求信息
-	ProductID uuid.UUID
+	ProductID string
 	nums      int64
 }
 
