@@ -362,15 +362,31 @@ type IPassengerDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Passenger, err error)
+	GetByName(id int64) (result model.Passenger, err error)
 }
 
-// SELECT * FROM @@table WHERE id=@uuid
+// SELECT * FROM @@table WHERE id=@id
 func (p passengerDo) GetByID(id int64) (result model.Passenger, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, uuid)
+	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM passengers WHERE id=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE name=@id
+func (p passengerDo) GetByName(id int64) (result model.Passenger, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM passengers WHERE name=? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

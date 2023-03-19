@@ -274,15 +274,31 @@ type IFactoryDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Factory, err error)
+	GetByName(id int64) (result model.Factory, err error)
 }
 
-// SELECT * FROM @@table WHERE id=@uuid
+// SELECT * FROM @@table WHERE id=@id
 func (f factoryDo) GetByID(id int64) (result model.Factory, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, uuid)
+	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM factories WHERE id=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = f.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE name=@id
+func (f factoryDo) GetByName(id int64) (result model.Factory, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM factories WHERE name=? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = f.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

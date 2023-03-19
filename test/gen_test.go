@@ -22,8 +22,8 @@ func TestGen(t *testing.T) {
 		logrus.Info("Open postgresSQL successfully")
 	}
 	gen.SetDefault(DB)
-	u, _ := gen.Passenger.GetByID(123)
+	u, _ := gen.Platform.GetByID(238043646732013568)
 	fmt.Println(u.ID)
-	l, _ := gen.LoginInfo.GetByUidAndPsw("123", "123")
+	l, _ := gen.LoginInfo.GetByNameAndPsw(238043443408932864, "338951b7e7607b65262fb051e7804d91")
 	fmt.Println(l.UserID)
 }

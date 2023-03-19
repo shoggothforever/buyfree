@@ -68,7 +68,7 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 	_driver.Devices = driverHasManyDevices{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Devices", "model.DEVICE"),
+		RelationField: field.NewRelation("Devices", "model.Device"),
 		Products: struct {
 			field.RelationField
 		}{
@@ -358,11 +358,11 @@ func (a driverHasManyDevices) Model(m *model.Driver) *driverHasManyDevicesTx {
 
 type driverHasManyDevicesTx struct{ tx *gorm.Association }
 
-func (a driverHasManyDevicesTx) Find() (result []*model.DEVICE, err error) {
+func (a driverHasManyDevicesTx) Find() (result []*model.Device, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a driverHasManyDevicesTx) Append(values ...*model.DEVICE) (err error) {
+func (a driverHasManyDevicesTx) Append(values ...*model.Device) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -370,7 +370,7 @@ func (a driverHasManyDevicesTx) Append(values ...*model.DEVICE) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a driverHasManyDevicesTx) Replace(values ...*model.DEVICE) (err error) {
+func (a driverHasManyDevicesTx) Replace(values ...*model.Device) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -378,7 +378,7 @@ func (a driverHasManyDevicesTx) Replace(values ...*model.DEVICE) (err error) {
 	return a.tx.Replace(targetValues...)
 }
 
-func (a driverHasManyDevicesTx) Delete(values ...*model.DEVICE) (err error) {
+func (a driverHasManyDevicesTx) Delete(values ...*model.Device) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -457,15 +457,31 @@ type IDriverDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Driver, err error)
+	GetByName(id int64) (result model.Driver, err error)
 }
 
-// SELECT * FROM @@table WHERE id=@uuid
+// SELECT * FROM @@table WHERE id=@id
 func (d driverDo) GetByID(id int64) (result model.Driver, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, uuid)
+	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM drivers WHERE id=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE name=@id
+func (d driverDo) GetByName(id int64) (result model.Driver, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM drivers WHERE name=? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

@@ -28,10 +28,12 @@ func newDeviceProduct(db *gorm.DB, opts ...gen.DOOption) deviceProduct {
 	tableName := _deviceProduct.deviceProductDo.TableName()
 	_deviceProduct.ALL = field.NewAsterisk(tableName)
 	_deviceProduct.ID = field.NewInt64(tableName, "id")
+	_deviceProduct.Inventory = field.NewInt64(tableName, "inventory")
 	_deviceProduct.MonthlySales = field.NewInt64(tableName, "monthly_sales")
 	_deviceProduct.FactoryRefer = field.NewString(tableName, "factory_refer")
 	_deviceProduct.Sku = field.NewString(tableName, "sku")
 	_deviceProduct.Name = field.NewString(tableName, "name")
+	_deviceProduct.Pic = field.NewString(tableName, "pic")
 	_deviceProduct.Type = field.NewString(tableName, "type")
 	_deviceProduct.BuyPrize = field.NewFloat64(tableName, "buy_prize")
 	_deviceProduct.SupplyPrize = field.NewFloat64(tableName, "supply_prize")
@@ -47,10 +49,12 @@ type deviceProduct struct {
 
 	ALL          field.Asterisk
 	ID           field.Int64
+	Inventory    field.Int64
 	MonthlySales field.Int64
 	FactoryRefer field.String
 	Sku          field.String
 	Name         field.String
+	Pic          field.String
 	Type         field.String
 	BuyPrize     field.Float64
 	SupplyPrize  field.Float64
@@ -72,10 +76,12 @@ func (d deviceProduct) As(alias string) *deviceProduct {
 func (d *deviceProduct) updateTableName(table string) *deviceProduct {
 	d.ALL = field.NewAsterisk(table)
 	d.ID = field.NewInt64(table, "id")
+	d.Inventory = field.NewInt64(table, "inventory")
 	d.MonthlySales = field.NewInt64(table, "monthly_sales")
 	d.FactoryRefer = field.NewString(table, "factory_refer")
 	d.Sku = field.NewString(table, "sku")
 	d.Name = field.NewString(table, "name")
+	d.Pic = field.NewString(table, "pic")
 	d.Type = field.NewString(table, "type")
 	d.BuyPrize = field.NewFloat64(table, "buy_prize")
 	d.SupplyPrize = field.NewFloat64(table, "supply_prize")
@@ -96,12 +102,14 @@ func (d *deviceProduct) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (d *deviceProduct) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 9)
+	d.fieldMap = make(map[string]field.Expr, 11)
 	d.fieldMap["id"] = d.ID
+	d.fieldMap["inventory"] = d.Inventory
 	d.fieldMap["monthly_sales"] = d.MonthlySales
 	d.fieldMap["factory_refer"] = d.FactoryRefer
 	d.fieldMap["sku"] = d.Sku
 	d.fieldMap["name"] = d.Name
+	d.fieldMap["pic"] = d.Pic
 	d.fieldMap["type"] = d.Type
 	d.fieldMap["buy_prize"] = d.BuyPrize
 	d.fieldMap["supply_prize"] = d.SupplyPrize
@@ -181,18 +189,136 @@ type IDeviceProductDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.DeviceProduct, err error)
+	GetByName(id int64) (result model.DeviceProduct, err error)
+	GetAllDeviceProduct(deviceid int64) (result []model.DeviceProduct, err error)
+	GetAllOrderProductReferDCart(cartrefer int64) (result []model.DeviceProduct, err error)
+	GetAllOrderProductReferPCart(cartrefer int64) (result []model.DeviceProduct, err error)
+	GetAllOrderProductReferFactory(factoryrefer int64) (result []model.DeviceProduct, err error)
+	GetAllOrderProductReferDOrder(orderrefer string) (result []model.DeviceProduct, err error)
+	GetAllOrderProductReferPOrder(orderrefer string) (result []model.DeviceProduct, err error)
 }
 
-// SELECT * FROM @@table WHERE id=@uuid
+// SELECT * FROM @@table WHERE id=@id
 func (d deviceProductDo) GetByID(id int64) (result model.DeviceProduct, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, uuid)
+	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM device_products WHERE id=? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE name=@id
+func (d deviceProductDo) GetByName(id int64) (result model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM device_products WHERE name=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @deviceid=(SELECT id from devices where id=@deviceid))
+func (d deviceProductDo) GetAllDeviceProduct(deviceid int64) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, deviceid)
+	params = append(params, deviceid)
+	generateSQL.WriteString("SELECT * FROM device_products where ?=(SELECT id from devices where id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @cartrefer=(SELECT cart_id from driver_carts where cart_id=@cartrefer))
+func (d deviceProductDo) GetAllOrderProductReferDCart(cartrefer int64) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, cartrefer)
+	params = append(params, cartrefer)
+	generateSQL.WriteString("SELECT * FROM device_products where ?=(SELECT cart_id from driver_carts where cart_id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @cartrefer=(SELECT cart_id from passenger_carts where cart_id=@cartrefer))
+func (d deviceProductDo) GetAllOrderProductReferPCart(cartrefer int64) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, cartrefer)
+	params = append(params, cartrefer)
+	generateSQL.WriteString("SELECT * FROM device_products where ?=(SELECT cart_id from passenger_carts where cart_id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @factoryrefer=(SELECT id from factories where id=@factoryrefer))
+func (d deviceProductDo) GetAllOrderProductReferFactory(factoryrefer int64) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, factoryrefer)
+	params = append(params, factoryrefer)
+	generateSQL.WriteString("SELECT * FROM device_products where ?=(SELECT id from factories where id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @orderrefer=(SELECT order_id from driver_order_forms where order_id=@orderrefer))
+func (d deviceProductDo) GetAllOrderProductReferDOrder(orderrefer string) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, orderrefer)
+	params = append(params, orderrefer)
+	generateSQL.WriteString("SELECT * FROM device_products where ?=(SELECT order_id from driver_order_forms where order_id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @orderrefer=(SELECT order_id from passenger_order_forms where order_id=@orderrefer))
+func (d deviceProductDo) GetAllOrderProductReferPOrder(orderrefer string) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, orderrefer)
+	params = append(params, orderrefer)
+	generateSQL.WriteString("SELECT * FROM device_products where ?=(SELECT order_id from passenger_order_forms where order_id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

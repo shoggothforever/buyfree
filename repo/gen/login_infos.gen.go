@@ -160,16 +160,20 @@ type ILoginInfoDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	GetByUidAndPsw(uid string, psw string) (result model.LoginInfo, err error)
+	GetByNameAndPsw(uid int64, psw string) (result model.LoginInfo, err error)
 }
 
-// SELECT * FROM @@table WHERE user_id=@@uid and password=@@psw
-func (l loginInfoDo) GetByUidAndPsw(uid string, psw string) (result model.LoginInfo, err error) {
+// SELECT * FROM @@table WHERE user_id=@uid and password=@psw
+func (l loginInfoDo) GetByNameAndPsw(uid int64, psw string) (result model.LoginInfo, err error) {
+	var params []interface{}
+
 	var generateSQL strings.Builder
-	generateSQL.WriteString("SELECT * FROM login_infos WHERE user_id=" + l.Quote(uid) + " and password=" + l.Quote(psw) + " ")
+	params = append(params, uid)
+	params = append(params, psw)
+	generateSQL.WriteString("SELECT * FROM login_infos WHERE user_id=? and password=? ")
 
 	var executeSQL *gorm.DB
-	executeSQL = l.UnderlyingDB().Raw(generateSQL.String()).Take(&result) // ignore_security_alert
+	executeSQL = l.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

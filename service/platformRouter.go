@@ -70,13 +70,17 @@ func PlatFormrouter() {
 		pdv.GET("/offline", platform.GetOffdev)
 		pdv.POST("/adddev", platform.AddDev)
 		//设备详情
-		pdc := pdv.Group("/info")
+		pdc := pdv.Group("/info") //传入设备ID
 		{
+			//下架
 			pdc.PUT("/down", platform.TakeDown)
+			//当日营销额(还缺少需要的信息，暂时不合并）
 			pdc.GET("/salesinfo", platform.AnaSales)
-			pdc.GET("/devinfo", platform.LsDev)
-			pdc.GET("/driverinfo", platform.LsDriver)
-			pdc.GET("/productinfo", platform.LsDevProduct)
+			//可以合并的操作
+			//pdc.GET("/devinfo", platform.LsDev)
+			//pdc.GET("/driverinfo", platform.LsDriver)
+			//pdc.GET("/productinfo", platform.LsDevProduct)
+			pdc.GET("/", platform.LsInfo)
 		}
 	}
 

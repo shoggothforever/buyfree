@@ -49,7 +49,7 @@ func InitPostgresSQL() {
 			&model.Platform{},
 			&model.Driver{},
 			&model.OrderProduct{},
-			&model.DEVICE{},
+			&model.Device{},
 			&model.DriverCart{},
 			&model.DriverOrderForm{},
 			&model.DeviceProduct{},
