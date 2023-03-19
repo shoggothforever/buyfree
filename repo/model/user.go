@@ -39,7 +39,7 @@ type User struct {
 	//用户头像(需要添加修改头像功能）
 	Pic string `gorm:"comment:用户头像" json:"pic"`
 	//用户昵称
-	Name     string `gorm:"notnull;size:32;comment:用户昵称" json:"name"`
+	Name     string `gorm:"notnull;unique;size:32;comment:用户昵称" json:"name"`
 	Password string `gorm:"notnull;size:32:comment:用户密码" json:"password"`
 	Mobile   string `gorm:"comment:手机号" json:"mobile"`
 	IDCard   string `gorm:"comment:身份证" json:"id_card"`

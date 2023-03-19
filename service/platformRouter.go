@@ -38,8 +38,10 @@ func PlatFormrouter() {
 		pt.POST("/login", auth.Login)
 
 	}
+	//鉴权
+	pt.Use(middleware.AuthJwt())
 	//数据大屏
-	psc := pt.Group("/screen", middleware.AuthJwt())
+	psc := pt.Group("/screen")
 	{
 		//可能不需要路由啦，直接加载
 		//psc.GET("/sales",platform.GetSales)

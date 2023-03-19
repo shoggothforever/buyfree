@@ -8,11 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var c context.Context
-
 //注册 后续可以增加修改密码功能
 func SavePtUser(ptadmin model.Platform) (model.LoginInfo, error) {
 	ptadmin.Role = 3
+	ptadmin.ID = utils.GetSnowFlake()
 	logininfo, err := SavePtLoginInfo(ptadmin)
 	if err != nil {
 		return model.LoginInfo{}, err
@@ -32,6 +31,7 @@ func SavePtLoginInfo(ptadmin model.Platform) (model.LoginInfo, error) {
 		logrus.Info("JWT created fail")
 		return model.LoginInfo{}, err
 	}
+	c := context.TODO()
 	dal.Getrd().Set(c, loginInfo.Jwt, 1, utils.EXPIRE)
 	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
 }

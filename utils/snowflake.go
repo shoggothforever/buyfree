@@ -138,3 +138,8 @@ func (p *SnowFlakeIdWorker) tilNextMillis(lastTimestamp int64) int64 {
 func (p *SnowFlakeIdWorker) timeGen() int64 {
 	return time.Now().UnixNano() / 1e6
 }
+func GetSnowFlake() int64 {
+	idWorker := SnowFlakeIdWorker{}
+	idWorker.Init(0, 1)
+	return idWorker.NextId()
+}
