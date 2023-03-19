@@ -3,7 +3,6 @@ package test
 import (
 	"buyfree/repo/gen"
 	"fmt"
-	uuid "github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,9 +22,8 @@ func TestGen(t *testing.T) {
 		logrus.Info("Open postgresSQL successfully")
 	}
 	gen.SetDefault(DB)
-	id, _ := uuid.Parse("a870e804-cf1e-3dc3-1190-5726a7d46039")
-	u, _ := gen.Passenger.GetByUUID(id)
+	u, _ := gen.Passenger.GetByID(123)
 	fmt.Println(u.ID)
-	l, _ := gen.LoginInfo.GetByUidAndPsw(u.ID, "123")
+	l, _ := gen.LoginInfo.GetByUidAndPsw("123", "123")
 	fmt.Println(l.UserID)
 }
