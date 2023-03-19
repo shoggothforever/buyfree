@@ -11,13 +11,13 @@ type Chosen struct {
 
 //创建此表时还会创建DeviceProduct
 type DEVICE struct {
-	ID            int64 `gorm:"primaryKey"`
-	OwnerID       int64 `gorm:"comment:车主ID"`
-	PlatformID    int64
+	ID            int64            `gorm:"primaryKey" json:"id"`
+	OwnerID       int64            `gorm:"comment:车主ID" json:"owner_id"`
+	PlatformID    int64            `json:"platform_id"`
 	Products      []*DeviceProduct `gorm:"foreignKey:DeviceID;comment:供货情况"`
-	IsActivated   bool             `gorm:"comment:1为激活，0为未激活"`
-	ActivatedTime time.Time        `gorm:"comment:激活时间"`
-	UpdatedTime   time.Time        `gorm:"comment:更新时间"`
-	IsOnline      bool             `gorm:"comment:1为上线，0为未上线"`
-	Profit        float64          `gorm:"comment:收益额"`
+	IsActivated   bool             `gorm:"comment:1为激活，0为未激活" json:"is_activated"`
+	ActivatedTime time.Time        `gorm:"comment:激活时间;autocreatetime"`
+	UpdatedTime   time.Time        `gorm:"comment:更新时间" json:"updated_time"`
+	IsOnline      bool             `gorm:"comment:1为上线，0为未上线" json:"is_online"`
+	Profit        float64          `gorm:"comment:收益额" json:"profit"`
 }

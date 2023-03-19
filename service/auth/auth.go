@@ -12,7 +12,7 @@ import (
 
 func Register(c *gin.Context) {
 	var ptadmin model.Platform
-	c.ShouldBind(&ptadmin)
+	c.Bind(&ptadmin)
 	fmt.Println(ptadmin)
 	fmt.Println(ptadmin.ID)
 	logininfo, err := platform.SavePtUser(ptadmin)
@@ -36,9 +36,11 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	var l []model.LoginInfo
 	var pt model.Platform
-	//需要用户id ，密码和盐
+	//输入昵称，密码 需要用户id和盐
 	c.ShouldBind(&pt)
-	psw := utils.Messagedigest5(pt.Password, pt.PasswordSalt)
+	var password string = pt.Password
+	dal.Getdb().Raw("select id,password_salt from platforms where name = ?", pt.Name).First(&pt)
+	psw := utils.Messagedigest5(password, pt.PasswordSalt)
 	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", pt.ID, psw).First(&l)
 	if len(l) != 0 {
 		c.JSON(200, response.LoginResponse{
