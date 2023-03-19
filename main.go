@@ -17,6 +17,6 @@ func main() {
 	//id, _ := uuid.Parse("a870e804-cf1e-3dc3-1190-5726a7d46039")
 	//u, _ := gen.Passenger.GetByUUID(id)
 	//fmt.Println(u.ID)
-	//dal.InitRedis()
+	dal.InitRedis()
 	service.PlatFormrouter()
 }

@@ -7,3 +7,9 @@ type Response struct {
 	Code int64  `json:"code" form:"code"`
 	Msg  string `json:"msg" form:"msg"`
 }
+
+type LoginResponse struct {
+	Response
+	UserID int64
+	Jwt    string
+}
