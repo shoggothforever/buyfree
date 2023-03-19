@@ -19,35 +19,35 @@ import (
 	"gorm.io/plugin/dbresolver"
 )
 
-func newDEVICE(db *gorm.DB, opts ...gen.DOOption) dEVICE {
-	_dEVICE := dEVICE{}
+func newDevice(db *gorm.DB, opts ...gen.DOOption) device {
+	_device := device{}
 
-	_dEVICE.dEVICEDo.UseDB(db, opts...)
-	_dEVICE.dEVICEDo.UseModel(&model.DEVICE{})
+	_device.deviceDo.UseDB(db, opts...)
+	_device.deviceDo.UseModel(&model.Device{})
 
-	tableName := _dEVICE.dEVICEDo.TableName()
-	_dEVICE.ALL = field.NewAsterisk(tableName)
-	_dEVICE.ID = field.NewInt64(tableName, "id")
-	_dEVICE.OwnerID = field.NewInt64(tableName, "owner_id")
-	_dEVICE.PlatformID = field.NewInt64(tableName, "platform_id")
-	_dEVICE.IsActivated = field.NewBool(tableName, "is_activated")
-	_dEVICE.ActivatedTime = field.NewTime(tableName, "activated_time")
-	_dEVICE.UpdatedTime = field.NewTime(tableName, "updated_time")
-	_dEVICE.IsOnline = field.NewBool(tableName, "is_online")
-	_dEVICE.Profit = field.NewFloat64(tableName, "profit")
-	_dEVICE.Products = dEVICEHasManyProducts{
+	tableName := _device.deviceDo.TableName()
+	_device.ALL = field.NewAsterisk(tableName)
+	_device.ID = field.NewInt64(tableName, "id")
+	_device.OwnerID = field.NewInt64(tableName, "owner_id")
+	_device.PlatformID = field.NewInt64(tableName, "platform_id")
+	_device.IsActivated = field.NewBool(tableName, "is_activated")
+	_device.ActivatedTime = field.NewTime(tableName, "activated_time")
+	_device.UpdatedTime = field.NewTime(tableName, "updated_time")
+	_device.IsOnline = field.NewBool(tableName, "is_online")
+	_device.Profit = field.NewFloat64(tableName, "profit")
+	_device.Products = deviceHasManyProducts{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("Products", "model.DeviceProduct"),
 	}
 
-	_dEVICE.fillFieldMap()
+	_device.fillFieldMap()
 
-	return _dEVICE
+	return _device
 }
 
-type dEVICE struct {
-	dEVICEDo
+type device struct {
+	deviceDo
 
 	ALL           field.Asterisk
 	ID            field.Int64
@@ -58,22 +58,22 @@ type dEVICE struct {
 	UpdatedTime   field.Time
 	IsOnline      field.Bool
 	Profit        field.Float64
-	Products      dEVICEHasManyProducts
+	Products      deviceHasManyProducts
 
 	fieldMap map[string]field.Expr
 }
 
-func (d dEVICE) Table(newTableName string) *dEVICE {
-	d.dEVICEDo.UseTable(newTableName)
+func (d device) Table(newTableName string) *device {
+	d.deviceDo.UseTable(newTableName)
 	return d.updateTableName(newTableName)
 }
 
-func (d dEVICE) As(alias string) *dEVICE {
-	d.dEVICEDo.DO = *(d.dEVICEDo.As(alias).(*gen.DO))
+func (d device) As(alias string) *device {
+	d.deviceDo.DO = *(d.deviceDo.As(alias).(*gen.DO))
 	return d.updateTableName(alias)
 }
 
-func (d *dEVICE) updateTableName(table string) *dEVICE {
+func (d *device) updateTableName(table string) *device {
 	d.ALL = field.NewAsterisk(table)
 	d.ID = field.NewInt64(table, "id")
 	d.OwnerID = field.NewInt64(table, "owner_id")
@@ -89,7 +89,7 @@ func (d *dEVICE) updateTableName(table string) *dEVICE {
 	return d
 }
 
-func (d *dEVICE) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+func (d *device) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := d.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
@@ -98,7 +98,7 @@ func (d *dEVICE) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	return _oe, ok
 }
 
-func (d *dEVICE) fillFieldMap() {
+func (d *device) fillFieldMap() {
 	d.fieldMap = make(map[string]field.Expr, 9)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["owner_id"] = d.OwnerID
@@ -111,23 +111,23 @@ func (d *dEVICE) fillFieldMap() {
 
 }
 
-func (d dEVICE) clone(db *gorm.DB) dEVICE {
-	d.dEVICEDo.ReplaceConnPool(db.Statement.ConnPool)
+func (d device) clone(db *gorm.DB) device {
+	d.deviceDo.ReplaceConnPool(db.Statement.ConnPool)
 	return d
 }
 
-func (d dEVICE) replaceDB(db *gorm.DB) dEVICE {
-	d.dEVICEDo.ReplaceDB(db)
+func (d device) replaceDB(db *gorm.DB) device {
+	d.deviceDo.ReplaceDB(db)
 	return d
 }
 
-type dEVICEHasManyProducts struct {
+type deviceHasManyProducts struct {
 	db *gorm.DB
 
 	field.RelationField
 }
 
-func (a dEVICEHasManyProducts) Where(conds ...field.Expr) *dEVICEHasManyProducts {
+func (a deviceHasManyProducts) Where(conds ...field.Expr) *deviceHasManyProducts {
 	if len(conds) == 0 {
 		return &a
 	}
@@ -140,22 +140,22 @@ func (a dEVICEHasManyProducts) Where(conds ...field.Expr) *dEVICEHasManyProducts
 	return &a
 }
 
-func (a dEVICEHasManyProducts) WithContext(ctx context.Context) *dEVICEHasManyProducts {
+func (a deviceHasManyProducts) WithContext(ctx context.Context) *deviceHasManyProducts {
 	a.db = a.db.WithContext(ctx)
 	return &a
 }
 
-func (a dEVICEHasManyProducts) Model(m *model.DEVICE) *dEVICEHasManyProductsTx {
-	return &dEVICEHasManyProductsTx{a.db.Model(m).Association(a.Name())}
+func (a deviceHasManyProducts) Model(m *model.Device) *deviceHasManyProductsTx {
+	return &deviceHasManyProductsTx{a.db.Model(m).Association(a.Name())}
 }
 
-type dEVICEHasManyProductsTx struct{ tx *gorm.Association }
+type deviceHasManyProductsTx struct{ tx *gorm.Association }
 
-func (a dEVICEHasManyProductsTx) Find() (result []*model.DeviceProduct, err error) {
+func (a deviceHasManyProductsTx) Find() (result []*model.DeviceProduct, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a dEVICEHasManyProductsTx) Append(values ...*model.DeviceProduct) (err error) {
+func (a deviceHasManyProductsTx) Append(values ...*model.DeviceProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -163,7 +163,7 @@ func (a dEVICEHasManyProductsTx) Append(values ...*model.DeviceProduct) (err err
 	return a.tx.Append(targetValues...)
 }
 
-func (a dEVICEHasManyProductsTx) Replace(values ...*model.DeviceProduct) (err error) {
+func (a deviceHasManyProductsTx) Replace(values ...*model.DeviceProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -171,7 +171,7 @@ func (a dEVICEHasManyProductsTx) Replace(values ...*model.DeviceProduct) (err er
 	return a.tx.Replace(targetValues...)
 }
 
-func (a dEVICEHasManyProductsTx) Delete(values ...*model.DeviceProduct) (err error) {
+func (a deviceHasManyProductsTx) Delete(values ...*model.DeviceProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -179,56 +179,56 @@ func (a dEVICEHasManyProductsTx) Delete(values ...*model.DeviceProduct) (err err
 	return a.tx.Delete(targetValues...)
 }
 
-func (a dEVICEHasManyProductsTx) Clear() error {
+func (a deviceHasManyProductsTx) Clear() error {
 	return a.tx.Clear()
 }
 
-func (a dEVICEHasManyProductsTx) Count() int64 {
+func (a deviceHasManyProductsTx) Count() int64 {
 	return a.tx.Count()
 }
 
-type dEVICEDo struct{ gen.DO }
+type deviceDo struct{ gen.DO }
 
-type IDEVICEDo interface {
+type IDeviceDo interface {
 	gen.SubQuery
-	Debug() IDEVICEDo
-	WithContext(ctx context.Context) IDEVICEDo
+	Debug() IDeviceDo
+	WithContext(ctx context.Context) IDeviceDo
 	WithResult(fc func(tx gen.Dao)) gen.ResultInfo
 	ReplaceDB(db *gorm.DB)
-	ReadDB() IDEVICEDo
-	WriteDB() IDEVICEDo
+	ReadDB() IDeviceDo
+	WriteDB() IDeviceDo
 	As(alias string) gen.Dao
-	Session(config *gorm.Session) IDEVICEDo
+	Session(config *gorm.Session) IDeviceDo
 	Columns(cols ...field.Expr) gen.Columns
-	Clauses(conds ...clause.Expression) IDEVICEDo
-	Not(conds ...gen.Condition) IDEVICEDo
-	Or(conds ...gen.Condition) IDEVICEDo
-	Select(conds ...field.Expr) IDEVICEDo
-	Where(conds ...gen.Condition) IDEVICEDo
-	Order(conds ...field.Expr) IDEVICEDo
-	Distinct(cols ...field.Expr) IDEVICEDo
-	Omit(cols ...field.Expr) IDEVICEDo
-	Join(table schema.Tabler, on ...field.Expr) IDEVICEDo
-	LeftJoin(table schema.Tabler, on ...field.Expr) IDEVICEDo
-	RightJoin(table schema.Tabler, on ...field.Expr) IDEVICEDo
-	Group(cols ...field.Expr) IDEVICEDo
-	Having(conds ...gen.Condition) IDEVICEDo
-	Limit(limit int) IDEVICEDo
-	Offset(offset int) IDEVICEDo
+	Clauses(conds ...clause.Expression) IDeviceDo
+	Not(conds ...gen.Condition) IDeviceDo
+	Or(conds ...gen.Condition) IDeviceDo
+	Select(conds ...field.Expr) IDeviceDo
+	Where(conds ...gen.Condition) IDeviceDo
+	Order(conds ...field.Expr) IDeviceDo
+	Distinct(cols ...field.Expr) IDeviceDo
+	Omit(cols ...field.Expr) IDeviceDo
+	Join(table schema.Tabler, on ...field.Expr) IDeviceDo
+	LeftJoin(table schema.Tabler, on ...field.Expr) IDeviceDo
+	RightJoin(table schema.Tabler, on ...field.Expr) IDeviceDo
+	Group(cols ...field.Expr) IDeviceDo
+	Having(conds ...gen.Condition) IDeviceDo
+	Limit(limit int) IDeviceDo
+	Offset(offset int) IDeviceDo
 	Count() (count int64, err error)
-	Scopes(funcs ...func(gen.Dao) gen.Dao) IDEVICEDo
-	Unscoped() IDEVICEDo
-	Create(values ...*model.DEVICE) error
-	CreateInBatches(values []*model.DEVICE, batchSize int) error
-	Save(values ...*model.DEVICE) error
-	First() (*model.DEVICE, error)
-	Take() (*model.DEVICE, error)
-	Last() (*model.DEVICE, error)
-	Find() ([]*model.DEVICE, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.DEVICE, err error)
-	FindInBatches(result *[]*model.DEVICE, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Scopes(funcs ...func(gen.Dao) gen.Dao) IDeviceDo
+	Unscoped() IDeviceDo
+	Create(values ...*model.Device) error
+	CreateInBatches(values []*model.Device, batchSize int) error
+	Save(values ...*model.Device) error
+	First() (*model.Device, error)
+	Take() (*model.Device, error)
+	Last() (*model.Device, error)
+	Find() ([]*model.Device, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.Device, err error)
+	FindInBatches(result *[]*model.Device, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*model.DEVICE) (info gen.ResultInfo, err error)
+	Delete(...*model.Device) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -236,28 +236,31 @@ type IDEVICEDo interface {
 	UpdateColumnSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	UpdateColumns(value interface{}) (info gen.ResultInfo, err error)
 	UpdateFrom(q gen.SubQuery) gen.Dao
-	Attrs(attrs ...field.AssignExpr) IDEVICEDo
-	Assign(attrs ...field.AssignExpr) IDEVICEDo
-	Joins(fields ...field.RelationField) IDEVICEDo
-	Preload(fields ...field.RelationField) IDEVICEDo
-	FirstOrInit() (*model.DEVICE, error)
-	FirstOrCreate() (*model.DEVICE, error)
-	FindByPage(offset int, limit int) (result []*model.DEVICE, count int64, err error)
+	Attrs(attrs ...field.AssignExpr) IDeviceDo
+	Assign(attrs ...field.AssignExpr) IDeviceDo
+	Joins(fields ...field.RelationField) IDeviceDo
+	Preload(fields ...field.RelationField) IDeviceDo
+	FirstOrInit() (*model.Device, error)
+	FirstOrCreate() (*model.Device, error)
+	FindByPage(offset int, limit int) (result []*model.Device, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
-	Returning(value interface{}, columns ...string) IDEVICEDo
+	Returning(value interface{}, columns ...string) IDeviceDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	GetByID(id int64) (result model.DEVICE, err error)
+	GetByID(id int64) (result model.Device, err error)
+	GetByName(id int64) (result model.Device, err error)
+	GetAllDriverDevice(id int64) (result model.Device, err error)
+	GetAllPlatformDevice(id int64) (result model.Device, err error)
 }
 
-// SELECT * FROM @@table WHERE id=@uuid
-func (d dEVICEDo) GetByID(id int64) (result model.DEVICE, err error) {
+// SELECT * FROM @@table WHERE id=@id
+func (d deviceDo) GetByID(id int64) (result model.Device, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, uuid)
+	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM devices WHERE id=? ")
 
 	var executeSQL *gorm.DB
@@ -267,153 +270,200 @@ func (d dEVICEDo) GetByID(id int64) (result model.DEVICE, err error) {
 	return
 }
 
-func (d dEVICEDo) Debug() IDEVICEDo {
+// SELECT * FROM @@table WHERE name=@id
+func (d deviceDo) GetByName(id int64) (result model.Device, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM devices WHERE name=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @id=(SELECT id from drivers where id=@id))
+func (d deviceDo) GetAllDriverDevice(id int64) (result model.Device, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM devices where ?=(SELECT id from drivers where id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where @id=(SELECT id from platforms where id=@id))
+func (d deviceDo) GetAllPlatformDevice(id int64) (result model.Device, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM devices where ?=(SELECT id from platforms where id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+func (d deviceDo) Debug() IDeviceDo {
 	return d.withDO(d.DO.Debug())
 }
 
-func (d dEVICEDo) WithContext(ctx context.Context) IDEVICEDo {
+func (d deviceDo) WithContext(ctx context.Context) IDeviceDo {
 	return d.withDO(d.DO.WithContext(ctx))
 }
 
-func (d dEVICEDo) ReadDB() IDEVICEDo {
+func (d deviceDo) ReadDB() IDeviceDo {
 	return d.Clauses(dbresolver.Read)
 }
 
-func (d dEVICEDo) WriteDB() IDEVICEDo {
+func (d deviceDo) WriteDB() IDeviceDo {
 	return d.Clauses(dbresolver.Write)
 }
 
-func (d dEVICEDo) Session(config *gorm.Session) IDEVICEDo {
+func (d deviceDo) Session(config *gorm.Session) IDeviceDo {
 	return d.withDO(d.DO.Session(config))
 }
 
-func (d dEVICEDo) Clauses(conds ...clause.Expression) IDEVICEDo {
+func (d deviceDo) Clauses(conds ...clause.Expression) IDeviceDo {
 	return d.withDO(d.DO.Clauses(conds...))
 }
 
-func (d dEVICEDo) Returning(value interface{}, columns ...string) IDEVICEDo {
+func (d deviceDo) Returning(value interface{}, columns ...string) IDeviceDo {
 	return d.withDO(d.DO.Returning(value, columns...))
 }
 
-func (d dEVICEDo) Not(conds ...gen.Condition) IDEVICEDo {
+func (d deviceDo) Not(conds ...gen.Condition) IDeviceDo {
 	return d.withDO(d.DO.Not(conds...))
 }
 
-func (d dEVICEDo) Or(conds ...gen.Condition) IDEVICEDo {
+func (d deviceDo) Or(conds ...gen.Condition) IDeviceDo {
 	return d.withDO(d.DO.Or(conds...))
 }
 
-func (d dEVICEDo) Select(conds ...field.Expr) IDEVICEDo {
+func (d deviceDo) Select(conds ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.Select(conds...))
 }
 
-func (d dEVICEDo) Where(conds ...gen.Condition) IDEVICEDo {
+func (d deviceDo) Where(conds ...gen.Condition) IDeviceDo {
 	return d.withDO(d.DO.Where(conds...))
 }
 
-func (d dEVICEDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) IDEVICEDo {
+func (d deviceDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) IDeviceDo {
 	return d.Where(field.CompareSubQuery(field.ExistsOp, nil, subquery.UnderlyingDB()))
 }
 
-func (d dEVICEDo) Order(conds ...field.Expr) IDEVICEDo {
+func (d deviceDo) Order(conds ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.Order(conds...))
 }
 
-func (d dEVICEDo) Distinct(cols ...field.Expr) IDEVICEDo {
+func (d deviceDo) Distinct(cols ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.Distinct(cols...))
 }
 
-func (d dEVICEDo) Omit(cols ...field.Expr) IDEVICEDo {
+func (d deviceDo) Omit(cols ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.Omit(cols...))
 }
 
-func (d dEVICEDo) Join(table schema.Tabler, on ...field.Expr) IDEVICEDo {
+func (d deviceDo) Join(table schema.Tabler, on ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.Join(table, on...))
 }
 
-func (d dEVICEDo) LeftJoin(table schema.Tabler, on ...field.Expr) IDEVICEDo {
+func (d deviceDo) LeftJoin(table schema.Tabler, on ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.LeftJoin(table, on...))
 }
 
-func (d dEVICEDo) RightJoin(table schema.Tabler, on ...field.Expr) IDEVICEDo {
+func (d deviceDo) RightJoin(table schema.Tabler, on ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.RightJoin(table, on...))
 }
 
-func (d dEVICEDo) Group(cols ...field.Expr) IDEVICEDo {
+func (d deviceDo) Group(cols ...field.Expr) IDeviceDo {
 	return d.withDO(d.DO.Group(cols...))
 }
 
-func (d dEVICEDo) Having(conds ...gen.Condition) IDEVICEDo {
+func (d deviceDo) Having(conds ...gen.Condition) IDeviceDo {
 	return d.withDO(d.DO.Having(conds...))
 }
 
-func (d dEVICEDo) Limit(limit int) IDEVICEDo {
+func (d deviceDo) Limit(limit int) IDeviceDo {
 	return d.withDO(d.DO.Limit(limit))
 }
 
-func (d dEVICEDo) Offset(offset int) IDEVICEDo {
+func (d deviceDo) Offset(offset int) IDeviceDo {
 	return d.withDO(d.DO.Offset(offset))
 }
 
-func (d dEVICEDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IDEVICEDo {
+func (d deviceDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IDeviceDo {
 	return d.withDO(d.DO.Scopes(funcs...))
 }
 
-func (d dEVICEDo) Unscoped() IDEVICEDo {
+func (d deviceDo) Unscoped() IDeviceDo {
 	return d.withDO(d.DO.Unscoped())
 }
 
-func (d dEVICEDo) Create(values ...*model.DEVICE) error {
+func (d deviceDo) Create(values ...*model.Device) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Create(values)
 }
 
-func (d dEVICEDo) CreateInBatches(values []*model.DEVICE, batchSize int) error {
+func (d deviceDo) CreateInBatches(values []*model.Device, batchSize int) error {
 	return d.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (d dEVICEDo) Save(values ...*model.DEVICE) error {
+func (d deviceDo) Save(values ...*model.Device) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Save(values)
 }
 
-func (d dEVICEDo) First() (*model.DEVICE, error) {
+func (d deviceDo) First() (*model.Device, error) {
 	if result, err := d.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.DEVICE), nil
+		return result.(*model.Device), nil
 	}
 }
 
-func (d dEVICEDo) Take() (*model.DEVICE, error) {
+func (d deviceDo) Take() (*model.Device, error) {
 	if result, err := d.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.DEVICE), nil
+		return result.(*model.Device), nil
 	}
 }
 
-func (d dEVICEDo) Last() (*model.DEVICE, error) {
+func (d deviceDo) Last() (*model.Device, error) {
 	if result, err := d.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.DEVICE), nil
+		return result.(*model.Device), nil
 	}
 }
 
-func (d dEVICEDo) Find() ([]*model.DEVICE, error) {
+func (d deviceDo) Find() ([]*model.Device, error) {
 	result, err := d.DO.Find()
-	return result.([]*model.DEVICE), err
+	return result.([]*model.Device), err
 }
 
-func (d dEVICEDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.DEVICE, err error) {
-	buf := make([]*model.DEVICE, 0, batchSize)
+func (d deviceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.Device, err error) {
+	buf := make([]*model.Device, 0, batchSize)
 	err = d.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -421,49 +471,49 @@ func (d dEVICEDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) erro
 	return results, err
 }
 
-func (d dEVICEDo) FindInBatches(result *[]*model.DEVICE, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (d deviceDo) FindInBatches(result *[]*model.Device, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return d.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (d dEVICEDo) Attrs(attrs ...field.AssignExpr) IDEVICEDo {
+func (d deviceDo) Attrs(attrs ...field.AssignExpr) IDeviceDo {
 	return d.withDO(d.DO.Attrs(attrs...))
 }
 
-func (d dEVICEDo) Assign(attrs ...field.AssignExpr) IDEVICEDo {
+func (d deviceDo) Assign(attrs ...field.AssignExpr) IDeviceDo {
 	return d.withDO(d.DO.Assign(attrs...))
 }
 
-func (d dEVICEDo) Joins(fields ...field.RelationField) IDEVICEDo {
+func (d deviceDo) Joins(fields ...field.RelationField) IDeviceDo {
 	for _, _f := range fields {
 		d = *d.withDO(d.DO.Joins(_f))
 	}
 	return &d
 }
 
-func (d dEVICEDo) Preload(fields ...field.RelationField) IDEVICEDo {
+func (d deviceDo) Preload(fields ...field.RelationField) IDeviceDo {
 	for _, _f := range fields {
 		d = *d.withDO(d.DO.Preload(_f))
 	}
 	return &d
 }
 
-func (d dEVICEDo) FirstOrInit() (*model.DEVICE, error) {
+func (d deviceDo) FirstOrInit() (*model.Device, error) {
 	if result, err := d.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.DEVICE), nil
+		return result.(*model.Device), nil
 	}
 }
 
-func (d dEVICEDo) FirstOrCreate() (*model.DEVICE, error) {
+func (d deviceDo) FirstOrCreate() (*model.Device, error) {
 	if result, err := d.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.DEVICE), nil
+		return result.(*model.Device), nil
 	}
 }
 
-func (d dEVICEDo) FindByPage(offset int, limit int) (result []*model.DEVICE, count int64, err error) {
+func (d deviceDo) FindByPage(offset int, limit int) (result []*model.Device, count int64, err error) {
 	result, err = d.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -478,7 +528,7 @@ func (d dEVICEDo) FindByPage(offset int, limit int) (result []*model.DEVICE, cou
 	return
 }
 
-func (d dEVICEDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+func (d deviceDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
 	count, err = d.Count()
 	if err != nil {
 		return
@@ -488,15 +538,15 @@ func (d dEVICEDo) ScanByPage(result interface{}, offset int, limit int) (count i
 	return
 }
 
-func (d dEVICEDo) Scan(result interface{}) (err error) {
+func (d deviceDo) Scan(result interface{}) (err error) {
 	return d.DO.Scan(result)
 }
 
-func (d dEVICEDo) Delete(models ...*model.DEVICE) (result gen.ResultInfo, err error) {
+func (d deviceDo) Delete(models ...*model.Device) (result gen.ResultInfo, err error) {
 	return d.DO.Delete(models)
 }
 
-func (d *dEVICEDo) withDO(do gen.Dao) *dEVICEDo {
+func (d *deviceDo) withDO(do gen.Dao) *deviceDo {
 	d.DO = *do.(*gen.DO)
 	return d
 }

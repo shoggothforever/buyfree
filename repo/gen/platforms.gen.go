@@ -76,7 +76,7 @@ func newPlatform(db *gorm.DB, opts ...gen.DOOption) platform {
 				field.RelationField
 			}
 		}{
-			RelationField: field.NewRelation("AuthorizedDrivers.Devices", "model.DEVICE"),
+			RelationField: field.NewRelation("AuthorizedDrivers.Devices", "model.Device"),
 			Products: struct {
 				field.RelationField
 			}{
@@ -88,7 +88,7 @@ func newPlatform(db *gorm.DB, opts ...gen.DOOption) platform {
 	_platform.Devices = platformHasManyDevices{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Devices", "model.DEVICE"),
+		RelationField: field.NewRelation("Devices", "model.Device"),
 	}
 
 	_platform.Advertisements = platformHasManyAdvertisements{
@@ -311,11 +311,11 @@ func (a platformHasManyDevices) Model(m *model.Platform) *platformHasManyDevices
 
 type platformHasManyDevicesTx struct{ tx *gorm.Association }
 
-func (a platformHasManyDevicesTx) Find() (result []*model.DEVICE, err error) {
+func (a platformHasManyDevicesTx) Find() (result []*model.Device, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a platformHasManyDevicesTx) Append(values ...*model.DEVICE) (err error) {
+func (a platformHasManyDevicesTx) Append(values ...*model.Device) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -323,7 +323,7 @@ func (a platformHasManyDevicesTx) Append(values ...*model.DEVICE) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a platformHasManyDevicesTx) Replace(values ...*model.DEVICE) (err error) {
+func (a platformHasManyDevicesTx) Replace(values ...*model.Device) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -331,7 +331,7 @@ func (a platformHasManyDevicesTx) Replace(values ...*model.DEVICE) (err error) {
 	return a.tx.Replace(targetValues...)
 }
 
-func (a platformHasManyDevicesTx) Delete(values ...*model.DEVICE) (err error) {
+func (a platformHasManyDevicesTx) Delete(values ...*model.Device) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -476,15 +476,31 @@ type IPlatformDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Platform, err error)
+	GetByName(id int64) (result model.Platform, err error)
 }
 
-// SELECT * FROM @@table WHERE id=@uuid
+// SELECT * FROM @@table WHERE id=@id
 func (p platformDo) GetByID(id int64) (result model.Platform, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, uuid)
+	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM platforms WHERE id=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE name=@id
+func (p platformDo) GetByName(id int64) (result model.Platform, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM platforms WHERE name=? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

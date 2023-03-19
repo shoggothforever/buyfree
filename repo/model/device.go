@@ -10,7 +10,7 @@ type Chosen struct {
 }
 
 //创建此表时还会创建DeviceProduct
-type DEVICE struct {
+type Device struct {
 	ID            int64            `gorm:"primaryKey" json:"id"`
 	OwnerID       int64            `gorm:"comment:车主ID" json:"owner_id"`
 	PlatformID    int64            `json:"platform_id"`

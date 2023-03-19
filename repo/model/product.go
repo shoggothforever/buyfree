@@ -3,7 +3,7 @@ package model
 type Product struct {
 	ID int64 `gorm:"primaryKey;"`
 	//存货
-	inventory int64 `gorm:"comment:存货"`
+	Inventory int64 `gorm:"comment:存货"`
 	//月销售量
 	MonthlySales int64 `gorm:"comment:月销"`
 	FactoryRefer string
@@ -11,6 +11,8 @@ type Product struct {
 	Sku string `gorm:"comment:库存控制最小可用单位"`
 	//产品名称
 	Name string `gorm:"comment:产品名称"`
+	//图片
+	Pic string `gorm:"comment:图片"`
 	//型号
 	Type string `gorm:"comment:型号"`
 	//销售价
@@ -25,9 +27,13 @@ type OrderProduct struct {
 	OrderRefer   string  `gorm:"comment:所属订单"`
 	IsChosen     bool    `gorm:"comment:场站是否上线该产品 1-上线 0-下线"`
 	Name         string  `gorm:"comment:商品名称"`
+	Pic          string  `gorm:"comment:图片"`
 	Type         string  `gorm:"comment:商品型号"`
 	Count        int64   `gorm:"comment:需求量"`
 	Prize        float64 `gorm:"comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价"`
+}
+type OrderProductImplement interface {
+	Refund()
 }
 
 func (o *OrderProduct) GetAmount() float64 {
@@ -51,8 +57,6 @@ type RepoProduct struct {
 	Product
 	//场站编号
 	FactoryID int64
-
-	//Subscribers map[uuid.UUID]*Driver
 }
 
 //func newProduct(name string, in int64) *Product {

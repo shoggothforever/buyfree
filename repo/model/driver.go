@@ -14,7 +14,7 @@ type Driver struct {
 	DriverInfo
 	Location string `gorm:"comment:地理位置"`
 
-	Devices []*DEVICE `gorm:"foreignKey:OwnerID;comment:持有售货机"`
+	Devices []*Device `gorm:"foreignKey:OwnerID;comment:持有售货机"`
 	//购物车信息
 	Cart *DriverCart `gorm:"foreignKey:DriverID;comment:补货购物车"`
 	//购物订单
