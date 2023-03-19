@@ -1,5 +1,5 @@
 syntax="proto3";
-package grpc_gen.product;
+package grpc_gen.user;
 option go_package="grpc_gen/user";
 
 //对于每一个用户都适用的接口

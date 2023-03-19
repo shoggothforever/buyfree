@@ -1,16 +1,12 @@
 package model
 
-import (
-	"github.com/google/uuid"
-)
-
 type Product struct {
-	ID int64 `gorm:"type:int;primaryKey;"`
+	ID int64 `gorm:"primaryKey;"`
 	//存货
 	inventory int64 `gorm:"comment:存货"`
 	//月销售量
 	MonthlySales int64 `gorm:"comment:月销"`
-	FactoryRefer uuid.UUID
+	FactoryRefer string
 	//库存单位
 	Sku string `gorm:"comment:库存控制最小可用单位"`
 	//产品名称
@@ -24,14 +20,14 @@ type Product struct {
 }
 type OrderProduct struct {
 	//外键
-	CartRefer    uuid.UUID `gorm:"comment:所属购物车"`
-	OrderRefer   uuid.UUID `gorm:"comment:所属订单"`
-	FactoryRefer uuid.UUID `gorm:"comment:所属场站"`
-	IsChosen     bool      `gorm:"comment:场站是否上线该产品 1-上线 0-下线"`
-	Name         string    `gorm:"comment:商品名称"`
-	Type         string    `gorm:"comment:商品型号"`
-	Count        int64     `gorm:"comment:需求量"`
-	Prize        float64   `gorm:"comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价"`
+	CartRefer    int64   `gorm:"comment:所属购物车"`
+	FactoryRefer int64   `gorm:"comment:所属场站"`
+	OrderRefer   string  `gorm:"comment:所属订单"`
+	IsChosen     bool    `gorm:"comment:场站是否上线该产品 1-上线 0-下线"`
+	Name         string  `gorm:"comment:商品名称"`
+	Type         string  `gorm:"comment:商品型号"`
+	Count        int64   `gorm:"comment:需求量"`
+	Prize        float64 `gorm:"comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价"`
 }
 
 func (o *OrderProduct) GetAmount() float64 {
@@ -49,12 +45,12 @@ func (o *OrderProduct) GetChooseAmount() float64 {
 type DeviceProduct struct {
 	Product
 	//售货机编号
-	DeviceID uuid.UUID `gorm:"comment:售货机编号"`
+	DeviceID int64 `gorm:"comment:售货机编号"`
 }
 type RepoProduct struct {
 	Product
 	//场站编号
-	FactoryID uuid.UUID
+	FactoryID int64
 
 	//Subscribers map[uuid.UUID]*Driver
 }

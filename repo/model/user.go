@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"time"
 )
@@ -29,7 +28,7 @@ const (
 
 type User struct {
 	//唯一标志符
-	ID uuid.UUID `gorm:"type:uuid;primaryKey;"`
+	ID int64 `gorm:"primaryKey;"`
 	//注册时间
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime:milli"`
@@ -57,20 +56,20 @@ type Admin struct {
 }
 
 type Possesion struct {
-	UserID  uuid.UUID
+	UserID  int64
 	Balance float64
 	Tickets []Ticket
 }
 
 type LoginInfo struct {
-	UserID   uuid.UUID
+	UserID   int64
 	Password string
 	Salt     string `gorm:"comment:加密盐"`
 	Jwt      string `gorm:"comment:鉴权值"`
 }
 
 type Cookies struct {
-	UserID    uuid.UUID
+	UserID    int64
 	JWT       string
 	CreatedAt time.Time
 }

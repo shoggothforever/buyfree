@@ -1,6 +1,7 @@
 syntax="proto3";
 package grpc_gen.product;
 option go_package="grpc_gen/driver";
+import "user.proto";
 message DriverRequest{
 
 }
@@ -10,7 +11,7 @@ message DriverResponse{
 }
 
 message Driver{
-  User u=1;
+  user.User u=1;
   string licensePlate=2;
 }
 

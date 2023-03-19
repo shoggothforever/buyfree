@@ -1,5 +1,5 @@
 syntax="proto3";
-package grpc_gen.product;
+package grpc_gen.passenger;
 option go_package="grpc_gen/passenger";
 //import "user.proto";
 message PassengerRequest{

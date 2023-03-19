@@ -4,7 +4,7 @@ package model
 type Passenger struct {
 	//积分
 	User
-	Score int `gorm:"comment:用户积分"`
+	Score int64 `gorm:"comment:用户积分"`
 	//用户的购物车(如果一次只能买一件，可以不用）
 	Cart *PassengerCart `gorm:"foreignKey:PassengerID"`
 	//订单
