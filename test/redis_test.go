@@ -79,4 +79,5 @@ func TestRedis(t *testing.T) {
 	RC.Set(ctx, loginInfo.Jwt, 1, utils.EXPIRE)
 	au, _ := RC.Get(ctx, loginInfo.Jwt).Result()
 	fmt.Println(au) // 打印出1 表示存在jwt ，打印出空行 表示不存在
+
 }

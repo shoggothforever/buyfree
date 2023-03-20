@@ -18,7 +18,7 @@ type DevProductPartInfo struct {
 	Sku         string
 	Name        string
 	Pic         string
-	Prize       int64
+	Prize       float64
 	MonthlySold int64
 	Inventory   int64
 	//上架？
@@ -43,6 +43,7 @@ type AddDevResponse struct {
 }
 
 type DevInfoResponse struct {
+	Response
 	model.SalesData
 	DevInfo
 }

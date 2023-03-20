@@ -3,7 +3,7 @@ package model
 type Platform struct {
 	Admin
 	//登记的司机
-	AuthorizedDrivers []*Driver        `gorm:"foreignkey:PlatformID"`
-	Devices           []*Device        `gorm:"foreignkey:PlatformID"`
-	Advertisements    []*Advertisement `gorm:"foreignkey:PlatformID"`
+	AuthorizedDrivers []*Driver        `gorm:"foreignkey:PlatformID" json:"authorized_drivers"`
+	Devices           []*Device        `gorm:"foreignkey:PlatformID" json:"devices"`
+	Advertisements    []*Advertisement `gorm:"foreignkey:PlatformID" json:"advertisements"`
 }

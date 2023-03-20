@@ -19,6 +19,7 @@ func PlatFormrouter() {
 	r := gin.Default()
 	r.Static("/static", "./public")
 	r.Use(middleware.Cors())
+
 	srv := http.Server{
 		Addr:    ":9003",
 		Handler: r,
@@ -39,7 +40,7 @@ func PlatFormrouter() {
 
 	}
 	//鉴权
-	pt.Use(middleware.AuthJwt())
+	//pt.Use(middleware.AuthJwt())
 	//数据大屏
 	psc := pt.Group("/screen")
 	{
@@ -87,12 +88,13 @@ func PlatFormrouter() {
 	//商品管理
 	ssc := pt.Group("/goods")
 	{
+		//默认展示全部
 		ssc.GET("/allorder", platform.GetOrders)
 		ssc.GET("/onshelf", platform.GetOnShelf)
 		ssc.GET("/soldout", platform.Getsoldout)
 		ssc.GET("/downshelf", platform.Getdownshelf)
 		ssc.GET("/info", platform.GetGoodinfo)
-		ssc.PUT("/on", platform.TakeOn)
+		//ssc.PUT("/on", platform.TakeOn)
 
 	}
 	//销售统计

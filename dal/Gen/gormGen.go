@@ -52,6 +52,31 @@ type DeviceQuery interface {
 	GetAllDriverDevice(id int64) (gen.T, error)
 	//sql(SELECT * FROM @@table where @id=(SELECT id from platforms where id=@id))
 	GetAllPlatformDevice(id int64) (gen.T, error)
+
+	//sql(SELECT * FROM @@table where is_online=@mode and @id=(SELECT id from platforms where id=@id))
+	GetByOnlinePlatformDevice(id int64, mode bool) (gen.T, error)
+
+	//sql(SELECT * FROM @@table where is_activated=@mode and @id=(SELECT id from platforms where id=@id))
+	GetByActivatedPlatformDevice(id int64, mode bool) (gen.T, error)
+}
+type OrderFormQuery interface {
+	//sql(SELECT * FROM @@table where @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+	FGetAllOrderFormsFrom(id int64) ([]gen.T, error)
+
+	//sql(SELECT * FROM @@table where state=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+	FGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
+
+	//sql(SELECT * FROM @@table where @id =(SELECT id from drivers where id=@id))
+	DGetAllOrderFormsFrom(id int64) ([]gen.T, error)
+
+	//sql(SELECT * FROM @@table where state=@mode and @id =(SELECT id from driver_order_forms where factory_id=@id))
+	DGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
+
+	//sql(SELECT * FROM @@table where @id =(SELECT id from passengers where id=@id))
+	PGetAllOrderFormsFrom(id int64) ([]gen.T, error)
+
+	//sql(SELECT * FROM @@table where statestate=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+	PGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
 }
 
 func main() {
@@ -74,14 +99,15 @@ func main() {
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 	g.UseDB(DB)
-	g.ApplyBasic(&model.User{})
+	//g.ApplyBasic(&model.User{})
 	g.ApplyInterface(func(Query) {}, &model.Passenger{},
 		&model.Driver{}, &model.Factory{},
 		&model.Platform{}, &model.DeviceProduct{},
 		&model.Device{}, &model.Advertisement{})
 	g.ApplyInterface(func(LoginQuery) {}, &model.LoginInfo{})
 	g.ApplyInterface(func(CartQuery) {}, &model.PassengerCart{}, &model.DriverCart{})
-	g.ApplyInterface(func(query ProductQuery) {}, &model.OrderProduct{}, &model.DeviceProduct{})
-	g.ApplyInterface(func(query DeviceQuery) {}, &model.Device{})
+	g.ApplyInterface(func(ProductQuery) {}, &model.OrderProduct{}, &model.DeviceProduct{})
+	g.ApplyInterface(func(DeviceQuery) {}, &model.Device{})
+	g.ApplyInterface(func(OrderFormQuery) {}, &model.PassengerOrderForm{}, &model.DriverOrderForm{})
 	g.Execute()
 }

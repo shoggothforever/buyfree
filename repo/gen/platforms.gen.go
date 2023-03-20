@@ -57,19 +57,6 @@ func newPlatform(db *gorm.DB, opts ...gen.DOOption) platform {
 				RelationField: field.NewRelation("AuthorizedDrivers.Cart.Products", "model.OrderProduct"),
 			},
 		},
-		DriverOrderForms: struct {
-			field.RelationField
-			ProductInfo struct {
-				field.RelationField
-			}
-		}{
-			RelationField: field.NewRelation("AuthorizedDrivers.DriverOrderForms", "model.DriverOrderForm"),
-			ProductInfo: struct {
-				field.RelationField
-			}{
-				RelationField: field.NewRelation("AuthorizedDrivers.DriverOrderForms.ProductInfo", "model.OrderProduct"),
-			},
-		},
 		Devices: struct {
 			field.RelationField
 			Products struct {
@@ -81,6 +68,19 @@ func newPlatform(db *gorm.DB, opts ...gen.DOOption) platform {
 				field.RelationField
 			}{
 				RelationField: field.NewRelation("AuthorizedDrivers.Devices.Products", "model.DeviceProduct"),
+			},
+		},
+		DriverOrderForms: struct {
+			field.RelationField
+			ProductInfo struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("AuthorizedDrivers.DriverOrderForms", "model.DriverOrderForm"),
+			ProductInfo: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("AuthorizedDrivers.DriverOrderForms.ProductInfo", "model.OrderProduct"),
 			},
 		},
 	}
@@ -207,15 +207,15 @@ type platformHasManyAuthorizedDrivers struct {
 			field.RelationField
 		}
 	}
-	DriverOrderForms struct {
-		field.RelationField
-		ProductInfo struct {
-			field.RelationField
-		}
-	}
 	Devices struct {
 		field.RelationField
 		Products struct {
+			field.RelationField
+		}
+	}
+	DriverOrderForms struct {
+		field.RelationField
+		ProductInfo struct {
 			field.RelationField
 		}
 	}

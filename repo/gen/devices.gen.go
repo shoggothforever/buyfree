@@ -253,6 +253,8 @@ type IDeviceDo interface {
 	GetByName(id int64) (result model.Device, err error)
 	GetAllDriverDevice(id int64) (result model.Device, err error)
 	GetAllPlatformDevice(id int64) (result model.Device, err error)
+	GetByOnlinePlatformDevice(id int64, mode bool) (result model.Device, err error)
+	GetByActivatedPlatformDevice(id int64, mode bool) (result model.Device, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -309,6 +311,40 @@ func (d deviceDo) GetAllPlatformDevice(id int64) (result model.Device, err error
 	params = append(params, id)
 	params = append(params, id)
 	generateSQL.WriteString("SELECT * FROM devices where ?=(SELECT id from platforms where id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where is_online=@mode and @id=(SELECT id from platforms where id=@id))
+func (d deviceDo) GetByOnlinePlatformDevice(id int64, mode bool) (result model.Device, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, mode)
+	params = append(params, id)
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM devices where is_online=? and ?=(SELECT id from platforms where id=?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where is_activated=@mode and @id=(SELECT id from platforms where id=@id))
+func (d deviceDo) GetByActivatedPlatformDevice(id int64, mode bool) (result model.Device, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, mode)
+	params = append(params, id)
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM devices where is_activated=? and ?=(SELECT id from platforms where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

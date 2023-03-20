@@ -22,8 +22,17 @@ func TestGen(t *testing.T) {
 		logrus.Info("Open postgresSQL successfully")
 	}
 	gen.SetDefault(DB)
-	u, _ := gen.Platform.GetByID(238043646732013568)
-	fmt.Println(u.ID)
-	l, _ := gen.LoginInfo.GetByNameAndPsw(238043443408932864, "338951b7e7607b65262fb051e7804d91")
-	fmt.Println(l.UserID)
+	//u, _ := gen.Platform.GetByID(238043646732013568)
+	//fmt.Println(u.ID)
+	//l, _ := gen.LoginInfo.GetByNameAndPsw(238043443408932864, "338951b7e7607b65262fb051e7804d91")
+	//fmt.Println(l.UserID)
+	//d, _ := gen.Device.GetAllDriverDevice(179)
+	//fmt.Println(d.Products)
+	//fmt.Println(d)
+	//p, _ := gen.DeviceProduct.GetAllDeviceProduct(10)
+	//fmt.Println(p)
+	os, _ := gen.OrderProduct.GetAllOrderProductReferDOrder("A comfort zone is a beautiful place, but nothing ever grows there. A man is not old until regrets take the place of dreams. Navicat 15 has added support for the system-wide dark mode. Navicat allows you to transfer data from one database and/or schema to another with detailed analytical process.")
+	for _, o := range os {
+		fmt.Println(o.Prize)
+	}
 }
