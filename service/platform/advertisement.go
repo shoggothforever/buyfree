@@ -5,27 +5,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//type ADController struct {
-//	BaseController
-//}
-
-func GetADList(c *gin.Context) {
-	c.JSON(200, response.Response{
-		200,
-		"ok"})
-}
-func GetAddAD(c *gin.Context) {
-	c.JSON(200, response.Response{
-		200,
-		"ok"})
-}
-func GetADContent(c *gin.Context) {
-	c.JSON(200, response.Response{
-		200,
-		"ok"})
+type ADController struct {
+	BaseController
 }
 
-func GetADEfficient(c *gin.Context) {
+func (a *ADController) GetADList(c *gin.Context) {
+	c.JSON(200, response.Response{
+		200,
+		"ok"})
+}
+func (a *ADController) GetAddAD(c *gin.Context) {
+	c.JSON(200, response.Response{
+		200,
+		"ok"})
+}
+func (a *ADController) GetADContent(c *gin.Context) {
+	c.JSON(200, response.Response{
+		200,
+		"ok"})
+}
+
+func (a *ADController) GetADEfficient(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})

@@ -5,6 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SalesController struct {
+	BaseController
+}
+
 //	@Summary		获取营销额
 //	@Tags			Screen
 //	@Accept			json
@@ -16,37 +20,37 @@ import (
 //	@Failure		403				{object}	model.Response
 //	@Success		200				{object}	model.Response
 //	@Router			/url/pause [Post]
-func GetSales(c *gin.Context) {
+func (s *SalesController) GetSales(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
-func GetCurve(c *gin.Context) {
+func (s *SalesController) GetCurve(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
 //从数据库获取相关信息
-func GetDevCnt(c *gin.Context) {
+func (s *SalesController) GetDevCnt(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
-func GetLocation(c *gin.Context) {
-	c.JSON(200, response.Response{
-		200,
-		"ok"})
-}
-
-func AnalyzeAD(c *gin.Context) {
+func (s *SalesController) GetLocation(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
-func GetSaleRank(c *gin.Context) {
+func (s *SalesController) AnalyzeAD(c *gin.Context) {
+	c.JSON(200, response.Response{
+		200,
+		"ok"})
+}
+
+func (s *SalesController) GetSaleRank(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})

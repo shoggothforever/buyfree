@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type DevadminController struct {
+	BaseController
+}
+
 func GetState(state bool) string {
 	if state == true {
 
@@ -16,7 +20,7 @@ func GetState(state bool) string {
 		return "离线"
 	}
 }
-func GetAlldev(c *gin.Context) {
+func (d *DevadminController) GetAlldev(c *gin.Context) {
 	var devs []*model.Device
 	var driver model.Driver
 	dal.Getdb().Model(&model.Device{}).Find(&devs)
@@ -46,7 +50,7 @@ func GetAlldev(c *gin.Context) {
 
 }
 
-func GetOndev(c *gin.Context) {
+func (d *DevadminController) GetOndev(c *gin.Context) {
 	var devs []*model.Device
 	var driver model.Driver
 	dal.Getdb().Model(&model.Device{}).Where("is_online = ?", true).Find(&devs)
@@ -75,7 +79,7 @@ func GetOndev(c *gin.Context) {
 	})
 }
 
-func GetOffdev(c *gin.Context) {
+func (d *DevadminController) GetOffdev(c *gin.Context) {
 	var devs []*model.Device
 	var driver model.Driver
 	dal.Getdb().Model(&model.Device{}).Where("is_online = ?", false).Find(&devs)
@@ -105,7 +109,7 @@ func GetOffdev(c *gin.Context) {
 }
 
 //从数据库获取相关信息
-func GetActivated(c *gin.Context) {
+func (d *DevadminController) GetActivated(c *gin.Context) {
 	var devs []*model.Device
 	var driver model.Driver
 	dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true).Find(&devs)
@@ -133,7 +137,7 @@ func GetActivated(c *gin.Context) {
 		devres,
 	})
 }
-func GetNotActivated(c *gin.Context) {
+func (d *DevadminController) GetNotActivated(c *gin.Context) {
 	var devs []*model.Device
 	var driver model.Driver
 	dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false).Find(&devs)
@@ -161,7 +165,7 @@ func GetNotActivated(c *gin.Context) {
 		devres,
 	})
 }
-func AddDev(c *gin.Context) {
+func (d *DevadminController) AddDev(c *gin.Context) {
 	var dev model.Device
 	var err error
 	err = c.ShouldBindJSON(&dev)
