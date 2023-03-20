@@ -5,17 +5,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetDailyRank(c *gin.Context) {
+type GoodsController struct {
+	BaseController
+}
+
+func (g *GoodsController) GetDailyRank(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
-func GetMonthlyRank(c *gin.Context) {
+func (g *GoodsController) GetMonthlyRank(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
-func GetAnnuallyRank(c *gin.Context) {
+func (g *GoodsController) GetAnnuallyRank(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})

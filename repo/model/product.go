@@ -38,6 +38,7 @@ type OrderProduct struct {
 	OrderRefer   string  `gorm:"comment:所属订单" json:"order_refer"`
 	IsChosen     bool    `gorm:"comment:场站是否上线该产品 1-上线 0-下线" json:"is_chosen"`
 	Name         string  `gorm:"comment:商品名称" json:"name"`
+	Sku          string  `gorm:"comment:库存控制最小可用单位" json:"sku"`
 	Pic          string  `gorm:"comment:图片" json:"pic"`
 	Type         string  `gorm:"comment:商品型号" json:"type"`
 	Count        int64   `gorm:"comment:需求量" json:"count"`

@@ -5,7 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetOrders(c *gin.Context) {
+type OrderController struct {
+	BaseController
+}
+
+func (o *OrderController) GetOrders(c *gin.Context) {
 	//var dofs []*model.DriverOrderForm
 	//
 	//err := dal.Getdb().Model(&model.DriverOrderForm{}).Find(&dofs).Error
@@ -43,30 +47,30 @@ func GetOrders(c *gin.Context) {
 	//}
 }
 
-func GetOnShelf(c *gin.Context) {
+func (o *OrderController) GetOnShelf(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
 //从数据库获取相关信息
-func Getsoldout(c *gin.Context) {
+func (o *OrderController) Getsoldout(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
-func Getdownshelf(c *gin.Context) {
+func (o *OrderController) Getdownshelf(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
-func GetGoodinfo(c *gin.Context) {
+func (o *OrderController) GetGoodinfo(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
-func TakeOn(c *gin.Context) {
+func (o *OrderController) TakeOn(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})

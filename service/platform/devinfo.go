@@ -8,14 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type DevinfoController struct {
+	BaseController
+}
+
 //TODO: 利用redis对车主端的数据进行统计，
-func AnaSales(c *gin.Context) {
+func (d *DevinfoController) AnaSales(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
-func LsInfo(c *gin.Context) {
+func (d *DevinfoController) LsInfo(c *gin.Context) {
 	//TODO:分析数据的服务
 
 	var err error
@@ -84,7 +88,7 @@ func LsInfo(c *gin.Context) {
 }
 
 //此处应该知道设备的ID
-func LsDev(c *gin.Context) {
+func (d *DevinfoController) LsDev(c *gin.Context) {
 	dev := model.Device{}
 	c.ShouldBind(&dev)
 	// id:=c.PostForm("id")
@@ -96,20 +100,20 @@ func LsDev(c *gin.Context) {
 	}
 }
 
-func LsDriver(c *gin.Context) {
+func (d *DevinfoController) LsDriver(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
 //从数据库获取相关信息
-func LsDevProduct(c *gin.Context) {
+func (d *DevinfoController) LsDevProduct(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
-func TakeDown(c *gin.Context) {
+func (d *DevinfoController) TakeDown(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
