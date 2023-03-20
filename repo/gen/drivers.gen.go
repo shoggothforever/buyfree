@@ -54,17 +54,6 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 		},
 	}
 
-	_driver.DriverOrderForms = driverHasOneDriverOrderForms{
-		db: db.Session(&gorm.Session{}),
-
-		RelationField: field.NewRelation("DriverOrderForms", "model.DriverOrderForm"),
-		ProductInfo: struct {
-			field.RelationField
-		}{
-			RelationField: field.NewRelation("DriverOrderForms.ProductInfo", "model.OrderProduct"),
-		},
-	}
-
 	_driver.Devices = driverHasManyDevices{
 		db: db.Session(&gorm.Session{}),
 
@@ -73,6 +62,17 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 			field.RelationField
 		}{
 			RelationField: field.NewRelation("Devices.Products", "model.DeviceProduct"),
+		},
+	}
+
+	_driver.DriverOrderForms = driverHasManyDriverOrderForms{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("DriverOrderForms", "model.DriverOrderForm"),
+		ProductInfo: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("DriverOrderForms.ProductInfo", "model.OrderProduct"),
 		},
 	}
 
@@ -103,9 +103,9 @@ type driver struct {
 	Location   field.String
 	Cart       driverHasOneCart
 
-	DriverOrderForms driverHasOneDriverOrderForms
-
 	Devices driverHasManyDevices
+
+	DriverOrderForms driverHasManyDriverOrderForms
 
 	fieldMap map[string]field.Expr
 }
@@ -254,76 +254,6 @@ func (a driverHasOneCartTx) Count() int64 {
 	return a.tx.Count()
 }
 
-type driverHasOneDriverOrderForms struct {
-	db *gorm.DB
-
-	field.RelationField
-
-	ProductInfo struct {
-		field.RelationField
-	}
-}
-
-func (a driverHasOneDriverOrderForms) Where(conds ...field.Expr) *driverHasOneDriverOrderForms {
-	if len(conds) == 0 {
-		return &a
-	}
-
-	exprs := make([]clause.Expression, 0, len(conds))
-	for _, cond := range conds {
-		exprs = append(exprs, cond.BeCond().(clause.Expression))
-	}
-	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
-	return &a
-}
-
-func (a driverHasOneDriverOrderForms) WithContext(ctx context.Context) *driverHasOneDriverOrderForms {
-	a.db = a.db.WithContext(ctx)
-	return &a
-}
-
-func (a driverHasOneDriverOrderForms) Model(m *model.Driver) *driverHasOneDriverOrderFormsTx {
-	return &driverHasOneDriverOrderFormsTx{a.db.Model(m).Association(a.Name())}
-}
-
-type driverHasOneDriverOrderFormsTx struct{ tx *gorm.Association }
-
-func (a driverHasOneDriverOrderFormsTx) Find() (result *model.DriverOrderForm, err error) {
-	return result, a.tx.Find(&result)
-}
-
-func (a driverHasOneDriverOrderFormsTx) Append(values ...*model.DriverOrderForm) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Append(targetValues...)
-}
-
-func (a driverHasOneDriverOrderFormsTx) Replace(values ...*model.DriverOrderForm) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Replace(targetValues...)
-}
-
-func (a driverHasOneDriverOrderFormsTx) Delete(values ...*model.DriverOrderForm) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Delete(targetValues...)
-}
-
-func (a driverHasOneDriverOrderFormsTx) Clear() error {
-	return a.tx.Clear()
-}
-
-func (a driverHasOneDriverOrderFormsTx) Count() int64 {
-	return a.tx.Count()
-}
-
 type driverHasManyDevices struct {
 	db *gorm.DB
 
@@ -391,6 +321,76 @@ func (a driverHasManyDevicesTx) Clear() error {
 }
 
 func (a driverHasManyDevicesTx) Count() int64 {
+	return a.tx.Count()
+}
+
+type driverHasManyDriverOrderForms struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	ProductInfo struct {
+		field.RelationField
+	}
+}
+
+func (a driverHasManyDriverOrderForms) Where(conds ...field.Expr) *driverHasManyDriverOrderForms {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a driverHasManyDriverOrderForms) WithContext(ctx context.Context) *driverHasManyDriverOrderForms {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a driverHasManyDriverOrderForms) Model(m *model.Driver) *driverHasManyDriverOrderFormsTx {
+	return &driverHasManyDriverOrderFormsTx{a.db.Model(m).Association(a.Name())}
+}
+
+type driverHasManyDriverOrderFormsTx struct{ tx *gorm.Association }
+
+func (a driverHasManyDriverOrderFormsTx) Find() (result []*model.DriverOrderForm, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a driverHasManyDriverOrderFormsTx) Append(values ...*model.DriverOrderForm) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a driverHasManyDriverOrderFormsTx) Replace(values ...*model.DriverOrderForm) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a driverHasManyDriverOrderFormsTx) Delete(values ...*model.DriverOrderForm) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a driverHasManyDriverOrderFormsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a driverHasManyDriverOrderFormsTx) Count() int64 {
 	return a.tx.Count()
 }
 

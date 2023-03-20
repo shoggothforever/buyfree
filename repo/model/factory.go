@@ -12,9 +12,10 @@ import "github.com/google/uuid"
 type Factory struct {
 	Admin
 	//场站地理位置
-	Address string `gorm:"comment:场站位置信息"`
+	Address string `gorm:"comment:场站位置信息" json:"address"`
 	//供应的商品
-	Products []*Product `gorm:"foreignkey:FactoryRefer"`
+	Products   []*RepoProduct     `gorm:"foreignkey:FactoryRefer" `
+	OrderForms []*DriverOrderForm `gorm:"foreignkey:FactoryRefer"`
 }
 
 func (f *Factory) deliver(pro_id uuid.UUID, d *Driver) {

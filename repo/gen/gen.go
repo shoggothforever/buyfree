@@ -16,19 +16,20 @@ import (
 )
 
 var (
-	Q             = new(Query)
-	Advertisement *advertisement
-	Device        *device
-	DeviceProduct *deviceProduct
-	Driver        *driver
-	DriverCart    *driverCart
-	Factory       *factory
-	LoginInfo     *loginInfo
-	OrderProduct  *orderProduct
-	Passenger     *passenger
-	PassengerCart *passengerCart
-	Platform      *platform
-	User          *user
+	Q                  = new(Query)
+	Advertisement      *advertisement
+	Device             *device
+	DeviceProduct      *deviceProduct
+	Driver             *driver
+	DriverCart         *driverCart
+	DriverOrderForm    *driverOrderForm
+	Factory            *factory
+	LoginInfo          *loginInfo
+	OrderProduct       *orderProduct
+	Passenger          *passenger
+	PassengerCart      *passengerCart
+	PassengerOrderForm *passengerOrderForm
+	Platform           *platform
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -38,67 +39,71 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	DeviceProduct = &Q.DeviceProduct
 	Driver = &Q.Driver
 	DriverCart = &Q.DriverCart
+	DriverOrderForm = &Q.DriverOrderForm
 	Factory = &Q.Factory
 	LoginInfo = &Q.LoginInfo
 	OrderProduct = &Q.OrderProduct
 	Passenger = &Q.Passenger
 	PassengerCart = &Q.PassengerCart
+	PassengerOrderForm = &Q.PassengerOrderForm
 	Platform = &Q.Platform
-	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:            db,
-		Advertisement: newAdvertisement(db, opts...),
-		Device:        newDevice(db, opts...),
-		DeviceProduct: newDeviceProduct(db, opts...),
-		Driver:        newDriver(db, opts...),
-		DriverCart:    newDriverCart(db, opts...),
-		Factory:       newFactory(db, opts...),
-		LoginInfo:     newLoginInfo(db, opts...),
-		OrderProduct:  newOrderProduct(db, opts...),
-		Passenger:     newPassenger(db, opts...),
-		PassengerCart: newPassengerCart(db, opts...),
-		Platform:      newPlatform(db, opts...),
-		User:          newUser(db, opts...),
+		db:                 db,
+		Advertisement:      newAdvertisement(db, opts...),
+		Device:             newDevice(db, opts...),
+		DeviceProduct:      newDeviceProduct(db, opts...),
+		Driver:             newDriver(db, opts...),
+		DriverCart:         newDriverCart(db, opts...),
+		DriverOrderForm:    newDriverOrderForm(db, opts...),
+		Factory:            newFactory(db, opts...),
+		LoginInfo:          newLoginInfo(db, opts...),
+		OrderProduct:       newOrderProduct(db, opts...),
+		Passenger:          newPassenger(db, opts...),
+		PassengerCart:      newPassengerCart(db, opts...),
+		PassengerOrderForm: newPassengerOrderForm(db, opts...),
+		Platform:           newPlatform(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Advertisement advertisement
-	Device        device
-	DeviceProduct deviceProduct
-	Driver        driver
-	DriverCart    driverCart
-	Factory       factory
-	LoginInfo     loginInfo
-	OrderProduct  orderProduct
-	Passenger     passenger
-	PassengerCart passengerCart
-	Platform      platform
-	User          user
+	Advertisement      advertisement
+	Device             device
+	DeviceProduct      deviceProduct
+	Driver             driver
+	DriverCart         driverCart
+	DriverOrderForm    driverOrderForm
+	Factory            factory
+	LoginInfo          loginInfo
+	OrderProduct       orderProduct
+	Passenger          passenger
+	PassengerCart      passengerCart
+	PassengerOrderForm passengerOrderForm
+	Platform           platform
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:            db,
-		Advertisement: q.Advertisement.clone(db),
-		Device:        q.Device.clone(db),
-		DeviceProduct: q.DeviceProduct.clone(db),
-		Driver:        q.Driver.clone(db),
-		DriverCart:    q.DriverCart.clone(db),
-		Factory:       q.Factory.clone(db),
-		LoginInfo:     q.LoginInfo.clone(db),
-		OrderProduct:  q.OrderProduct.clone(db),
-		Passenger:     q.Passenger.clone(db),
-		PassengerCart: q.PassengerCart.clone(db),
-		Platform:      q.Platform.clone(db),
-		User:          q.User.clone(db),
+		db:                 db,
+		Advertisement:      q.Advertisement.clone(db),
+		Device:             q.Device.clone(db),
+		DeviceProduct:      q.DeviceProduct.clone(db),
+		Driver:             q.Driver.clone(db),
+		DriverCart:         q.DriverCart.clone(db),
+		DriverOrderForm:    q.DriverOrderForm.clone(db),
+		Factory:            q.Factory.clone(db),
+		LoginInfo:          q.LoginInfo.clone(db),
+		OrderProduct:       q.OrderProduct.clone(db),
+		Passenger:          q.Passenger.clone(db),
+		PassengerCart:      q.PassengerCart.clone(db),
+		PassengerOrderForm: q.PassengerOrderForm.clone(db),
+		Platform:           q.Platform.clone(db),
 	}
 }
 
@@ -112,51 +117,54 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:            db,
-		Advertisement: q.Advertisement.replaceDB(db),
-		Device:        q.Device.replaceDB(db),
-		DeviceProduct: q.DeviceProduct.replaceDB(db),
-		Driver:        q.Driver.replaceDB(db),
-		DriverCart:    q.DriverCart.replaceDB(db),
-		Factory:       q.Factory.replaceDB(db),
-		LoginInfo:     q.LoginInfo.replaceDB(db),
-		OrderProduct:  q.OrderProduct.replaceDB(db),
-		Passenger:     q.Passenger.replaceDB(db),
-		PassengerCart: q.PassengerCart.replaceDB(db),
-		Platform:      q.Platform.replaceDB(db),
-		User:          q.User.replaceDB(db),
+		db:                 db,
+		Advertisement:      q.Advertisement.replaceDB(db),
+		Device:             q.Device.replaceDB(db),
+		DeviceProduct:      q.DeviceProduct.replaceDB(db),
+		Driver:             q.Driver.replaceDB(db),
+		DriverCart:         q.DriverCart.replaceDB(db),
+		DriverOrderForm:    q.DriverOrderForm.replaceDB(db),
+		Factory:            q.Factory.replaceDB(db),
+		LoginInfo:          q.LoginInfo.replaceDB(db),
+		OrderProduct:       q.OrderProduct.replaceDB(db),
+		Passenger:          q.Passenger.replaceDB(db),
+		PassengerCart:      q.PassengerCart.replaceDB(db),
+		PassengerOrderForm: q.PassengerOrderForm.replaceDB(db),
+		Platform:           q.Platform.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Advertisement IAdvertisementDo
-	Device        IDeviceDo
-	DeviceProduct IDeviceProductDo
-	Driver        IDriverDo
-	DriverCart    IDriverCartDo
-	Factory       IFactoryDo
-	LoginInfo     ILoginInfoDo
-	OrderProduct  IOrderProductDo
-	Passenger     IPassengerDo
-	PassengerCart IPassengerCartDo
-	Platform      IPlatformDo
-	User          IUserDo
+	Advertisement      IAdvertisementDo
+	Device             IDeviceDo
+	DeviceProduct      IDeviceProductDo
+	Driver             IDriverDo
+	DriverCart         IDriverCartDo
+	DriverOrderForm    IDriverOrderFormDo
+	Factory            IFactoryDo
+	LoginInfo          ILoginInfoDo
+	OrderProduct       IOrderProductDo
+	Passenger          IPassengerDo
+	PassengerCart      IPassengerCartDo
+	PassengerOrderForm IPassengerOrderFormDo
+	Platform           IPlatformDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Advertisement: q.Advertisement.WithContext(ctx),
-		Device:        q.Device.WithContext(ctx),
-		DeviceProduct: q.DeviceProduct.WithContext(ctx),
-		Driver:        q.Driver.WithContext(ctx),
-		DriverCart:    q.DriverCart.WithContext(ctx),
-		Factory:       q.Factory.WithContext(ctx),
-		LoginInfo:     q.LoginInfo.WithContext(ctx),
-		OrderProduct:  q.OrderProduct.WithContext(ctx),
-		Passenger:     q.Passenger.WithContext(ctx),
-		PassengerCart: q.PassengerCart.WithContext(ctx),
-		Platform:      q.Platform.WithContext(ctx),
-		User:          q.User.WithContext(ctx),
+		Advertisement:      q.Advertisement.WithContext(ctx),
+		Device:             q.Device.WithContext(ctx),
+		DeviceProduct:      q.DeviceProduct.WithContext(ctx),
+		Driver:             q.Driver.WithContext(ctx),
+		DriverCart:         q.DriverCart.WithContext(ctx),
+		DriverOrderForm:    q.DriverOrderForm.WithContext(ctx),
+		Factory:            q.Factory.WithContext(ctx),
+		LoginInfo:          q.LoginInfo.WithContext(ctx),
+		OrderProduct:       q.OrderProduct.WithContext(ctx),
+		Passenger:          q.Passenger.WithContext(ctx),
+		PassengerCart:      q.PassengerCart.WithContext(ctx),
+		PassengerOrderForm: q.PassengerOrderForm.WithContext(ctx),
+		Platform:           q.Platform.WithContext(ctx),
 	}
 }
 

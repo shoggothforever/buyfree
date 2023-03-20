@@ -30,10 +30,10 @@ type User struct {
 	//唯一标志符
 	ID int64 `gorm:"primaryKey;" json:"id" form:"id"`
 	//注册时间
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime:milli"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime:milli" json:"updated_at"`
 	//注销选项	GORM.
-	DeletedAt gorm.DeletedAt
+	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 	//账户余额
 	Balance float64 `gorm:"comment:账户余额" json:"balance"`
 	//用户头像(需要添加修改头像功能）

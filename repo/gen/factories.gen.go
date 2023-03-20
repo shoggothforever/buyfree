@@ -47,6 +47,17 @@ func newFactory(db *gorm.DB, opts ...gen.DOOption) factory {
 		RelationField: field.NewRelation("Products", "model.Product"),
 	}
 
+	_factory.OrderForms = factoryHasManyOrderForms{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("OrderForms", "model.DriverOrderForm"),
+		ProductInfo: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("OrderForms.ProductInfo", "model.OrderProduct"),
+		},
+	}
+
 	_factory.fillFieldMap()
 
 	return _factory
@@ -71,6 +82,8 @@ type factory struct {
 	PasswordSalt field.String
 	Address      field.String
 	Products     factoryHasManyProducts
+
+	OrderForms factoryHasManyOrderForms
 
 	fieldMap map[string]field.Expr
 }
@@ -117,7 +130,7 @@ func (f *factory) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (f *factory) fillFieldMap() {
-	f.fieldMap = make(map[string]field.Expr, 15)
+	f.fieldMap = make(map[string]field.Expr, 16)
 	f.fieldMap["id"] = f.ID
 	f.fieldMap["created_at"] = f.CreatedAt
 	f.fieldMap["updated_at"] = f.UpdatedAt
@@ -208,6 +221,76 @@ func (a factoryHasManyProductsTx) Clear() error {
 }
 
 func (a factoryHasManyProductsTx) Count() int64 {
+	return a.tx.Count()
+}
+
+type factoryHasManyOrderForms struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	ProductInfo struct {
+		field.RelationField
+	}
+}
+
+func (a factoryHasManyOrderForms) Where(conds ...field.Expr) *factoryHasManyOrderForms {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a factoryHasManyOrderForms) WithContext(ctx context.Context) *factoryHasManyOrderForms {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a factoryHasManyOrderForms) Model(m *model.Factory) *factoryHasManyOrderFormsTx {
+	return &factoryHasManyOrderFormsTx{a.db.Model(m).Association(a.Name())}
+}
+
+type factoryHasManyOrderFormsTx struct{ tx *gorm.Association }
+
+func (a factoryHasManyOrderFormsTx) Find() (result []*model.DriverOrderForm, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a factoryHasManyOrderFormsTx) Append(values ...*model.DriverOrderForm) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a factoryHasManyOrderFormsTx) Replace(values ...*model.DriverOrderForm) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a factoryHasManyOrderFormsTx) Delete(values ...*model.DriverOrderForm) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a factoryHasManyOrderFormsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a factoryHasManyOrderFormsTx) Count() int64 {
 	return a.tx.Count()
 }
 

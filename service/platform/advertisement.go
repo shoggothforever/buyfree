@@ -5,6 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//type ADController struct {
+//	BaseController
+//}
+
 func GetADList(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,

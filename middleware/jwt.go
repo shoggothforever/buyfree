@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"buyfree/dal"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +19,7 @@ func AuthJwt() gin.HandlerFunc {
 			return
 		} //如果在PostMan中使用 Bearer Token 会在jwt前加上bearer: 前缀
 		authjwt, err := dal.Getrd().Get(c, jwt).Result()
-		fmt.Println(authjwt)
+		//fmt.Println(authjwt)
 		if err != nil {
 			c.Set("AUthInfo", "Failed!")
 			c.AbortWithStatusJSON(200, gin.H{
@@ -35,6 +34,7 @@ func AuthJwt() gin.HandlerFunc {
 			return
 		} else {
 			c.Set("AuthInfo", "Success!")
+			c.Set("Jwt", jwt)
 			c.Next()
 		}
 	}

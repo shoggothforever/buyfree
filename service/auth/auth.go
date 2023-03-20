@@ -6,15 +6,15 @@ import (
 	"buyfree/service/platform"
 	"buyfree/service/response"
 	"buyfree/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 func Register(c *gin.Context) {
+	//一定要定义成值类型，在bind里要传地址
 	var ptadmin model.Platform
-	c.Bind(&ptadmin)
-	fmt.Println(ptadmin)
-	fmt.Println(ptadmin.ID)
+	c.ShouldBind(&ptadmin)
+	//fmt.Println(ptadmin)
+	//fmt.Println(ptadmin.ID)
 	logininfo, err := platform.SavePtUser(ptadmin)
 	if err == nil {
 		c.JSON(200, response.LoginResponse{

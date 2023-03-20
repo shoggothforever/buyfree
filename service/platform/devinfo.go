@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/repo/gen"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"github.com/gin-gonic/gin"
@@ -13,18 +14,72 @@ func AnaSales(c *gin.Context) {
 		200,
 		"ok"})
 }
+
 func LsInfo(c *gin.Context) {
+	//TODO:分析数据的服务
+
+	var err error
 	dev := model.Device{}
+	//只需要传递ID
 	c.ShouldBind(&dev)
 	// id:=c.PostForm("id")
-	err := dal.Getdb().Model(&model.Device{}).Where("id = ?", dev.ID).First(&dev).Error
-
-	//driver_id:=dev.OwnerID
-	//err=
-	if err == nil {
+	//err := dal.Getdb().Model(&model.Device{}).Where("id = ?", dev.ID).First(&dev).Error
+	dev, err = gen.Device.GetByID(dev.ID)
+	if err != nil {
 		c.JSON(200, response.Response{
-			200,
-			"ok"})
+			400,
+			"加载页面失败",
+		})
+		return
+	}
+	driver, err := gen.Driver.GetByID(dev.OwnerID)
+	if err != nil {
+		c.JSON(200, response.Response{
+			400,
+			"加载页面失败",
+		})
+		return
+	}
+	products, err := gen.DeviceProduct.GetAllDeviceProduct(dev.ID)
+	if err != nil {
+		c.JSON(200, response.Response{
+			400,
+			"加载页面失败",
+		})
+		return
+	}
+	n := len(products)
+	prinfos := make([]*response.DevProductPartInfo, n)
+	for i := 0; i < n; i++ {
+		prinfos[i].Sku = products[i].Sku
+		prinfos[i].Name = products[i].Name
+		prinfos[i].Pic = products[i].Pic
+		prinfos[i].Prize = products[i].SupplyPrize
+		prinfos[i].MonthlySold = products[i].MonthlySales
+		prinfos[i].Inventory = products[i].Inventory
+	}
+	if err == nil {
+		c.JSON(200, response.DevInfoResponse{
+			response.Response{
+				200,
+				"ok"},
+			model.SalesData{
+				0, 0, 0, 0, 0,
+			}, response.DevInfo{
+				dev.ID,
+				dev.ActivatedTime,
+				dev.UpdatedTime,
+				driver.Location,
+				driver.Name,
+				driver.Mobile,
+				prinfos,
+			},
+		})
+	} else {
+		c.JSON(200, response.Response{
+			400,
+			"加载页面失败",
+		})
 	}
 }
 

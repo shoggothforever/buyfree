@@ -4,6 +4,7 @@ import (
 	"buyfree/dal"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -161,24 +162,26 @@ func GetNotActivated(c *gin.Context) {
 	})
 }
 func AddDev(c *gin.Context) {
-	var dev []*model.Device
-	c.ShouldBind(&dev)
-	if len(dev) == 0 {
+	var dev model.Device
+	var err error
+	err = c.ShouldBindJSON(&dev)
+	if err != nil {
 		c.JSON(200, response.Response{
 			400,
 			"添加设备失败，请输入正确的设备信息",
 		})
+		return
+	}
+	fmt.Println(dev)
+	err = dal.Getdb().Model(&model.Device{}).Create(&dev).Error
+	if err == nil {
+		c.JSON(200, response.AddDevResponse{
+			response.Response{200,
+				"添加设备成功",
+			},
+			&dev,
+		})
 	} else {
-		err := dal.Getdb().Model(&model.Device{}).Create(&dev[0])
-		if err == nil {
-			c.JSON(200, response.AddDevResponse{
-				response.Response{200,
-					"添加设备成功",
-				},
-				dev[0],
-			})
-		} else {
-			c.JSON(200, response.Response{400, "添加设备失败"})
-		}
+		c.JSON(200, response.Response{400, "添加设备失败"})
 	}
 }
