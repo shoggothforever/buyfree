@@ -41,6 +41,33 @@ func newDevice(db *gorm.DB, opts ...gen.DOOption) device {
 		RelationField: field.NewRelation("Products", "model.DeviceProduct"),
 	}
 
+	_device.Advertisements = deviceManyToManyAdvertisements{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Advertisements", "model.Advertisement"),
+		Devices: struct {
+			field.RelationField
+			Products struct {
+				field.RelationField
+			}
+			Advertisements struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("Advertisements.Devices", "model.Device"),
+			Products: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Advertisements.Devices.Products", "model.DeviceProduct"),
+			},
+			Advertisements: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Advertisements.Devices.Advertisements", "model.Advertisement"),
+			},
+		},
+	}
+
 	_device.fillFieldMap()
 
 	return _device
@@ -59,6 +86,8 @@ type device struct {
 	IsOnline      field.Bool
 	Profit        field.Float64
 	Products      deviceHasManyProducts
+
+	Advertisements deviceManyToManyAdvertisements
 
 	fieldMap map[string]field.Expr
 }
@@ -99,7 +128,7 @@ func (d *device) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (d *device) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 9)
+	d.fieldMap = make(map[string]field.Expr, 10)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["owner_id"] = d.OwnerID
 	d.fieldMap["platform_id"] = d.PlatformID
@@ -187,6 +216,82 @@ func (a deviceHasManyProductsTx) Count() int64 {
 	return a.tx.Count()
 }
 
+type deviceManyToManyAdvertisements struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Devices struct {
+		field.RelationField
+		Products struct {
+			field.RelationField
+		}
+		Advertisements struct {
+			field.RelationField
+		}
+	}
+}
+
+func (a deviceManyToManyAdvertisements) Where(conds ...field.Expr) *deviceManyToManyAdvertisements {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a deviceManyToManyAdvertisements) WithContext(ctx context.Context) *deviceManyToManyAdvertisements {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a deviceManyToManyAdvertisements) Model(m *model.Device) *deviceManyToManyAdvertisementsTx {
+	return &deviceManyToManyAdvertisementsTx{a.db.Model(m).Association(a.Name())}
+}
+
+type deviceManyToManyAdvertisementsTx struct{ tx *gorm.Association }
+
+func (a deviceManyToManyAdvertisementsTx) Find() (result []*model.Advertisement, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a deviceManyToManyAdvertisementsTx) Append(values ...*model.Advertisement) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a deviceManyToManyAdvertisementsTx) Replace(values ...*model.Advertisement) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a deviceManyToManyAdvertisementsTx) Delete(values ...*model.Advertisement) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a deviceManyToManyAdvertisementsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a deviceManyToManyAdvertisementsTx) Count() int64 {
+	return a.tx.Count()
+}
+
 type deviceDo struct{ gen.DO }
 
 type IDeviceDo interface {
@@ -255,6 +360,7 @@ type IDeviceDo interface {
 	GetAllPlatformDevice(id int64) (result model.Device, err error)
 	GetByOnlinePlatformDevice(id int64, mode bool) (result model.Device, err error)
 	GetByActivatedPlatformDevice(id int64, mode bool) (result model.Device, err error)
+	GetDeviceByAdvertiseID(ad_id int64) (result []model.Device, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -344,6 +450,21 @@ func (d deviceDo) GetByActivatedPlatformDevice(id int64, mode bool) (result mode
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = @ad_id ))
+func (d deviceDo) GetDeviceByAdvertiseID(ad_id int64) (result []model.Device, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, ad_id)
+	generateSQL.WriteString("select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = ? ) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

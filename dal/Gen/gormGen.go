@@ -60,6 +60,8 @@ type DeviceQuery interface {
 
 	//sql(SELECT * FROM @@table where is_activated=@mode and platform_id=(SELECT id from platforms where id=@id))
 	GetByActivatedPlatformDevice(id int64, mode bool) (gen.T, error)
+	//sql(select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = @ad_id ))
+	GetDeviceByAdvertiseID(ad_id int64) ([]gen.T, error)
 }
 type OrderFormQuery interface {
 	//sql(SELECT * FROM @@table where factory_id =(SELECT id from factories where id=@id))
@@ -79,6 +81,11 @@ type OrderFormQuery interface {
 
 	//sql(SELECT * FROM @@table where state=@mode and passenger_id =(SELECT id from passengers where id=@id))
 	PGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
+}
+
+type AdvertisementQuery interface {
+	//sql(select * from advertisements as a where a.id in(select advertisement_id from ad_devices where device_id = @dev_id))
+	GetAdvertisementByDeviceID(dev_id int64) ([]gen.T, error)
 }
 
 func main() {
@@ -105,11 +112,12 @@ func main() {
 	g.ApplyInterface(func(Query) {}, &model.Passenger{},
 		&model.Driver{}, &model.Factory{},
 		&model.Platform{}, &model.DeviceProduct{}, &model.FactoryProduct{},
-		&model.Device{}, &model.Advertisement{})
+		&model.Device{}, &model.Advertisement{}, &model.BankCardInfo{})
 	g.ApplyInterface(func(LoginQuery) {}, &model.LoginInfo{})
 	g.ApplyInterface(func(CartQuery) {}, &model.PassengerCart{}, &model.DriverCart{})
 	g.ApplyInterface(func(ProductQuery) {}, &model.OrderProduct{}, &model.DeviceProduct{}, &model.FactoryProduct{})
 	g.ApplyInterface(func(DeviceQuery) {}, &model.Device{})
 	g.ApplyInterface(func(OrderFormQuery) {}, &model.PassengerOrderForm{}, &model.DriverOrderForm{})
+	g.ApplyInterface(func(AdvertisementQuery) {}, &model.Advertisement{})
 	g.Execute()
 }

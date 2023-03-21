@@ -40,7 +40,7 @@ type User struct {
 	Pic string `gorm:"comment:用户头像" json:"pic"`
 	//用户昵称
 	Name     string `gorm:"notnull;unique;size:32;comment:用户昵称" json:"name"`
-	Password string `gorm:"notnull;size:32:comment:用户密码" json:"password"`
+	Password string `gorm:"size:32:comment:用户密码" json:"password"`
 	Mobile   string `gorm:"comment:手机号" json:"mobile"`
 	IDCard   string `gorm:"comment:身份证" json:"id_card"`
 	//用户身份标志符，注册时确认
@@ -66,4 +66,13 @@ type LoginInfo struct {
 	Password string `json:"password"`
 	Salt     string `gorm:"comment:加密盐" json:"salt"`
 	Jwt      string `gorm:"comment:鉴权值" json:"jwt"`
+}
+
+type BankCardInfo struct {
+	ID       int64   `gorm:"comment:用户ID" json:"id"`
+	CardID   int64   `gorm:"unique" json:"card_id"`
+	BankName string  `gorm:"银行名称" json:"bankName"`
+	Password string  `json:"password"`
+	Cash     float64 `gorm:"comment:账户余额" json:"cash"`
+	BankFund float64 `gorm:"comment:银行资金" json:"bank_fund"`
 }

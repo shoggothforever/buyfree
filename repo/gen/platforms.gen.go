@@ -62,12 +62,31 @@ func newPlatform(db *gorm.DB, opts ...gen.DOOption) platform {
 			Products struct {
 				field.RelationField
 			}
+			Advertisements struct {
+				field.RelationField
+				Devices struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("AuthorizedDrivers.Devices", "model.Device"),
 			Products: struct {
 				field.RelationField
 			}{
 				RelationField: field.NewRelation("AuthorizedDrivers.Devices.Products", "model.DeviceProduct"),
+			},
+			Advertisements: struct {
+				field.RelationField
+				Devices struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("AuthorizedDrivers.Devices.Advertisements", "model.Advertisement"),
+				Devices: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("AuthorizedDrivers.Devices.Advertisements.Devices", "model.Device"),
+				},
 			},
 		},
 		DriverOrderForms: struct {
@@ -211,6 +230,12 @@ type platformHasManyAuthorizedDrivers struct {
 		field.RelationField
 		Products struct {
 			field.RelationField
+		}
+		Advertisements struct {
+			field.RelationField
+			Devices struct {
+				field.RelationField
+			}
 		}
 	}
 	DriverOrderForms struct {

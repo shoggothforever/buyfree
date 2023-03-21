@@ -26,4 +26,5 @@ func TestRegister(t *testing.T) {
 	DB.Model(&model.Platform{}).Create(&pt)
 	l := model.LoginInfo{123, "123", "123", "123"}
 	DB.Model(&model.LoginInfo{}).Create(&l)
+
 }

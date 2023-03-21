@@ -37,13 +37,20 @@ func TestGen(t *testing.T) {
 	//		fmt.Println(o.Price)
 	//	}
 	//}
-
-	factoryProduct, _ := gen.FactoryProduct.GetBySkuAndFName("233", "cat")
-	fmt.Println(factoryProduct)
-
+	/*测试根据SKU 和 name 获取场站商品的信息(ok)*/
+	//factoryProduct, _ := gen.FactoryProduct.GetBySkuAndFName("233", "cat")
+	//fmt.Println(factoryProduct)
+	/*测试根据场站ID 获取所有司机订单(ok)*/
 	//dof, _ := gen.DriverOrderForm.FGetAllOrderForms(123)
 	//fmt.Println(dof)
-	//
+	/*测试根据场站ID和订单状态 获取所有司机订单 （ok)*/
 	//dofa, _ := gen.DriverOrderForm.FGetByStateOrderForms(123, 1)
 	//fmt.Println(dofa)
+	/*测试 获取投放了广告@id的所有设备(ok)*/
+	devices, _ := gen.Device.GetDeviceByAdvertiseID(1)
+	fmt.Println(devices)
+	/*获取设备@id投放的所有广告(ok)*/
+	ads, _ := gen.Advertisement.GetAdvertisementByDeviceID(1)
+	fmt.Println(ads)
+
 }

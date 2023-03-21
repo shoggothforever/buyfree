@@ -63,6 +63,19 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 		}{
 			RelationField: field.NewRelation("Devices.Products", "model.DeviceProduct"),
 		},
+		Advertisements: struct {
+			field.RelationField
+			Devices struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("Devices.Advertisements", "model.Advertisement"),
+			Devices: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Devices.Advertisements.Devices", "model.Device"),
+			},
+		},
 	}
 
 	_driver.DriverOrderForms = driverHasManyDriverOrderForms{
@@ -261,6 +274,12 @@ type driverHasManyDevices struct {
 
 	Products struct {
 		field.RelationField
+	}
+	Advertisements struct {
+		field.RelationField
+		Devices struct {
+			field.RelationField
+		}
 	}
 }
 

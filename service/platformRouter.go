@@ -32,7 +32,7 @@ func PlatFormrouter() {
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, response.PingResponse{"welecome to platform.buyfree.com"})
 	})
-
+	//注册与登录
 	pt := r.Group("/pt")
 	{
 		pt.POST("/register", auth.Register)
@@ -63,32 +63,18 @@ func PlatFormrouter() {
 	}
 	//设备管理
 	var devct platform.DevadminController
-	pdv := pt.Group("/dev")
+	pdv := pt.Group("/dev-admin")
 	{
-
-		//默认显示
-		//pdv.GET("/alldev", platform.GetAlldev)
-		pdv.GET("/", devct.GetAlldev)
-
-		pdv.GET("/activated", devct.GetActivated)
-		pdv.GET("/nonactivated", devct.GetNotActivated)
-		pdv.GET("/online", devct.GetOndev)
-		pdv.GET("/offline", devct.GetOffdev)
-		pdv.POST("/adddev", devct.AddDev)
+		pdv.GET("/dev-list/:mode", devct.GetdevBystate)
+		pdv.POST("/dev", devct.AddDev)
+		var devinfoct platform.DevinfoController
 		//设备详情
-		pdc := pdv.Group("/info") //传入设备ID
-		{
-			var devinfoct platform.DevinfoController
-			//下架
-			pdc.PUT("/down", devinfoct.TakeDown)
-			//当日营销额(还缺少需要的信息，暂时不合并）
-			pdc.GET("/salesinfo", devinfoct.AnaSales)
-			//可以合并的操作
-			//pdc.GET("/devinfo", devinfoct.LsDev)
-			//pdc.GET("/driverinfo", devinfoct.LsDriver)
-			//pdc.GET("/productinfo", devinfoct.LsDevProduct)
-			pdc.GET("/", devinfoct.LsInfo)
-		}
+		pdv.GET("/info/:id", devinfoct.LsInfo)
+
+		//下架
+		pdv.PUT("/down", devinfoct.TakeDown)
+		//当日营销额(还缺少需要的信息，暂时不合并）
+		pdv.GET("/salesinfo", devinfoct.AnaSales)
 	}
 
 	//商品管理
@@ -97,18 +83,15 @@ func PlatFormrouter() {
 	{
 
 		//默认展示全部
-		ssc.GET("/allorder", orderct.GetFactoryOrders)
-		ssc.GET("allorder/info", orderct.GetGoodinfo)
-		ssc.GET("/onshelf", orderct.GetOnShelf)
-		ssc.GET("/soldout", orderct.Getsoldout)
-		ssc.GET("/downshelf", orderct.Getdownshelf)
-
-		//ssc.PUT("/on", orderct.TakeOn)
+		ssc.GET("/factory/:mode", orderct.GetFactoryOrders)
+		ssc.GET("/info/:sku", orderct.GetGoodinfo)
+		//上下架操作整合
+		ssc.GET("/op/:mode", orderct.ModifyGoods)
 
 	}
 	//销售统计
 	var goodsct platform.GoodsController
-	sst := pt.Group("/anasales")
+	sst := pt.Group("/ana-sales")
 	{
 
 		//默认显示
@@ -122,12 +105,12 @@ func PlatFormrouter() {
 	var adct platform.ADController
 	ana := pt.Group("/ads")
 	{
+		ana.POST("", adct.AddAD)
 		ana.GET("/list", adct.GetADList)
-		ana.GET("/add", adct.GetAddAD)
-		adinfo := ana.Group("/info")
+		adinfo := ana.Group("/infos")
 		{
-			adinfo.GET("/content", adct.GetADContent)
-			adinfo.GET("/efficent", adct.GetADEfficient)
+			adinfo.GET("/content/:id", adct.GetADContent)
+			adinfo.GET("/efficient/:id", adct.GetADEfficient)
 		}
 	}
 	quit := make(chan os.Signal)
