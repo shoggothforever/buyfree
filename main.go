@@ -23,6 +23,7 @@ func main() {
 	once.Do(dal.InitRedis)
 	once.Do(utils.InitIDWorker)
 	//defer Exit()
+
 	service.PlatFormrouter()
 
 }

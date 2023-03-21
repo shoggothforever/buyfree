@@ -33,12 +33,35 @@ func newAdvertisement(db *gorm.DB, opts ...gen.DOOption) advertisement {
 	_advertisement.ExpectedPlayTimes = field.NewInt64(tableName, "expected_play_times")
 	_advertisement.NowPlayTimes = field.NewInt64(tableName, "now_play_times")
 	_advertisement.InvestFund = field.NewFloat64(tableName, "invest_fund")
-	_advertisement.Profie = field.NewFloat64(tableName, "profie")
+	_advertisement.Profit = field.NewFloat64(tableName, "profit")
 	_advertisement.VideoCover = field.NewString(tableName, "video_cover")
 	_advertisement.ADOwner = field.NewString(tableName, "ad_owner")
 	_advertisement.PlayUrl = field.NewString(tableName, "play_url")
 	_advertisement.ExpireAt = field.NewTime(tableName, "expire_at")
-	_advertisement.ADState = field.NewInt(tableName, "ad_state")
+	_advertisement.ADState = field.NewInt64(tableName, "ad_state")
+	_advertisement.Devices = advertisementManyToManyDevices{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Devices", "model.Device"),
+		Products: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Devices.Products", "model.DeviceProduct"),
+		},
+		Advertisements: struct {
+			field.RelationField
+			Devices struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("Devices.Advertisements", "model.Advertisement"),
+			Devices: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Devices.Advertisements.Devices", "model.Device"),
+			},
+		},
+	}
 
 	_advertisement.fillFieldMap()
 
@@ -55,12 +78,13 @@ type advertisement struct {
 	ExpectedPlayTimes field.Int64
 	NowPlayTimes      field.Int64
 	InvestFund        field.Float64
-	Profie            field.Float64
+	Profit            field.Float64
 	VideoCover        field.String
 	ADOwner           field.String
 	PlayUrl           field.String
 	ExpireAt          field.Time
-	ADState           field.Int
+	ADState           field.Int64
+	Devices           advertisementManyToManyDevices
 
 	fieldMap map[string]field.Expr
 }
@@ -83,12 +107,12 @@ func (a *advertisement) updateTableName(table string) *advertisement {
 	a.ExpectedPlayTimes = field.NewInt64(table, "expected_play_times")
 	a.NowPlayTimes = field.NewInt64(table, "now_play_times")
 	a.InvestFund = field.NewFloat64(table, "invest_fund")
-	a.Profie = field.NewFloat64(table, "profie")
+	a.Profit = field.NewFloat64(table, "profit")
 	a.VideoCover = field.NewString(table, "video_cover")
 	a.ADOwner = field.NewString(table, "ad_owner")
 	a.PlayUrl = field.NewString(table, "play_url")
 	a.ExpireAt = field.NewTime(table, "expire_at")
-	a.ADState = field.NewInt(table, "ad_state")
+	a.ADState = field.NewInt64(table, "ad_state")
 
 	a.fillFieldMap()
 
@@ -105,19 +129,20 @@ func (a *advertisement) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (a *advertisement) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 12)
+	a.fieldMap = make(map[string]field.Expr, 13)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["description"] = a.Description
 	a.fieldMap["platform_id"] = a.PlatformID
 	a.fieldMap["expected_play_times"] = a.ExpectedPlayTimes
 	a.fieldMap["now_play_times"] = a.NowPlayTimes
 	a.fieldMap["invest_fund"] = a.InvestFund
-	a.fieldMap["profie"] = a.Profie
+	a.fieldMap["profit"] = a.Profit
 	a.fieldMap["video_cover"] = a.VideoCover
 	a.fieldMap["ad_owner"] = a.ADOwner
 	a.fieldMap["play_url"] = a.PlayUrl
 	a.fieldMap["expire_at"] = a.ExpireAt
 	a.fieldMap["ad_state"] = a.ADState
+
 }
 
 func (a advertisement) clone(db *gorm.DB) advertisement {
@@ -128,6 +153,82 @@ func (a advertisement) clone(db *gorm.DB) advertisement {
 func (a advertisement) replaceDB(db *gorm.DB) advertisement {
 	a.advertisementDo.ReplaceDB(db)
 	return a
+}
+
+type advertisementManyToManyDevices struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Products struct {
+		field.RelationField
+	}
+	Advertisements struct {
+		field.RelationField
+		Devices struct {
+			field.RelationField
+		}
+	}
+}
+
+func (a advertisementManyToManyDevices) Where(conds ...field.Expr) *advertisementManyToManyDevices {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a advertisementManyToManyDevices) WithContext(ctx context.Context) *advertisementManyToManyDevices {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a advertisementManyToManyDevices) Model(m *model.Advertisement) *advertisementManyToManyDevicesTx {
+	return &advertisementManyToManyDevicesTx{a.db.Model(m).Association(a.Name())}
+}
+
+type advertisementManyToManyDevicesTx struct{ tx *gorm.Association }
+
+func (a advertisementManyToManyDevicesTx) Find() (result []*model.Device, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a advertisementManyToManyDevicesTx) Append(values ...*model.Device) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a advertisementManyToManyDevicesTx) Replace(values ...*model.Device) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a advertisementManyToManyDevicesTx) Delete(values ...*model.Device) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a advertisementManyToManyDevicesTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a advertisementManyToManyDevicesTx) Count() int64 {
+	return a.tx.Count()
 }
 
 type advertisementDo struct{ gen.DO }
@@ -194,6 +295,7 @@ type IAdvertisementDo interface {
 
 	GetByID(id int64) (result model.Advertisement, err error)
 	GetByName(id int64) (result model.Advertisement, err error)
+	GetAdvertisementByDeviceID(dev_id int64) (result []model.Advertisement, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -221,6 +323,21 @@ func (a advertisementDo) GetByName(id int64) (result model.Advertisement, err er
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(select * from advertisements as a where a.id in(select advertisement_id from ad_devices where device_id = @dev_id))
+func (a advertisementDo) GetAdvertisementByDeviceID(dev_id int64) (result []model.Advertisement, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, dev_id)
+	generateSQL.WriteString("select * from advertisements as a where a.id in(select advertisement_id from ad_devices where device_id = ?) ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

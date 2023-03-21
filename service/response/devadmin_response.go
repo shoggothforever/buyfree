@@ -7,10 +7,10 @@ import (
 
 type DevQueryInfo struct {
 	Seq          int64
-	DevID        int64
-	DriverName   string
-	Mobile       string
-	SaleForToday float64
+	DevID        int64  `gorm:"id"`
+	DriverName   string `gorm:"name"`
+	Mobile       string `gorm:"mobile"`
+	SalesOfToday float64
 	Location     string
 	State        string
 }
@@ -25,17 +25,18 @@ type DevProductPartInfo struct {
 	//上架？
 }
 type DevInfo struct {
+	//TODO: seq 交给前端
 	DevID         int64
 	ActivatedTime time.Time
 	UpdatedTime   time.Time
 	Location      string
 	DriverName    string
 	Mobile        string
-	ProductInfo   []*DevProductPartInfo
+	ProductInfo   []DevProductPartInfo
 }
 type DevResponse struct {
 	Response
-	DevResponses []*DevQueryInfo
+	DevResponses []DevQueryInfo
 }
 
 type AddDevResponse struct {

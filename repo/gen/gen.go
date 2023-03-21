@@ -18,6 +18,7 @@ import (
 var (
 	Q                  = new(Query)
 	Advertisement      *advertisement
+	BankCardInfo       *bankCardInfo
 	Device             *device
 	DeviceProduct      *deviceProduct
 	Driver             *driver
@@ -36,6 +37,7 @@ var (
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	Advertisement = &Q.Advertisement
+	BankCardInfo = &Q.BankCardInfo
 	Device = &Q.Device
 	DeviceProduct = &Q.DeviceProduct
 	Driver = &Q.Driver
@@ -55,6 +57,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:                 db,
 		Advertisement:      newAdvertisement(db, opts...),
+		BankCardInfo:       newBankCardInfo(db, opts...),
 		Device:             newDevice(db, opts...),
 		DeviceProduct:      newDeviceProduct(db, opts...),
 		Driver:             newDriver(db, opts...),
@@ -75,6 +78,7 @@ type Query struct {
 	db *gorm.DB
 
 	Advertisement      advertisement
+	BankCardInfo       bankCardInfo
 	Device             device
 	DeviceProduct      deviceProduct
 	Driver             driver
@@ -96,6 +100,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:                 db,
 		Advertisement:      q.Advertisement.clone(db),
+		BankCardInfo:       q.BankCardInfo.clone(db),
 		Device:             q.Device.clone(db),
 		DeviceProduct:      q.DeviceProduct.clone(db),
 		Driver:             q.Driver.clone(db),
@@ -124,6 +129,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:                 db,
 		Advertisement:      q.Advertisement.replaceDB(db),
+		BankCardInfo:       q.BankCardInfo.replaceDB(db),
 		Device:             q.Device.replaceDB(db),
 		DeviceProduct:      q.DeviceProduct.replaceDB(db),
 		Driver:             q.Driver.replaceDB(db),
@@ -142,6 +148,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 
 type queryCtx struct {
 	Advertisement      IAdvertisementDo
+	BankCardInfo       IBankCardInfoDo
 	Device             IDeviceDo
 	DeviceProduct      IDeviceProductDo
 	Driver             IDriverDo
@@ -160,6 +167,7 @@ type queryCtx struct {
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		Advertisement:      q.Advertisement.WithContext(ctx),
+		BankCardInfo:       q.BankCardInfo.WithContext(ctx),
 		Device:             q.Device.WithContext(ctx),
 		DeviceProduct:      q.DeviceProduct.WithContext(ctx),
 		Driver:             q.Driver.WithContext(ctx),
