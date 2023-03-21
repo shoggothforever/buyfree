@@ -29,6 +29,7 @@ func newDriverOrderForm(db *gorm.DB, opts ...gen.DOOption) driverOrderForm {
 	tableName := _driverOrderForm.driverOrderFormDo.TableName()
 	_driverOrderForm.ALL = field.NewAsterisk(tableName)
 	_driverOrderForm.FactoryID = field.NewInt64(tableName, "factory_id")
+	_driverOrderForm.FactoryName = field.NewString(tableName, "factory_name")
 	_driverOrderForm.DriverID = field.NewInt64(tableName, "driver_id")
 	_driverOrderForm.CarID = field.NewString(tableName, "car_id")
 	_driverOrderForm.Comment = field.NewString(tableName, "comment")
@@ -37,8 +38,8 @@ func newDriverOrderForm(db *gorm.DB, opts ...gen.DOOption) driverOrderForm {
 	_driverOrderForm.Cost = field.NewInt64(tableName, "cost")
 	_driverOrderForm.State = field.NewInt(tableName, "state")
 	_driverOrderForm.Location = field.NewString(tableName, "location")
-	_driverOrderForm.Placetime = field.NewTime(tableName, "placetime")
-	_driverOrderForm.Paytime = field.NewTime(tableName, "paytime")
+	_driverOrderForm.PlaceTime = field.NewTime(tableName, "place_time")
+	_driverOrderForm.PayTime = field.NewTime(tableName, "pay_time")
 	_driverOrderForm.ProductInfo = driverOrderFormHasManyProductInfo{
 		db: db.Session(&gorm.Session{}),
 
@@ -55,6 +56,7 @@ type driverOrderForm struct {
 
 	ALL         field.Asterisk
 	FactoryID   field.Int64
+	FactoryName field.String
 	DriverID    field.Int64
 	CarID       field.String
 	Comment     field.String
@@ -63,8 +65,8 @@ type driverOrderForm struct {
 	Cost        field.Int64
 	State       field.Int
 	Location    field.String
-	Placetime   field.Time
-	Paytime     field.Time
+	PlaceTime   field.Time
+	PayTime     field.Time
 	ProductInfo driverOrderFormHasManyProductInfo
 
 	fieldMap map[string]field.Expr
@@ -83,6 +85,7 @@ func (d driverOrderForm) As(alias string) *driverOrderForm {
 func (d *driverOrderForm) updateTableName(table string) *driverOrderForm {
 	d.ALL = field.NewAsterisk(table)
 	d.FactoryID = field.NewInt64(table, "factory_id")
+	d.FactoryName = field.NewString(table, "factory_name")
 	d.DriverID = field.NewInt64(table, "driver_id")
 	d.CarID = field.NewString(table, "car_id")
 	d.Comment = field.NewString(table, "comment")
@@ -91,8 +94,8 @@ func (d *driverOrderForm) updateTableName(table string) *driverOrderForm {
 	d.Cost = field.NewInt64(table, "cost")
 	d.State = field.NewInt(table, "state")
 	d.Location = field.NewString(table, "location")
-	d.Placetime = field.NewTime(table, "placetime")
-	d.Paytime = field.NewTime(table, "paytime")
+	d.PlaceTime = field.NewTime(table, "place_time")
+	d.PayTime = field.NewTime(table, "pay_time")
 
 	d.fillFieldMap()
 
@@ -109,8 +112,9 @@ func (d *driverOrderForm) GetFieldByName(fieldName string) (field.OrderExpr, boo
 }
 
 func (d *driverOrderForm) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 12)
+	d.fieldMap = make(map[string]field.Expr, 13)
 	d.fieldMap["factory_id"] = d.FactoryID
+	d.fieldMap["factory_name"] = d.FactoryName
 	d.fieldMap["driver_id"] = d.DriverID
 	d.fieldMap["car_id"] = d.CarID
 	d.fieldMap["comment"] = d.Comment
@@ -119,8 +123,8 @@ func (d *driverOrderForm) fillFieldMap() {
 	d.fieldMap["cost"] = d.Cost
 	d.fieldMap["state"] = d.State
 	d.fieldMap["location"] = d.Location
-	d.fieldMap["placetime"] = d.Placetime
-	d.fieldMap["paytime"] = d.Paytime
+	d.fieldMap["place_time"] = d.PlaceTime
+	d.fieldMap["pay_time"] = d.PayTime
 
 }
 
@@ -262,22 +266,21 @@ type IDriverOrderFormDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	FGetAllOrderFormsFrom(id int64) (result []model.DriverOrderForm, err error)
+	FGetAllOrderForms(id int64) (result []model.DriverOrderForm, err error)
 	FGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.DriverOrderForm, err error)
-	DGetAllOrderFormsFrom(id int64) (result []model.DriverOrderForm, err error)
+	DGetAllOrderForms(id int64) (result []model.DriverOrderForm, err error)
 	DGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.DriverOrderForm, err error)
-	PGetAllOrderFormsFrom(id int64) (result []model.DriverOrderForm, err error)
+	PGetAllOrderForms(id int64) (result []model.DriverOrderForm, err error)
 	PGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.DriverOrderForm, err error)
 }
 
-// sql(SELECT * FROM @@table where @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
-func (d driverOrderFormDo) FGetAllOrderFormsFrom(id int64) (result []model.DriverOrderForm, err error) {
+// sql(SELECT * FROM @@table where factory_id =(SELECT id from factories where id=@id))
+func (d driverOrderFormDo) FGetAllOrderForms(id int64) (result []model.DriverOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM driver_order_forms where ? =(SELECT factory_id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM driver_order_forms where factory_id =(SELECT id from factories where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -286,15 +289,14 @@ func (d driverOrderFormDo) FGetAllOrderFormsFrom(id int64) (result []model.Drive
 	return
 }
 
-// sql(SELECT * FROM @@table where state=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+// sql(SELECT * FROM @@table where state=@mode and factory_id=(SELECT id from factories where id=@id))
 func (d driverOrderFormDo) FGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.DriverOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, mode)
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM driver_order_forms where state=? and ? =(SELECT factory_id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM driver_order_forms where state=? and factory_id=(SELECT id from factories where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -303,14 +305,13 @@ func (d driverOrderFormDo) FGetByStateOrderForms(id int64, mode model.ORDERSTATE
 	return
 }
 
-// sql(SELECT * FROM @@table where @id =(SELECT id from drivers where id=@id))
-func (d driverOrderFormDo) DGetAllOrderFormsFrom(id int64) (result []model.DriverOrderForm, err error) {
+// sql(SELECT * FROM @@table where driver_id =(SELECT id from drivers where id=@id))
+func (d driverOrderFormDo) DGetAllOrderForms(id int64) (result []model.DriverOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM driver_order_forms where ? =(SELECT id from drivers where id=?) ")
+	generateSQL.WriteString("SELECT * FROM driver_order_forms where driver_id =(SELECT id from drivers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -319,15 +320,14 @@ func (d driverOrderFormDo) DGetAllOrderFormsFrom(id int64) (result []model.Drive
 	return
 }
 
-// sql(SELECT * FROM @@table where state=@mode and @id =(SELECT id from driver_order_forms where factory_id=@id))
+// sql(SELECT * FROM @@table where state=@mode and driver_id =(SELECT id from drivers where id=@id))
 func (d driverOrderFormDo) DGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.DriverOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, mode)
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM driver_order_forms where state=? and ? =(SELECT id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM driver_order_forms where state=? and driver_id =(SELECT id from drivers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -336,14 +336,13 @@ func (d driverOrderFormDo) DGetByStateOrderForms(id int64, mode model.ORDERSTATE
 	return
 }
 
-// sql(SELECT * FROM @@table where @id =(SELECT id from passengers where id=@id))
-func (d driverOrderFormDo) PGetAllOrderFormsFrom(id int64) (result []model.DriverOrderForm, err error) {
+// sql(SELECT * FROM @@table where passenger_id =(SELECT id from passengers where id=@id))
+func (d driverOrderFormDo) PGetAllOrderForms(id int64) (result []model.DriverOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM driver_order_forms where ? =(SELECT id from passengers where id=?) ")
+	generateSQL.WriteString("SELECT * FROM driver_order_forms where passenger_id =(SELECT id from passengers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -352,15 +351,14 @@ func (d driverOrderFormDo) PGetAllOrderFormsFrom(id int64) (result []model.Drive
 	return
 }
 
-// sql(SELECT * FROM @@table where statestate=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+// sql(SELECT * FROM @@table where state=@mode and passenger_id =(SELECT id from passengers where id=@id))
 func (d driverOrderFormDo) PGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.DriverOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, mode)
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM driver_order_forms where statestate=? and ? =(SELECT factory_id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM driver_order_forms where state=? and passenger_id =(SELECT id from passengers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

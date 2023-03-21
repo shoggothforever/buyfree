@@ -58,8 +58,8 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		prinfos[i].Sku = products[i].Sku
 		prinfos[i].Name = products[i].Name
 		prinfos[i].Pic = products[i].Pic
-		prinfos[i].Prize = products[i].SupplyPrize
-		prinfos[i].MonthlySold = products[i].MonthlySales
+		prinfos[i].Price = products[i].SupplyPrice
+		prinfos[i].MonthlySales = products[i].MonthlySales
 		prinfos[i].Inventory = products[i].Inventory
 	}
 	if err == nil {

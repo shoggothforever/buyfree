@@ -4,6 +4,7 @@ import (
 	"buyfree/dal"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -169,6 +170,8 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	var dev model.Device
 	var err error
 	err = c.ShouldBindJSON(&dev)
+	fmt.Println(utils.GetSnowFlake())
+	dev.ID = utils.GetSnowFlake()
 	if err != nil {
 		c.JSON(200, response.Response{
 			400,

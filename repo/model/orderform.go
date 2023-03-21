@@ -24,9 +24,9 @@ type OrderForm struct {
 	Location string `gorm:"comment:支付时存储位置(购物时获取车主位置）" json:"location"`
 
 	//下单时间
-	Placetime time.Time `gorm:"comment:下单时间" json:"place_time"`
+	PlaceTime time.Time `gorm:"comment:下单时间" json:"place_time"`
 	//支付时间
-	Paytime time.Time `gorm:"comment:支付时间" json:"pay_time"`
+	PayTime time.Time `gorm:"comment:支付时间" json:"pay_time"`
 	//商品信息
 	ProductInfo []*OrderProduct `gorm:"foreignKey:OrderRefer"`
 }
@@ -42,8 +42,7 @@ type PassengerOrderForm struct {
 
 //需要关联创表
 type DriverOrderForm struct {
-	FactoryRefer string `gorm:"comment:指向factory.id" json:"factory_id"`
-
+	FactoryID   int64  `gorm:"comment:指向factory.id" json:"factory_id"`
 	FactoryName string `gorm:"comment:订单发货场站名" json:"factory_name"`
 	//Driver外键
 	DriverID int64 `json:"driver_id"`

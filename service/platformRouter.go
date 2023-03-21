@@ -41,6 +41,7 @@ func PlatFormrouter() {
 	}
 	//鉴权
 	//pt.Use(middleware.AuthJwt())
+
 	//数据大屏
 	var salect platform.SalesController
 	psc := pt.Group("/screen")
@@ -96,11 +97,12 @@ func PlatFormrouter() {
 	{
 
 		//默认展示全部
-		ssc.GET("/allorder", orderct.GetOrders)
+		ssc.GET("/allorder", orderct.GetFactoryOrders)
+		ssc.GET("allorder/info", orderct.GetGoodinfo)
 		ssc.GET("/onshelf", orderct.GetOnShelf)
 		ssc.GET("/soldout", orderct.Getsoldout)
 		ssc.GET("/downshelf", orderct.Getdownshelf)
-		ssc.GET("/info", orderct.GetGoodinfo)
+
 		//ssc.PUT("/on", orderct.TakeOn)
 
 	}

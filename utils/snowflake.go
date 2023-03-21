@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var IDWorker SnowFlakeIdWorker
+
 type SnowFlakeIdWorker struct {
 
 	// 开始时间戳
@@ -138,8 +140,12 @@ func (p *SnowFlakeIdWorker) tilNextMillis(lastTimestamp int64) int64 {
 func (p *SnowFlakeIdWorker) timeGen() int64 {
 	return time.Now().UnixNano() / 1e6
 }
+func InitIDWorker() {
+	IDWorker.Init(0, 1)
+}
+
 func GetSnowFlake() int64 {
-	idWorker := SnowFlakeIdWorker{}
-	idWorker.Init(0, 1)
-	return idWorker.NextId()
+	//IDWorker = SnowFlakeIdWorker{}
+	//IDWorker.Init(0, 1)
+	return IDWorker.NextId()
 }
