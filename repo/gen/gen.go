@@ -24,6 +24,7 @@ var (
 	DriverCart         *driverCart
 	DriverOrderForm    *driverOrderForm
 	Factory            *factory
+	FactoryProduct     *factoryProduct
 	LoginInfo          *loginInfo
 	OrderProduct       *orderProduct
 	Passenger          *passenger
@@ -41,6 +42,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	DriverCart = &Q.DriverCart
 	DriverOrderForm = &Q.DriverOrderForm
 	Factory = &Q.Factory
+	FactoryProduct = &Q.FactoryProduct
 	LoginInfo = &Q.LoginInfo
 	OrderProduct = &Q.OrderProduct
 	Passenger = &Q.Passenger
@@ -59,6 +61,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		DriverCart:         newDriverCart(db, opts...),
 		DriverOrderForm:    newDriverOrderForm(db, opts...),
 		Factory:            newFactory(db, opts...),
+		FactoryProduct:     newFactoryProduct(db, opts...),
 		LoginInfo:          newLoginInfo(db, opts...),
 		OrderProduct:       newOrderProduct(db, opts...),
 		Passenger:          newPassenger(db, opts...),
@@ -78,6 +81,7 @@ type Query struct {
 	DriverCart         driverCart
 	DriverOrderForm    driverOrderForm
 	Factory            factory
+	FactoryProduct     factoryProduct
 	LoginInfo          loginInfo
 	OrderProduct       orderProduct
 	Passenger          passenger
@@ -98,6 +102,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		DriverCart:         q.DriverCart.clone(db),
 		DriverOrderForm:    q.DriverOrderForm.clone(db),
 		Factory:            q.Factory.clone(db),
+		FactoryProduct:     q.FactoryProduct.clone(db),
 		LoginInfo:          q.LoginInfo.clone(db),
 		OrderProduct:       q.OrderProduct.clone(db),
 		Passenger:          q.Passenger.clone(db),
@@ -125,6 +130,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		DriverCart:         q.DriverCart.replaceDB(db),
 		DriverOrderForm:    q.DriverOrderForm.replaceDB(db),
 		Factory:            q.Factory.replaceDB(db),
+		FactoryProduct:     q.FactoryProduct.replaceDB(db),
 		LoginInfo:          q.LoginInfo.replaceDB(db),
 		OrderProduct:       q.OrderProduct.replaceDB(db),
 		Passenger:          q.Passenger.replaceDB(db),
@@ -142,6 +148,7 @@ type queryCtx struct {
 	DriverCart         IDriverCartDo
 	DriverOrderForm    IDriverOrderFormDo
 	Factory            IFactoryDo
+	FactoryProduct     IFactoryProductDo
 	LoginInfo          ILoginInfoDo
 	OrderProduct       IOrderProductDo
 	Passenger          IPassengerDo
@@ -159,6 +166,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		DriverCart:         q.DriverCart.WithContext(ctx),
 		DriverOrderForm:    q.DriverOrderForm.WithContext(ctx),
 		Factory:            q.Factory.WithContext(ctx),
+		FactoryProduct:     q.FactoryProduct.WithContext(ctx),
 		LoginInfo:          q.LoginInfo.WithContext(ctx),
 		OrderProduct:       q.OrderProduct.WithContext(ctx),
 		Passenger:          q.Passenger.WithContext(ctx),

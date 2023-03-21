@@ -5,12 +5,13 @@ type OrderInfostruct struct {
 	Sku         string `json:"sku"`
 	Name        string `json:"name"`
 	Type        string `json:"type"`
-	Pic         string `json:"pic"`
-	Sales       string `json:"sales"`
-	Inventory   int64  `json:"inventory"`
+	//State       int     `json:"state"`
+	Pic       string  `json:"pic"`
+	Sales     float64 `json:"sales"`
+	Inventory int64   `json:"inventory"`
 }
 
 type OrderResponse struct {
 	Response
-	OrderInfostructs []*OrderInfostruct
+	OrderInfostructs []OrderInfostruct
 }

@@ -12,8 +12,8 @@ import (
 func TestGen(t *testing.T) {
 	dsn := "host=localhost port=5432 user=bf dbname=bfdb password=bf123  sslmode=disable  TimeZone=Asia/Shanghai"
 	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		CreateBatchSize:        1000,
-		PrepareStmt:            true,
+		CreateBatchSize: 1000,
+		//PrepareStmt:            true,
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
@@ -31,8 +31,19 @@ func TestGen(t *testing.T) {
 	//fmt.Println(d)
 	//p, _ := gen.DeviceProduct.GetAllDeviceProduct(10)
 	//fmt.Println(p)
-	os, _ := gen.OrderProduct.GetAllOrderProductReferDOrder("A comfort zone is a beautiful place, but nothing ever grows there. A man is not old until regrets take the place of dreams. Navicat 15 has added support for the system-wide dark mode. Navicat allows you to transfer data from one database and/or schema to another with detailed analytical process.")
-	for _, o := range os {
-		fmt.Println(o.Prize)
-	}
+	//{
+	//	os, _ := gen.OrderProduct.GetAllOrderProductReferDOrder("A comfort zone is a beautiful place, but nothing ever grows there. A man is not old until regrets take the place of dreams. Navicat 15 has added support for the system-wide dark mode. Navicat allows you to transfer data from one database and/or schema to another with detailed analytical process.")
+	//	for _, o := range os {
+	//		fmt.Println(o.Price)
+	//	}
+	//}
+
+	factoryProduct, _ := gen.FactoryProduct.GetBySkuAndFName("233", "cat")
+	fmt.Println(factoryProduct)
+
+	//dof, _ := gen.DriverOrderForm.FGetAllOrderForms(123)
+	//fmt.Println(dof)
+	//
+	//dofa, _ := gen.DriverOrderForm.FGetByStateOrderForms(123, 1)
+	//fmt.Println(dofa)
 }

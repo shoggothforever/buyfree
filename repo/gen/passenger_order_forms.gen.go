@@ -34,8 +34,8 @@ func newPassengerOrderForm(db *gorm.DB, opts ...gen.DOOption) passengerOrderForm
 	_passengerOrderForm.Cost = field.NewInt64(tableName, "cost")
 	_passengerOrderForm.State = field.NewInt(tableName, "state")
 	_passengerOrderForm.Location = field.NewString(tableName, "location")
-	_passengerOrderForm.Placetime = field.NewTime(tableName, "placetime")
-	_passengerOrderForm.Paytime = field.NewTime(tableName, "paytime")
+	_passengerOrderForm.PlaceTime = field.NewTime(tableName, "place_time")
+	_passengerOrderForm.PayTime = field.NewTime(tableName, "pay_time")
 	_passengerOrderForm.ProductInfo = passengerOrderFormHasManyProductInfo{
 		db: db.Session(&gorm.Session{}),
 
@@ -57,8 +57,8 @@ type passengerOrderForm struct {
 	Cost        field.Int64
 	State       field.Int
 	Location    field.String
-	Placetime   field.Time
-	Paytime     field.Time
+	PlaceTime   field.Time
+	PayTime     field.Time
 	ProductInfo passengerOrderFormHasManyProductInfo
 
 	fieldMap map[string]field.Expr
@@ -82,8 +82,8 @@ func (p *passengerOrderForm) updateTableName(table string) *passengerOrderForm {
 	p.Cost = field.NewInt64(table, "cost")
 	p.State = field.NewInt(table, "state")
 	p.Location = field.NewString(table, "location")
-	p.Placetime = field.NewTime(table, "placetime")
-	p.Paytime = field.NewTime(table, "paytime")
+	p.PlaceTime = field.NewTime(table, "place_time")
+	p.PayTime = field.NewTime(table, "pay_time")
 
 	p.fillFieldMap()
 
@@ -107,8 +107,8 @@ func (p *passengerOrderForm) fillFieldMap() {
 	p.fieldMap["cost"] = p.Cost
 	p.fieldMap["state"] = p.State
 	p.fieldMap["location"] = p.Location
-	p.fieldMap["placetime"] = p.Placetime
-	p.fieldMap["paytime"] = p.Paytime
+	p.fieldMap["place_time"] = p.PlaceTime
+	p.fieldMap["pay_time"] = p.PayTime
 
 }
 
@@ -250,22 +250,21 @@ type IPassengerOrderFormDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	FGetAllOrderFormsFrom(id int64) (result []model.PassengerOrderForm, err error)
+	FGetAllOrderForms(id int64) (result []model.PassengerOrderForm, err error)
 	FGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.PassengerOrderForm, err error)
-	DGetAllOrderFormsFrom(id int64) (result []model.PassengerOrderForm, err error)
+	DGetAllOrderForms(id int64) (result []model.PassengerOrderForm, err error)
 	DGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.PassengerOrderForm, err error)
-	PGetAllOrderFormsFrom(id int64) (result []model.PassengerOrderForm, err error)
+	PGetAllOrderForms(id int64) (result []model.PassengerOrderForm, err error)
 	PGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.PassengerOrderForm, err error)
 }
 
-// sql(SELECT * FROM @@table where @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
-func (p passengerOrderFormDo) FGetAllOrderFormsFrom(id int64) (result []model.PassengerOrderForm, err error) {
+// sql(SELECT * FROM @@table where factory_id =(SELECT id from factories where id=@id))
+func (p passengerOrderFormDo) FGetAllOrderForms(id int64) (result []model.PassengerOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM passenger_order_forms where ? =(SELECT factory_id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM passenger_order_forms where factory_id =(SELECT id from factories where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -274,15 +273,14 @@ func (p passengerOrderFormDo) FGetAllOrderFormsFrom(id int64) (result []model.Pa
 	return
 }
 
-// sql(SELECT * FROM @@table where state=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+// sql(SELECT * FROM @@table where state=@mode and factory_id=(SELECT id from factories where id=@id))
 func (p passengerOrderFormDo) FGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.PassengerOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, mode)
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM passenger_order_forms where state=? and ? =(SELECT factory_id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM passenger_order_forms where state=? and factory_id=(SELECT id from factories where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -291,14 +289,13 @@ func (p passengerOrderFormDo) FGetByStateOrderForms(id int64, mode model.ORDERST
 	return
 }
 
-// sql(SELECT * FROM @@table where @id =(SELECT id from drivers where id=@id))
-func (p passengerOrderFormDo) DGetAllOrderFormsFrom(id int64) (result []model.PassengerOrderForm, err error) {
+// sql(SELECT * FROM @@table where driver_id =(SELECT id from drivers where id=@id))
+func (p passengerOrderFormDo) DGetAllOrderForms(id int64) (result []model.PassengerOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM passenger_order_forms where ? =(SELECT id from drivers where id=?) ")
+	generateSQL.WriteString("SELECT * FROM passenger_order_forms where driver_id =(SELECT id from drivers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -307,15 +304,14 @@ func (p passengerOrderFormDo) DGetAllOrderFormsFrom(id int64) (result []model.Pa
 	return
 }
 
-// sql(SELECT * FROM @@table where state=@mode and @id =(SELECT id from driver_order_forms where factory_id=@id))
+// sql(SELECT * FROM @@table where state=@mode and driver_id =(SELECT id from drivers where id=@id))
 func (p passengerOrderFormDo) DGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.PassengerOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, mode)
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM passenger_order_forms where state=? and ? =(SELECT id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM passenger_order_forms where state=? and driver_id =(SELECT id from drivers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -324,14 +320,13 @@ func (p passengerOrderFormDo) DGetByStateOrderForms(id int64, mode model.ORDERST
 	return
 }
 
-// sql(SELECT * FROM @@table where @id =(SELECT id from passengers where id=@id))
-func (p passengerOrderFormDo) PGetAllOrderFormsFrom(id int64) (result []model.PassengerOrderForm, err error) {
+// sql(SELECT * FROM @@table where passenger_id =(SELECT id from passengers where id=@id))
+func (p passengerOrderFormDo) PGetAllOrderForms(id int64) (result []model.PassengerOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM passenger_order_forms where ? =(SELECT id from passengers where id=?) ")
+	generateSQL.WriteString("SELECT * FROM passenger_order_forms where passenger_id =(SELECT id from passengers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -340,15 +335,14 @@ func (p passengerOrderFormDo) PGetAllOrderFormsFrom(id int64) (result []model.Pa
 	return
 }
 
-// sql(SELECT * FROM @@table where statestate=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+// sql(SELECT * FROM @@table where state=@mode and passenger_id =(SELECT id from passengers where id=@id))
 func (p passengerOrderFormDo) PGetByStateOrderForms(id int64, mode model.ORDERSTATE) (result []model.PassengerOrderForm, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, mode)
 	params = append(params, id)
-	params = append(params, id)
-	generateSQL.WriteString("SELECT * FROM passenger_order_forms where statestate=? and ? =(SELECT factory_id from driver_order_forms where factory_id=?) ")
+	generateSQL.WriteString("SELECT * FROM passenger_order_forms where state=? and passenger_id =(SELECT id from passengers where id=?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

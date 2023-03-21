@@ -34,6 +34,7 @@ func newAdvertisement(db *gorm.DB, opts ...gen.DOOption) advertisement {
 	_advertisement.NowPlayTimes = field.NewInt64(tableName, "now_play_times")
 	_advertisement.InvestFund = field.NewFloat64(tableName, "invest_fund")
 	_advertisement.Profie = field.NewFloat64(tableName, "profie")
+	_advertisement.VideoCover = field.NewString(tableName, "video_cover")
 	_advertisement.ADOwner = field.NewString(tableName, "ad_owner")
 	_advertisement.PlayUrl = field.NewString(tableName, "play_url")
 	_advertisement.ExpireAt = field.NewTime(tableName, "expire_at")
@@ -55,6 +56,7 @@ type advertisement struct {
 	NowPlayTimes      field.Int64
 	InvestFund        field.Float64
 	Profie            field.Float64
+	VideoCover        field.String
 	ADOwner           field.String
 	PlayUrl           field.String
 	ExpireAt          field.Time
@@ -82,6 +84,7 @@ func (a *advertisement) updateTableName(table string) *advertisement {
 	a.NowPlayTimes = field.NewInt64(table, "now_play_times")
 	a.InvestFund = field.NewFloat64(table, "invest_fund")
 	a.Profie = field.NewFloat64(table, "profie")
+	a.VideoCover = field.NewString(table, "video_cover")
 	a.ADOwner = field.NewString(table, "ad_owner")
 	a.PlayUrl = field.NewString(table, "play_url")
 	a.ExpireAt = field.NewTime(table, "expire_at")
@@ -102,7 +105,7 @@ func (a *advertisement) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (a *advertisement) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 11)
+	a.fieldMap = make(map[string]field.Expr, 12)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["description"] = a.Description
 	a.fieldMap["platform_id"] = a.PlatformID
@@ -110,6 +113,7 @@ func (a *advertisement) fillFieldMap() {
 	a.fieldMap["now_play_times"] = a.NowPlayTimes
 	a.fieldMap["invest_fund"] = a.InvestFund
 	a.fieldMap["profie"] = a.Profie
+	a.fieldMap["video_cover"] = a.VideoCover
 	a.fieldMap["ad_owner"] = a.ADOwner
 	a.fieldMap["play_url"] = a.PlayUrl
 	a.fieldMap["expire_at"] = a.ExpireAt

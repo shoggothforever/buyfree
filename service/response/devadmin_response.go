@@ -15,12 +15,13 @@ type DevQueryInfo struct {
 	State        string
 }
 type DevProductPartInfo struct {
-	Sku         string
-	Name        string
-	Pic         string
-	Prize       float64
-	MonthlySold int64
-	Inventory   int64
+	FactoryName  string
+	Sku          string
+	Name         string
+	Pic          string
+	Price        float64
+	MonthlySales float64
+	Inventory    int64
 	//上架？
 }
 type DevInfo struct {

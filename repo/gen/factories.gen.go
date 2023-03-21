@@ -44,7 +44,7 @@ func newFactory(db *gorm.DB, opts ...gen.DOOption) factory {
 	_factory.Products = factoryHasManyProducts{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Products", "model.Product"),
+		RelationField: field.NewRelation("Products", "model.FactoryProduct"),
 	}
 
 	_factory.OrderForms = factoryHasManyOrderForms{
@@ -188,11 +188,11 @@ func (a factoryHasManyProducts) Model(m *model.Factory) *factoryHasManyProductsT
 
 type factoryHasManyProductsTx struct{ tx *gorm.Association }
 
-func (a factoryHasManyProductsTx) Find() (result []*model.Product, err error) {
+func (a factoryHasManyProductsTx) Find() (result []*model.FactoryProduct, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a factoryHasManyProductsTx) Append(values ...*model.Product) (err error) {
+func (a factoryHasManyProductsTx) Append(values ...*model.FactoryProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -200,7 +200,7 @@ func (a factoryHasManyProductsTx) Append(values ...*model.Product) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a factoryHasManyProductsTx) Replace(values ...*model.Product) (err error) {
+func (a factoryHasManyProductsTx) Replace(values ...*model.FactoryProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -208,7 +208,7 @@ func (a factoryHasManyProductsTx) Replace(values ...*model.Product) (err error) 
 	return a.tx.Replace(targetValues...)
 }
 
-func (a factoryHasManyProductsTx) Delete(values ...*model.Product) (err error) {
+func (a factoryHasManyProductsTx) Delete(values ...*model.FactoryProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v

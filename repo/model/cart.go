@@ -26,7 +26,7 @@ type PassengerCart struct {
 type DriverCart struct {
 	//外键 Driver.Uuid
 	DriverID string `json:"driver_id"`
-
+	//添加进购物车时自动获取
 	FactoryName string `gorm:"comment:购物场站名称" json:"factory_name"`
 	//距离场站距离
 	Distance int64 `gorm:"comment:距离场站距离" json:"distance"`

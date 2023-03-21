@@ -260,14 +260,13 @@ func (d driverCartDo) GetByCardID(id int64) (result model.DriverCart, err error)
 	return
 }
 
-// sql(SELECT * FROM @@table where @driverid=(SELECT id from drivers where id =@driverid))
+// sql(SELECT * FROM @@table where driver_id=(SELECT id from drivers where id =@driverid))
 func (d driverCartDo) GetAllCarts(driverid int64) (result []model.DriverCart, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, driverid)
-	params = append(params, driverid)
-	generateSQL.WriteString("SELECT * FROM driver_carts where ?=(SELECT id from drivers where id =?) ")
+	generateSQL.WriteString("SELECT * FROM driver_carts where driver_id=(SELECT id from drivers where id =?) ")
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

@@ -29,53 +29,55 @@ type CartQuery interface {
 	// SELECT * FROM @@table WHERE cart_id=@id
 	GetByCardID(id int64) (gen.T, error)
 
-	// sql(SELECT * FROM @@table where @driverid=(SELECT id from drivers where id =@driverid))
+	// sql(SELECT * FROM @@table where driver_id=(SELECT id from drivers where id =@driverid))
 	GetAllCarts(driverid int64) ([]gen.T, error)
 }
 type ProductQuery interface {
-	//sql(SELECT * FROM @@table where @deviceid=(SELECT id from devices where id=@deviceid))
+	//sql(SELECT * FROM @@table where device_id=(SELECT id from devices where id=@deviceid))
 	GetAllDeviceProduct(deviceid int64) ([]gen.T, error)
-	//sql(SELECT * FROM @@table where @cartrefer=(SELECT cart_id from driver_carts where cart_id=@cartrefer))
-	GetAllOrderProductReferDCart(cartrefer int64) ([]gen.T, error)
-	//sql(SELECT * FROM @@table where @cartrefer=(SELECT cart_id from passenger_carts where cart_id=@cartrefer))
-	GetAllOrderProductReferPCart(cartrefer int64) ([]gen.T, error)
-	//sql(SELECT * FROM @@table where @factoryrefer=(SELECT id from factories where id=@factoryrefer))
-	GetAllOrderProductReferFactory(factoryrefer int64) ([]gen.T, error)
-	//sql(SELECT * FROM @@table where @orderrefer=(SELECT order_id from driver_order_forms where order_id=@orderrefer))
+	//sql(SELECT * FROM @@table where cart_refer=(SELECT cart_id from driver_carts where cart_id=@cartrefer))
+	DGetAllOrderProductReferCart(cartrefer int64) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where cart_refer=(SELECT cart_id from passenger_carts where cart_id=@cartrefer))
+	PGetAllOrderProductReferCart(cartrefer int64) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where factory_id=(SELECT id from factories where id=@factoryid))
+	GetAllOrderProductReferFactory(factoryid int64) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where order_refer=(SELECT order_id from driver_order_forms where order_id=@orderrefer))
 	GetAllOrderProductReferDOrder(orderrefer string) ([]gen.T, error)
-	//sql(SELECT * FROM @@table where @orderrefer=(SELECT order_id from passenger_order_forms where order_id=@orderrefer))
+	//sql(SELECT * FROM @@table where order_refer=(SELECT order_id from passenger_order_forms where order_id=@orderrefer))
 	GetAllOrderProductReferPOrder(orderrefer string) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where sku=@sku and factory_name=@fname)
+	GetBySkuAndFName(sku, fname string) (gen.T, error)
 }
 
 type DeviceQuery interface {
-	//sql(SELECT * FROM @@table where @id=(SELECT id from drivers where id=@id))
+	//sql(SELECT * FROM @@table where owner_id=(SELECT id from drivers where id=@id))
 	GetAllDriverDevice(id int64) (gen.T, error)
-	//sql(SELECT * FROM @@table where @id=(SELECT id from platforms where id=@id))
+	//sql(SELECT * FROM @@table where platform_id=(SELECT id from platforms where id=@id))
 	GetAllPlatformDevice(id int64) (gen.T, error)
 
-	//sql(SELECT * FROM @@table where is_online=@mode and @id=(SELECT id from platforms where id=@id))
+	//sql(SELECT * FROM @@table where is_online=@mode and platform_id=(SELECT id from platforms where id=@id))
 	GetByOnlinePlatformDevice(id int64, mode bool) (gen.T, error)
 
-	//sql(SELECT * FROM @@table where is_activated=@mode and @id=(SELECT id from platforms where id=@id))
+	//sql(SELECT * FROM @@table where is_activated=@mode and platform_id=(SELECT id from platforms where id=@id))
 	GetByActivatedPlatformDevice(id int64, mode bool) (gen.T, error)
 }
 type OrderFormQuery interface {
-	//sql(SELECT * FROM @@table where @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
-	FGetAllOrderFormsFrom(id int64) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where factory_id =(SELECT id from factories where id=@id))
+	FGetAllOrderForms(id int64) ([]gen.T, error)
 
-	//sql(SELECT * FROM @@table where state=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+	//sql(SELECT * FROM @@table where state=@mode and factory_id=(SELECT id from factories where id=@id))
 	FGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
 
-	//sql(SELECT * FROM @@table where @id =(SELECT id from drivers where id=@id))
-	DGetAllOrderFormsFrom(id int64) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where driver_id =(SELECT id from drivers where id=@id))
+	DGetAllOrderForms(id int64) ([]gen.T, error)
 
-	//sql(SELECT * FROM @@table where state=@mode and @id =(SELECT id from driver_order_forms where factory_id=@id))
+	//sql(SELECT * FROM @@table where state=@mode and driver_id =(SELECT id from drivers where id=@id))
 	DGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
 
-	//sql(SELECT * FROM @@table where @id =(SELECT id from passengers where id=@id))
-	PGetAllOrderFormsFrom(id int64) ([]gen.T, error)
+	//sql(SELECT * FROM @@table where passenger_id =(SELECT id from passengers where id=@id))
+	PGetAllOrderForms(id int64) ([]gen.T, error)
 
-	//sql(SELECT * FROM @@table where statestate=@mode and @id =(SELECT factory_id from driver_order_forms where factory_id=@id))
+	//sql(SELECT * FROM @@table where state=@mode and passenger_id =(SELECT id from passengers where id=@id))
 	PGetByStateOrderForms(id int64, mode model.ORDERSTATE) ([]gen.T, error)
 }
 
@@ -102,11 +104,11 @@ func main() {
 	//g.ApplyBasic(&model.User{})
 	g.ApplyInterface(func(Query) {}, &model.Passenger{},
 		&model.Driver{}, &model.Factory{},
-		&model.Platform{}, &model.DeviceProduct{},
+		&model.Platform{}, &model.DeviceProduct{}, &model.FactoryProduct{},
 		&model.Device{}, &model.Advertisement{})
 	g.ApplyInterface(func(LoginQuery) {}, &model.LoginInfo{})
 	g.ApplyInterface(func(CartQuery) {}, &model.PassengerCart{}, &model.DriverCart{})
-	g.ApplyInterface(func(ProductQuery) {}, &model.OrderProduct{}, &model.DeviceProduct{})
+	g.ApplyInterface(func(ProductQuery) {}, &model.OrderProduct{}, &model.DeviceProduct{}, &model.FactoryProduct{})
 	g.ApplyInterface(func(DeviceQuery) {}, &model.Device{})
 	g.ApplyInterface(func(OrderFormQuery) {}, &model.PassengerOrderForm{}, &model.DriverOrderForm{})
 	g.Execute()

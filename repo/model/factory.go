@@ -14,21 +14,21 @@ type Factory struct {
 	//场站地理位置
 	Address string `gorm:"comment:场站位置信息" json:"address"`
 	//供应的商品
-	Products   []*RepoProduct     `gorm:"foreignkey:FactoryRefer" `
-	OrderForms []*DriverOrderForm `gorm:"foreignkey:FactoryRefer"`
+	Products   []*FactoryProduct  `gorm:"foreignkey:FactoryID" `
+	OrderForms []*DriverOrderForm `gorm:"foreignkey:FactoryID"`
 }
 
 func (f *Factory) deliver(pro_id uuid.UUID, d *Driver) {
 
 }
 
-//func (r *RepoProduct) register(o design.Observer) {
+//func (r *FactoryProduct) register(o design.Observer) {
 //	d,err:=o.(*Driver)
 //}
-//func (r *RepoProduct) deregister(o *design.Observer) {
+//func (r *FactoryProduct) deregister(o *design.Observer) {
 //	r.Subscribers.
 //}
 //
-//func (r *RepoProduct)notifyAll(){
+//func (r *FactoryProduct)notifyAll(){
 //
 //}
