@@ -1,6 +1,6 @@
 package response
 
-type OrderInfostruct struct {
+type FactoryOrderInfo struct {
 	FactoryName string `json:"factory_name"`
 	Sku         string `json:"sku"`
 	Name        string `json:"name"`
@@ -13,5 +13,5 @@ type OrderInfostruct struct {
 
 type OrderResponse struct {
 	Response
-	OrderInfostructs []OrderInfostruct
+	OrderInfostructs []FactoryOrderInfo
 }

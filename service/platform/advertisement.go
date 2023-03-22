@@ -2,8 +2,11 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/repo/gen"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -12,6 +15,16 @@ type ADController struct {
 	BaseController
 }
 
+//TODO:swagger
+// @Summary 获取所有广告信息
+// @Description
+// @Tags	Advertisement
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Success 200 {object} response.ADResponse
+// @Failure 400 {object} response.Response
+// @Router /pt/ads/list [get]
 func (a *ADController) GetADList(c *gin.Context) {
 
 	var ads []model.Advertisement
@@ -23,24 +36,44 @@ func (a *ADController) GetADList(c *gin.Context) {
 			"ok"},
 		ads})
 }
+
+//TODO:swagger
+// @Summary 添加广告信息
+// @Description 按照Advertisement定义的内容传递json格式的数据
+// @Tags	Advertisement
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Success 201 {object} response.ADResponse
+// @Failure 400 {object} response.Response
+// @Router /pt/ads [post]
 func (a *ADController) AddAD(c *gin.Context) {
-	var ad []model.Advertisement
-	c.ShouldBind(&ad)
-	if len(ad) == 0 {
-		a.Error(c, 400, "添加广告信息失败")
-		return
-	}
-	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad[0]).Error
+	var ad model.Advertisement
+	c.Bind(&ad)
+	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
 	if err == nil {
+		ad.ID = utils.IDWorker.NextId()
 		c.JSON(200, response.ADResponse{
-			response.Response{200,
-				"ok"},
-			ad,
+			response.Response{201,
+				"添加广告信息成功"},
+			[]model.Advertisement{ad},
 		})
 	} else {
 		a.Error(c, 400, "添加广告信息失败")
 	}
 }
+
+//TODO:swagger
+// @Summary 获取单个广告信息
+// @Description 传入广告ID
+// @Tags	Advertisement
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Param id path int true "广告ID"
+// @Success 200 {object} response.ADResponse
+// @Failure 400 {object} response.Response
+// @Router /pt/ads/infos/{id} [get]
 func (a *ADController) GetADContent(c *gin.Context) {
 	//TODO:交给前端吧
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -49,25 +82,47 @@ func (a *ADController) GetADContent(c *gin.Context) {
 	if err != nil {
 		a.Error(c, 400, "获取广告信息失败")
 	}
-	c.JSON(200, response.ADInfoResponse{
+	c.JSON(200, response.ADResponse{
 		response.Response{
 			200,
-			"ok"},
-		ad})
+			"获取广告信息成功"},
+		[]model.Advertisement{ad}})
 }
 
+//TODO:swagger
+// @Summary 获取单个广告效益
+// @Description 传入广告ID
+// @Tags	Advertisement
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Param id path int true "广告ID"
+// @Success 200 {object} response.ADEfficientResponse
+// @Failure 400 {object} response.Response
+// @Router /pt/ads/efficient/{id} [get]
 func (a *ADController) GetADEfficient(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+	fmt.Println(id)
 	var ad model.Advertisement
-	//var drivers []*model.Driver
-	//var driver *model.Driver
-	var devices []*model.Device
-	var effinfo []*response.ADEfficientInfo
-	dal.Getdb().Model(&model.Advertisement{}).Where("id = ?", id).First(&ad)
 
-	//TODO:好好写原生SQL语句
-	dal.Getdb().Model(&model.Device{}).Raw("select * from devices as d where d. id in "+
-		"(select device_id where advertisement_id = ? )", id).Find(&devices)
+	var devices []model.Device
+	devices, _ = gen.Device.GetDeviceByAdvertiseID(id)
+	fmt.Println(devices)
+	n := len(devices)
+	effinfo := make([]response.ADEfficientInfo, n, n)
+	for i := 0; i < n; i++ {
+		var driver *model.Driver
+		dal.Getdb().Model(&model.Driver{}).Select("name", "car_id").Where("id = ?", devices[i].OwnerID).First(&driver)
+		effinfo[i].DriverName = driver.Name
+		effinfo[i].CarID = driver.CarID
+		effinfo[i].DeviceID = devices[i].ID
+		ad, _ = gen.Advertisement.GetAdvertisementProfitAndPlayTimes(id, devices[i].ID)
+		fmt.Println(ad)
+		effinfo[i].PlayedTimes = ad.PlayTimes
+		effinfo[i].Profit = ad.Profit
+		effinfo[i].Profit = ad.Profit
+	}
+
 	c.JSON(200, response.ADEfficientResponse{
 		response.Response{
 			200,

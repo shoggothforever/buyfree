@@ -14,7 +14,7 @@ func AuthJwt() gin.HandlerFunc {
 		} else {
 			c.Set("AUthInfo", "Failed!")
 			c.AbortWithStatusJSON(200, gin.H{
-				"code": 403, "msg": "请登录后再试",
+				"code": 401, "msg": "验证信息失败",
 			})
 			return
 		} //如果在PostMan中使用 Bearer Token 会在jwt前加上bearer: 前缀
@@ -23,13 +23,13 @@ func AuthJwt() gin.HandlerFunc {
 		if err != nil {
 			c.Set("AUthInfo", "Failed!")
 			c.AbortWithStatusJSON(200, gin.H{
-				"code": 403, "msg": "请输入正确的信息",
+				"code": 401, "msg": "验证信息失败",
 			})
 			return
 		} else if authjwt != "1" {
 			c.Set("AUthInfo", "Failed!")
 			c.AbortWithStatusJSON(200, gin.H{
-				"code": 403, "msg": "请输入正确的信息",
+				"code": 401, "msg": "验证信息失败",
 			})
 			return
 		} else {

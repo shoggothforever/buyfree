@@ -31,7 +31,7 @@ func newAdvertisement(db *gorm.DB, opts ...gen.DOOption) advertisement {
 	_advertisement.Description = field.NewString(tableName, "description")
 	_advertisement.PlatformID = field.NewInt64(tableName, "platform_id")
 	_advertisement.ExpectedPlayTimes = field.NewInt64(tableName, "expected_play_times")
-	_advertisement.NowPlayTimes = field.NewInt64(tableName, "now_play_times")
+	_advertisement.PlayTimes = field.NewInt64(tableName, "play_times")
 	_advertisement.InvestFund = field.NewFloat64(tableName, "invest_fund")
 	_advertisement.Profit = field.NewFloat64(tableName, "profit")
 	_advertisement.VideoCover = field.NewString(tableName, "video_cover")
@@ -76,7 +76,7 @@ type advertisement struct {
 	Description       field.String
 	PlatformID        field.Int64
 	ExpectedPlayTimes field.Int64
-	NowPlayTimes      field.Int64
+	PlayTimes         field.Int64
 	InvestFund        field.Float64
 	Profit            field.Float64
 	VideoCover        field.String
@@ -105,7 +105,7 @@ func (a *advertisement) updateTableName(table string) *advertisement {
 	a.Description = field.NewString(table, "description")
 	a.PlatformID = field.NewInt64(table, "platform_id")
 	a.ExpectedPlayTimes = field.NewInt64(table, "expected_play_times")
-	a.NowPlayTimes = field.NewInt64(table, "now_play_times")
+	a.PlayTimes = field.NewInt64(table, "play_times")
 	a.InvestFund = field.NewFloat64(table, "invest_fund")
 	a.Profit = field.NewFloat64(table, "profit")
 	a.VideoCover = field.NewString(table, "video_cover")
@@ -134,7 +134,7 @@ func (a *advertisement) fillFieldMap() {
 	a.fieldMap["description"] = a.Description
 	a.fieldMap["platform_id"] = a.PlatformID
 	a.fieldMap["expected_play_times"] = a.ExpectedPlayTimes
-	a.fieldMap["now_play_times"] = a.NowPlayTimes
+	a.fieldMap["play_times"] = a.PlayTimes
 	a.fieldMap["invest_fund"] = a.InvestFund
 	a.fieldMap["profit"] = a.Profit
 	a.fieldMap["video_cover"] = a.VideoCover
@@ -296,6 +296,7 @@ type IAdvertisementDo interface {
 	GetByID(id int64) (result model.Advertisement, err error)
 	GetByName(id int64) (result model.Advertisement, err error)
 	GetAdvertisementByDeviceID(dev_id int64) (result []model.Advertisement, err error)
+	GetAdvertisementProfitAndPlayTimes(ad_id int64, dev_id int64) (result model.Advertisement, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -338,6 +339,22 @@ func (a advertisementDo) GetAdvertisementByDeviceID(dev_id int64) (result []mode
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// select * from ad_devices where advertisement_id = @ad_id and device_id = @dev_id
+func (a advertisementDo) GetAdvertisementProfitAndPlayTimes(ad_id int64, dev_id int64) (result model.Advertisement, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, ad_id)
+	params = append(params, dev_id)
+	generateSQL.WriteString("select * from ad_devices where advertisement_id = ? and device_id = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

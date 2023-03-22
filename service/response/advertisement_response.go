@@ -9,10 +9,10 @@ type ADResponse struct {
 	ADInfos []model.Advertisement
 }
 
-type ADInfoResponse struct {
-	Response
-	ADInfos model.Advertisement
-}
+//type ADInfoResponse struct {
+//	Response
+//	ADInfos model.Advertisement
+//}
 type ADEfficientInfo struct {
 	DeviceID    int64   `json:"device_id"`
 	PlayedTimes int64   `json:"played_times"`
@@ -22,5 +22,5 @@ type ADEfficientInfo struct {
 }
 type ADEfficientResponse struct {
 	Response
-	ADEfficientInfos []*ADEfficientInfo
+	ADEfficientInfos []ADEfficientInfo
 }

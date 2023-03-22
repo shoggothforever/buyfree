@@ -9,6 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PlatformAccount godoc
+// @Summary 平台用户注册
+// @Description 	Input info as model.Platform
+// @Tags			Platform
+// @accept			json
+// @Produce			json
+// @Success			200 {object} response.LoginResponse
+// @failure			500 {object} response.LoginResponse
+// @Router			/pt/register [post]
 func Register(c *gin.Context) {
 	//一定要定义成值类型，在bind里要传地址
 	var ptadmin model.Platform
@@ -33,6 +42,16 @@ func Register(c *gin.Context) {
 			""})
 	}
 }
+
+// PlatformAccount godoc
+// @Summary 平台用户登录
+// @Description 	Input user's nickname and password
+// @Tags			Platform
+// @accept			json
+// @Produce			json
+// @Success			200 {object} response.LoginResponse
+// @Failure			500 {object} response.LoginResponse
+// @Router			/pt/login [post]
 func Login(c *gin.Context) {
 	var l []model.LoginInfo
 	var pt model.Platform
