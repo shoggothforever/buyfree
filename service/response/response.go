@@ -10,6 +10,6 @@ type Response struct {
 
 type LoginResponse struct {
 	Response
-	UserID int64
-	Jwt    string
+	UserID int64  `json:"user_id"`
+	Jwt    string `json:"jwt"`
 }

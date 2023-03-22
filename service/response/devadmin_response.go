@@ -6,32 +6,30 @@ import (
 )
 
 type DevQueryInfo struct {
-	Seq          int64
-	DevID        int64  `gorm:"id"`
-	DriverName   string `gorm:"name"`
-	Mobile       string `gorm:"mobile"`
-	SalesOfToday float64
-	Location     string
-	State        string
+	Seq          int64   `json:"seq"`
+	DevID        int64   `gorm:"id" json:"dev_id"`
+	DriverName   string  `gorm:"name" json:"driver_name"`
+	Mobile       string  `gorm:"mobile" json:"mobile"`
+	SalesOfToday float64 `json:"sales_of_today"`
+	Location     string  `json:"location"`
+	State        string  `json:"state"`
 }
 type DevProductPartInfo struct {
-	FactoryName  string
-	Sku          string
-	Name         string
-	Pic          string
-	Price        float64
-	MonthlySales float64
-	Inventory    int64
-	//上架？
+	FactoryName  string  `json:"factory_name"`
+	Sku          string  `json:"sku"`
+	Name         string  `json:"name"`
+	Pic          string  `json:"pic"`
+	Price        float64 `json:"price"`
+	MonthlySales float64 `json:"monthly_sales"`
+	Inventory    int64   `json:"inventory"`
 }
 type DevInfo struct {
-	//TODO: seq 交给前端
-	DevID         int64
-	ActivatedTime time.Time
-	UpdatedTime   time.Time
-	Location      string
-	DriverName    string
-	Mobile        string
+	DevID         int64     `json:"devID"`
+	ActivatedTime time.Time `json:"activated_time"`
+	UpdatedTime   time.Time `json:"updated_time"`
+	Location      string    `json:"location"`
+	DriverName    string    `json:"driver_name"`
+	Mobile        string    `json:"mobile"`
 	ProductInfo   []DevProductPartInfo
 }
 type DevResponse struct {

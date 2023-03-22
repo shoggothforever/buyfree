@@ -1,0 +1,585 @@
+basePath: /
+definitions:
+  model.Advertisement:
+    properties:
+      ad_owner:
+        type: string
+      ad_state:
+        type: integer
+      description:
+        type: string
+      devices:
+        description: 在投放广告的时候需要注意
+        items:
+          $ref: '#/definitions/model.Device'
+        type: array
+      expected_play_times:
+        type: integer
+      expire_at:
+        type: string
+      id:
+        type: integer
+      invest_fund:
+        type: number
+      platform_id:
+        type: integer
+      play_times:
+        type: integer
+      play_url:
+        type: string
+      profit:
+        type: number
+      video_cover:
+        type: string
+    type: object
+  model.Device:
+    properties:
+      activated_time:
+        type: string
+      advertisements:
+        items:
+          $ref: '#/definitions/model.Advertisement'
+        type: array
+      id:
+        type: integer
+      is_activated:
+        type: boolean
+      is_online:
+        type: boolean
+      owner_id:
+        type: integer
+      platform_id:
+        type: integer
+      products:
+        items:
+          $ref: '#/definitions/model.DeviceProduct'
+        type: array
+      profit:
+        type: number
+      updated_time:
+        type: string
+    type: object
+  model.DeviceProduct:
+    properties:
+      annually_sales:
+        type: number
+      buy_price:
+        description: 销售价
+        type: number
+      daily_sales:
+        type: number
+      device_id:
+        description: 售货机编号
+        type: integer
+      factory_id:
+        type: integer
+      id:
+        type: integer
+      inventory:
+        description: 存货
+        type: integer
+      monthly_sales:
+        type: number
+      name:
+        description: 产品名称
+        type: string
+      pic:
+        description: 图片
+        type: string
+      sku:
+        type: string
+      supply_price:
+        description: 批发价
+        type: number
+      total_sales:
+        type: number
+      type:
+        description: 型号
+        type: string
+      weekly_sales:
+        type: number
+    type: object
+  response.ADEfficientInfo:
+    properties:
+      car_id:
+        type: string
+      device_id:
+        type: integer
+      driver_name:
+        type: string
+      played_times:
+        type: integer
+      profit:
+        type: number
+    type: object
+  response.ADEfficientResponse:
+    properties:
+      adefficientInfos:
+        items:
+          $ref: '#/definitions/response.ADEfficientInfo'
+        type: array
+      code:
+        type: integer
+      msg:
+        type: string
+    type: object
+  response.ADResponse:
+    properties:
+      adinfos:
+        items:
+          $ref: '#/definitions/model.Advertisement'
+        type: array
+      code:
+        type: integer
+      msg:
+        type: string
+    type: object
+  response.AddDevResponse:
+    properties:
+      code:
+        type: integer
+      devices:
+        $ref: '#/definitions/model.Device'
+      msg:
+        type: string
+    type: object
+  response.DevInfoResponse:
+    properties:
+      activated_time:
+        type: string
+      annually_sales:
+        type: number
+      code:
+        type: integer
+      daily_sales:
+        type: number
+      devID:
+        description: 'TODO: seq 交给前端'
+        type: integer
+      driver_name:
+        type: string
+      location:
+        type: string
+      mobile:
+        type: string
+      monthly_sales:
+        type: number
+      msg:
+        type: string
+      productInfo:
+        items:
+          $ref: '#/definitions/response.DevProductPartInfo'
+        type: array
+      total_sales:
+        type: number
+      updated_time:
+        type: string
+      weekly_sales:
+        type: number
+    type: object
+  response.DevProductPartInfo:
+    properties:
+      factory_name:
+        type: string
+      inventory:
+        type: integer
+      monthly_sales:
+        type: number
+      name:
+        type: string
+      pic:
+        type: string
+      price:
+        type: number
+      sku:
+        type: string
+    type: object
+  response.DevQueryInfo:
+    properties:
+      dev_id:
+        type: integer
+      driver_name:
+        type: string
+      location:
+        type: string
+      mobile:
+        type: string
+      sales_of_today:
+        type: number
+      seq:
+        type: integer
+      state:
+        type: string
+    type: object
+  response.DevResponse:
+    properties:
+      code:
+        type: integer
+      devResponses:
+        items:
+          $ref: '#/definitions/response.DevQueryInfo'
+        type: array
+      msg:
+        type: string
+    type: object
+  response.Factory_OrderInfo:
+    properties:
+      factory_name:
+        type: string
+      inventory:
+        type: integer
+      name:
+        type: string
+      pic:
+        description: State       int     `json:"state"`
+        type: string
+      sales:
+        type: number
+      sku:
+        type: string
+      type:
+        type: string
+    type: object
+  response.FactoryGoodsResponse:
+    properties:
+      annually_sales:
+        type: number
+      buy_price:
+        description: 销售价
+        type: number
+      code:
+        type: integer
+      daily_sales:
+        type: number
+      factory_id:
+        type: integer
+      factory_name:
+        description: 场站名字
+        type: string
+      id:
+        type: integer
+      inventory:
+        description: 存货
+        type: integer
+      monthly_sales:
+        type: number
+      msg:
+        type: string
+      name:
+        description: 产品名称
+        type: string
+      pic:
+        description: 图片
+        type: string
+      sku:
+        type: string
+      supply_price:
+        description: 批发价
+        type: number
+      total_sales:
+        type: number
+      type:
+        description: 型号
+        type: string
+      weekly_sales:
+        type: number
+    type: object
+  response.LoginResponse:
+    properties:
+      code:
+        type: integer
+      jwt:
+        type: string
+      msg:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  response.OrderResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      orderInfostructs:
+        items:
+          $ref: '#/definitions/response.Factory_OrderInfo'
+        type: array
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:9003
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /pt/ads:
+    post:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 按照Advertisement定义的内容传递json格式的数据
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.ADResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 添加广告信息
+      tags:
+      - Advertisement
+  /pt/ads/efficient/{id}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入广告ID
+      parameters:
+      - description: 广告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ADEfficientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取单个广告效益
+      tags:
+      - Advertisement
+  /pt/ads/infos/{id}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入广告ID
+      parameters:
+      - description: 广告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ADResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取单个广告信息
+      tags:
+      - Advertisement
+  /pt/ads/list:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ADResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取所有广告信息
+      tags:
+      - Advertisement
+  /pt/dev-admin/devs:
+    post:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 按照Device的定义 传入json格式的数据,设备的ID无需传入
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.AddDevResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 添加设备信息
+      tags:
+      - Device
+  /pt/dev-admin/infos/{id}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 输入设备的ID以查看对应设备的销量,绑定车主以及库存的信息
+      parameters:
+      - description: use to identify Device
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DevInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 展示设备详情信息
+      tags:
+      - Device
+  /pt/dev-admin/list/{mode}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入字段名:mode;mode=0:获取全部设备信息,mode=1，2,3,4分别对应获取在线，离线,激活，未激活的设备信息
+      parameters:
+      - description: group mode
+        in: path
+        name: mode
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取的设备信息
+          schema:
+            $ref: '#/definitions/response.DevResponse'
+      summary: 获取设备信息
+      tags:
+      - Device
+  /pt/login:
+    post:
+      consumes:
+      - application/json
+      description: Input user's nickname and password
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+      summary: 平台用户登录
+      tags:
+      - Platform
+  /pt/orders/factory/{mode}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入字段mode，获取对应订单信息
+      parameters:
+      - description: 按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}
+        in: path
+        name: mode
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取场站订单信息(车主在该场站下的订单)
+      tags:
+      - Orderform
+  /pt/orders/infos/{sku}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 输入商品SKU,获取场站中对应商品的详细信息
+      parameters:
+      - description: sku 指向唯一的场站中的商品信息
+        in: path
+        name: sku
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryGoodsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取商品信息
+      tags:
+      - Orderform
+  /pt/register:
+    post:
+      consumes:
+      - application/json
+      description: Input info as model.Platform
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+      summary: 平台用户注册
+      tags:
+      - Platform
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

@@ -86,6 +86,8 @@ type OrderFormQuery interface {
 type AdvertisementQuery interface {
 	//sql(select * from advertisements as a where a.id in(select advertisement_id from ad_devices where device_id = @dev_id))
 	GetAdvertisementByDeviceID(dev_id int64) ([]gen.T, error)
+	//select * from ad_devices where advertisement_id = @ad_id and device_id = @dev_id
+	GetAdvertisementProfitAndPlayTimes(ad_id, dev_id int64) (gen.T, error)
 }
 
 func main() {
