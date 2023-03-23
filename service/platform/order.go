@@ -62,7 +62,7 @@ func (o *OrderController) GetFactoryOrders(c *gin.Context) {
 			infos[j].Pic = products[j].Pic
 			infos[j].Type = products[j].Type
 			//TODO:展示在首页和上架就交给前端吧,获取订单中的商品在场站的上下架状态，根据factoryID 和 商品SKU在场站的商品表中查询对应的状态信息
-			//infos[j].State = products[j].IsChosen
+			infos[j].State = products[j].IsChosen
 			saleinfo, _ := gen.FactoryProduct.GetBySkuAndFName(info.Sku, info.FactoryName)
 			infos[j].Sales = saleinfo.TotalSales
 			infos[j].Inventory = saleinfo.Inventory
@@ -144,11 +144,6 @@ func (o *OrderController) GetGoodinfo(c *gin.Context) {
 		o.Error(c, 404, "查询失败")
 		return
 	}
-	//c.JSON(200, gin.H{
-	//	"Code":    200,
-	//	"Msg":     "成功获取对应信息",
-	//	"Product": product,
-	//})
 	c.JSON(200, response.FactoryGoodsResponse{
 		response.Response{200, "成功获取对应信息"},
 		product,

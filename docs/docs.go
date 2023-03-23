@@ -399,6 +399,75 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/pt/screen": {
+            "get": {
+                "description": "在数据大屏上展示管理场站的销售数据",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform"
+                ],
+                "summary": "展示销售数据",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ScreenInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/static/{mode}": {
+            "get": {
+                "description": "展示管理场站的销售数据，获取详细的销售排行信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform"
+                ],
+                "summary": "销售数据统计",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "mode=0 今日排行，mode=1 本月排行 ,mode=2 年度排行",
+                        "name": "mode",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SaleStaticResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -548,6 +617,63 @@ const docTemplate = `{
                 }
             }
         },
+        "model.FactoryProduct": {
+            "type": "object",
+            "properties": {
+                "annually_sales": {
+                    "type": "number"
+                },
+                "buy_price": {
+                    "description": "销售价",
+                    "type": "number"
+                },
+                "daily_sales": {
+                    "type": "number"
+                },
+                "factory_id": {
+                    "type": "integer"
+                },
+                "factory_name": {
+                    "description": "场站名字",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "inventory": {
+                    "description": "存货",
+                    "type": "integer"
+                },
+                "monthly_sales": {
+                    "type": "number"
+                },
+                "name": {
+                    "description": "产品名称",
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "图片",
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "supply_price": {
+                    "description": "批发价",
+                    "type": "number"
+                },
+                "total_sales": {
+                    "type": "number"
+                },
+                "type": {
+                    "description": "型号",
+                    "type": "string"
+                },
+                "weekly_sales": {
+                    "type": "number"
+                }
+            }
+        },
         "response.ADEfficientInfo": {
             "type": "object",
             "properties": {
@@ -632,7 +758,6 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "devID": {
-                    "description": "TODO: seq 交给前端",
                     "type": "integer"
                 },
                 "driver_name": {
@@ -670,9 +795,6 @@ const docTemplate = `{
         "response.DevProductPartInfo": {
             "type": "object",
             "properties": {
-                "factory_name": {
-                    "type": "string"
-                },
                 "inventory": {
                     "type": "integer"
                 },
@@ -685,11 +807,12 @@ const docTemplate = `{
                 "pic": {
                     "type": "string"
                 },
-                "price": {
-                    "type": "number"
-                },
                 "sku": {
+                    "description": "FactoryName  string  ` + "`" + `json:\"factory_name\"` + "`" + `",
                     "type": "string"
+                },
+                "supply_price": {
+                    "type": "number"
                 }
             }
         },
@@ -799,7 +922,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.Factory_OrderInfo": {
+        "response.FactoryOrderInfo": {
             "type": "object",
             "properties": {
                 "factory_name": {
@@ -812,7 +935,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pic": {
-                    "description": "State       int     ` + "`" + `json:\"state\"` + "`" + `",
                     "type": "string"
                 },
                 "sales": {
@@ -820,6 +942,9 @@ const docTemplate = `{
                 },
                 "sku": {
                     "type": "string"
+                },
+                "state": {
+                    "type": "boolean"
                 },
                 "type": {
                     "type": "string"
@@ -852,10 +977,10 @@ const docTemplate = `{
                 "msg": {
                     "type": "string"
                 },
-                "orderInfostructs": {
+                "orderInfos": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/response.Factory_OrderInfo"
+                        "$ref": "#/definitions/response.FactoryOrderInfo"
                     }
                 }
             }
@@ -868,6 +993,92 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "response.SaleStaticResponse": {
+            "type": "object",
+            "properties": {
+                "annually_sales": {
+                    "type": "number"
+                },
+                "daily_sales": {
+                    "type": "number"
+                },
+                "devicesRank": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Device"
+                    }
+                },
+                "monthly_sales": {
+                    "type": "number"
+                },
+                "productsRank": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FactoryProduct"
+                    }
+                },
+                "total_sales": {
+                    "type": "number"
+                },
+                "weekly_sales": {
+                    "type": "number"
+                }
+            }
+        },
+        "response.ScreenInfoResponse": {
+            "type": "object",
+            "properties": {
+                "adlist": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Advertisement"
+                    }
+                },
+                "annually_sales": {
+                    "type": "number"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "daily_sales": {
+                    "type": "number"
+                },
+                "dev_nums": {
+                    "type": "integer"
+                },
+                "monthly_sales": {
+                    "type": "number"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "offline_dev_nums": {
+                    "type": "integer"
+                },
+                "online_dev_nums": {
+                    "type": "integer"
+                },
+                "productRankList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.FactoryOrderInfo"
+                    }
+                },
+                "sales": {
+                    "description": "营销额七日增长曲线",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "total_sales": {
+                    "type": "number"
+                },
+                "weekly_sales": {
+                    "type": "number"
                 }
             }
         }

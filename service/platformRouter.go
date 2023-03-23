@@ -51,21 +51,11 @@ func PlatFormrouter() {
 	var salect platform.SalesController
 	psc := pt.Group("/screen")
 	{
-
-		//可能不需要路由啦，直接加载
-		//psc.GET("/sales",platform.GetSales)
-		//psc.GET("/curve",platform.GetCurve)
-		//psc.GET("/cntdev",platform.GetDevCnt)
-		//psc.GET("/adstatic",platform.AnalyzeAD)
-		//psc.GET("/hotdata",platform.GetSaleRank)
-		//psc.GET("/locate",platform.GetLocation)
 		//TODO:
-		psc.GET("",
-			salect.GetSales, salect.GetCurve,
-			salect.GetDevCnt, salect.AnalyzeAD,
-			salect.GetSaleRank, salect.GetLocation,
-		)
-
+		psc.GET("", salect.GetScreenData)
+		//, salect.GetCurve,
+		//			salect.GetDevCnt, salect.AnalyzeAD,
+		//			salect.GetSaleRank, salect.GetLocation,
 	}
 	//设备管理
 	var devct platform.DevadminController
@@ -77,8 +67,8 @@ func PlatFormrouter() {
 		//设备详情
 		rdv.GET("/infos/:id", devinfoct.LsInfo)
 
-		//TODO:下架
-		rdv.PUT("/shelf", devinfoct.TakeDown)
+		////TODO:下架功能取消
+		//rdv.PUT("/shelf", devinfoct.TakeDown)
 		//TODO:当日营销额(还缺少需要的信息，暂时不合并）
 		rdv.GET("/infos/sale", devinfoct.AnaSales)
 	}
@@ -96,16 +86,14 @@ func PlatFormrouter() {
 
 	}
 	//销售统计
-	var goodsct platform.GoodsController
-	sst := pt.Group("/ana-sales")
-	{
+	//var goodsct platform.GoodsController
+	//sst := pt.Group("/ana-sales")
+	//{
 
-		//TODO:默认显示
-		sst.GET("/static", salect.GetSales)
-		sst.GET("/daily", goodsct.GetDailyRank)
-		sst.GET("/monthly", goodsct.GetMonthlyRank)
-		sst.GET("/annually", goodsct.GetAnnuallyRank)
-	}
+	//TODO:默认显示
+	pt.GET("/static/:mode", salect.GetSales)
+	//sst.GET("/rank/:mode", goodsct.GetRank)
+	//}
 	//广告管理
 	var adct platform.ADController
 	ads := pt.Group("/ads")

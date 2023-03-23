@@ -1,6 +1,7 @@
 package config
 
 import (
+	"buyfree/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -37,7 +38,7 @@ type Config struct {
 
 var Reader *viper.Viper
 
-func Init() {
+func init() {
 	Reader = viper.New()
 	path, _ := os.Getwd()
 	Reader.AddConfigPath(path + "./config")
@@ -52,4 +53,5 @@ func Init() {
 			logrus.Error("found error in config file\n", ok)
 		}
 	}
+	utils.IDWorker.Init(0, 1)
 }

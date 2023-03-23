@@ -1,11 +1,9 @@
 package main
 
 import (
-	"buyfree/config"
 	"buyfree/dal"
 	"buyfree/repo/gen"
 	"buyfree/service"
-	"buyfree/utils"
 	"sync"
 )
 
@@ -36,11 +34,11 @@ var once sync.Once
 //	close(utils.Orderchannel)
 //}
 func main() {
-	config.Init()
-	once.Do(dal.InitPostgresSQL)
+	//config.Init()
+	//once.Do(dal.InitPostgresSQL)
 	gen.SetDefault(dal.DB)
-	once.Do(dal.InitRedis)
-	once.Do(utils.InitIDWorker)
+	//once.Do(dal.InitRedis)
+	//once.Do(utils.InitIDWorker)
 	//defer Exit()
 
 	service.PlatFormrouter()
