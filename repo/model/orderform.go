@@ -22,14 +22,29 @@ type OrderForm struct {
 	State ORDERSTATE `gorm:"type:smallint;comment:订单状态 2-已完成 1-待取货 0-未支付" json:"state"`
 	//支付时存储位置(购物时获取车主位置）
 	Location string `gorm:"comment:支付时存储位置(购物时获取车主位置）" json:"location"`
-
-	//下单时间
+	//下单时间（创建时更新即可）
 	PlaceTime time.Time `gorm:"comment:下单时间" json:"place_time"`
-	//支付时间
+	//支付时间（更改操作先于发送订单请求，支付时更新即可）
 	PayTime time.Time `gorm:"comment:支付时间" json:"pay_time"`
 	//商品信息
 	ProductInfo []*OrderProduct `gorm:"foreignKey:OrderRefer"`
 }
+type OrderFormRequest struct {
+	//订单车主ID
+	UserID 	int64	`json:"user_id"`
+	//订单编码
+	OrderID string `json:"order_id"`
+	//花费
+	Cost int64 `json:"cost"`
+	//订单状态 订单状态 2-已完成 1-待取货 0-未支付
+	State ORDERSTATE `json:"state"`
+	//支付时存储位置(购物时获取车主位置）
+	Location string `json:"location"`
+	//true:订货，false:退货
+	IsReplenishment bool `json:"is_replenishment"`
+	//回复信号
+	ReplySign chan bool
+}0
 
 //需要关联创表
 type PassengerOrderForm struct {

@@ -15,11 +15,11 @@ type DevQueryInfo struct {
 	State        string  `json:"state"`
 }
 type DevProductPartInfo struct {
-	FactoryName  string  `json:"factory_name"`
+	//FactoryName  string  `json:"factory_name"`
 	Sku          string  `json:"sku"`
 	Name         string  `json:"name"`
 	Pic          string  `json:"pic"`
-	Price        float64 `json:"price"`
+	SupplyPrice  float64 `json:"supply_price"`
 	MonthlySales float64 `json:"monthly_sales"`
 	Inventory    int64   `json:"inventory"`
 }

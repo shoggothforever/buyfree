@@ -28,7 +28,7 @@ func ReadPostgresSQLlinfo() {
 	dsn = info[config.Sqldsn]
 }
 
-func InitPostgresSQL() {
+func init() {
 	ReadPostgresSQLlinfo()
 	//fmt.Println(dsn)
 	newLogger := logger.New(

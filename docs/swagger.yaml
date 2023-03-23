@@ -99,6 +99,46 @@ definitions:
       weekly_sales:
         type: number
     type: object
+  model.FactoryProduct:
+    properties:
+      annually_sales:
+        type: number
+      buy_price:
+        description: 销售价
+        type: number
+      daily_sales:
+        type: number
+      factory_id:
+        type: integer
+      factory_name:
+        description: 场站名字
+        type: string
+      id:
+        type: integer
+      inventory:
+        description: 存货
+        type: integer
+      monthly_sales:
+        type: number
+      name:
+        description: 产品名称
+        type: string
+      pic:
+        description: 图片
+        type: string
+      sku:
+        type: string
+      supply_price:
+        description: 批发价
+        type: number
+      total_sales:
+        type: number
+      type:
+        description: 型号
+        type: string
+      weekly_sales:
+        type: number
+    type: object
   response.ADEfficientInfo:
     properties:
       car_id:
@@ -154,7 +194,6 @@ definitions:
       daily_sales:
         type: number
       devID:
-        description: 'TODO: seq 交给前端'
         type: integer
       driver_name:
         type: string
@@ -179,8 +218,6 @@ definitions:
     type: object
   response.DevProductPartInfo:
     properties:
-      factory_name:
-        type: string
       inventory:
         type: integer
       monthly_sales:
@@ -189,10 +226,11 @@ definitions:
         type: string
       pic:
         type: string
-      price:
-        type: number
       sku:
+        description: FactoryName  string  `json:"factory_name"`
         type: string
+      supply_price:
+        type: number
     type: object
   response.DevQueryInfo:
     properties:
@@ -220,24 +258,6 @@ definitions:
           $ref: '#/definitions/response.DevQueryInfo'
         type: array
       msg:
-        type: string
-    type: object
-  response.Factory_OrderInfo:
-    properties:
-      factory_name:
-        type: string
-      inventory:
-        type: integer
-      name:
-        type: string
-      pic:
-        description: State       int     `json:"state"`
-        type: string
-      sales:
-        type: number
-      sku:
-        type: string
-      type:
         type: string
     type: object
   response.FactoryGoodsResponse:
@@ -284,6 +304,25 @@ definitions:
       weekly_sales:
         type: number
     type: object
+  response.FactoryOrderInfo:
+    properties:
+      factory_name:
+        type: string
+      inventory:
+        type: integer
+      name:
+        type: string
+      pic:
+        type: string
+      sales:
+        type: number
+      sku:
+        type: string
+      state:
+        type: boolean
+      type:
+        type: string
+    type: object
   response.LoginResponse:
     properties:
       code:
@@ -301,9 +340,9 @@ definitions:
         type: integer
       msg:
         type: string
-      orderInfostructs:
+      orderInfos:
         items:
-          $ref: '#/definitions/response.Factory_OrderInfo'
+          $ref: '#/definitions/response.FactoryOrderInfo'
         type: array
     type: object
   response.Response:
@@ -312,6 +351,63 @@ definitions:
         type: integer
       msg:
         type: string
+    type: object
+  response.SaleStaticResponse:
+    properties:
+      annually_sales:
+        type: number
+      daily_sales:
+        type: number
+      devicesRank:
+        items:
+          $ref: '#/definitions/model.Device'
+        type: array
+      monthly_sales:
+        type: number
+      productsRank:
+        items:
+          $ref: '#/definitions/model.FactoryProduct'
+        type: array
+      total_sales:
+        type: number
+      weekly_sales:
+        type: number
+    type: object
+  response.ScreenInfoResponse:
+    properties:
+      adlist:
+        items:
+          $ref: '#/definitions/model.Advertisement'
+        type: array
+      annually_sales:
+        type: number
+      code:
+        type: integer
+      daily_sales:
+        type: number
+      dev_nums:
+        type: integer
+      monthly_sales:
+        type: number
+      msg:
+        type: string
+      offline_dev_nums:
+        type: integer
+      online_dev_nums:
+        type: integer
+      productRankList:
+        items:
+          $ref: '#/definitions/response.FactoryOrderInfo'
+        type: array
+      sales:
+        description: 营销额七日增长曲线
+        items:
+          type: number
+        type: array
+      total_sales:
+        type: number
+      weekly_sales:
+        type: number
     type: object
 externalDocs:
   description: OpenAPI
@@ -577,6 +673,52 @@ paths:
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 平台用户注册
+      tags:
+      - Platform
+  /pt/screen:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 在数据大屏上展示管理场站的销售数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ScreenInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 展示销售数据
+      tags:
+      - Platform
+  /pt/static/{mode}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 展示管理场站的销售数据，获取详细的销售排行信息
+      parameters:
+      - description: mode=0 今日排行，mode=1 本月排行 ,mode=2 年度排行
+        in: path
+        name: mode
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SaleStaticResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 销售数据统计
       tags:
       - Platform
 securityDefinitions:

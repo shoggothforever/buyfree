@@ -12,48 +12,34 @@ type SnowFlakeIdWorker struct {
 
 	// 开始时间戳
 	twepoch int64
-
 	// 机器ID所占的位数
 	workerIdBits int64
-
 	// 数据标识ID所占的位数
 	dataCenterIdBits int64
-
 	// 支持的最大机器ID
 	maxWorkerId int64
-
 	// 支持的最大机房 ID
 	maxDataCenterId int64
-
 	// 序列在ID中占的位数
 	sequenceBits int64
-
 	// 机器ID向左移位数
 	workerIdShift int64
-
 	// 机房ID向左移位数
 	dataCenterIdShift int64
-
 	// 时间截向左移位数
 	timestampLeftShift int64
-
 	// 生成序列的掩码最大值
 	sequenceMask int64
-
 	// 工作机器ID
 	workerId int64
-
 	// 机房ID
 	dataCenterId int64
-
 	/**
 	 * 毫秒内序列
 	 */
 	sequence int64
-
 	// 上次生成ID的时间戳
 	lastTimestamp int64
-
 	// 锁
 	lock sync.Mutex
 }
@@ -79,14 +65,12 @@ func (p *SnowFlakeIdWorker) Init(dataCenterId int64, workerId int64) {
 	p.timestampLeftShift = p.sequenceBits + p.workerIdBits + p.dataCenterIdBits
 	// 生成序列的掩码最大值，最大为4095
 	p.sequenceMask = -1 ^ (-1 << p.sequenceBits)
-
 	if workerId > p.maxWorkerId || workerId < 0 {
 		//panic(errors.New(fmt.Sprintf("Worker ID can't be greater than %d or less than 0", p.maxWorkerId)))
 	}
 	if dataCenterId > p.maxDataCenterId || dataCenterId < 0 {
 		//panic(errors.New(fmt.Sprintf("DataCenter ID can't be greater than %d or less than 0", p.maxDataCenterId)))
 	}
-
 	p.workerId = workerId
 	p.dataCenterId = dataCenterId
 	// 毫秒内序列(0~4095)
@@ -140,9 +124,10 @@ func (p *SnowFlakeIdWorker) tilNextMillis(lastTimestamp int64) int64 {
 func (p *SnowFlakeIdWorker) timeGen() int64 {
 	return time.Now().UnixNano() / 1e6
 }
-func InitIDWorker() {
-	IDWorker.Init(0, 1)
-}
+
+//func init() {
+//
+//}
 
 func GetSnowFlake() int64 {
 	//IDWorker = SnowFlakeIdWorker{}
