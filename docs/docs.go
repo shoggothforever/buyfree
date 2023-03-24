@@ -133,7 +133,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/ads/list": {
+        "/pt/ads/list/{page}": {
             "get": {
                 "consumes": [
                     "application/json",
@@ -146,6 +146,15 @@ const docTemplate = `{
                     "Platform/Advertisement"
                 ],
                 "summary": "获取所有广告信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "跳转到的页数，起始为第一页",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -571,7 +580,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "mode=0 今日排行，mode=1 本月排行 ,mode=2 年度排行",
+                        "description": "根据模式获取平台商品的排行信息，mode=0 今日排行，mode=1 本周排行 ,mode=2 本月排行,mode=3 本年排行,mode=4 总排行",
                         "name": "mode",
                         "in": "path",
                         "required": true
@@ -741,63 +750,11 @@ const docTemplate = `{
                 }
             }
         },
-        "model.FactoryProduct": {
+        "model.ProductRank": {
             "type": "object",
             "properties": {
-                "annually_sales": {
-                    "type": "number"
-                },
-                "buy_price": {
-                    "description": "销售价",
-                    "type": "number"
-                },
-                "daily_sales": {
-                    "type": "number"
-                },
-                "factory_id": {
-                    "type": "integer"
-                },
-                "factory_name": {
-                    "description": "场站名字",
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "inventory": {
-                    "description": "存货",
-                    "type": "integer"
-                },
-                "is_on_shelf": {
-                    "description": "上架状态",
-                    "type": "boolean"
-                },
-                "monthly_sales": {
-                    "type": "number"
-                },
-                "name": {
-                    "description": "产品名称",
-                    "type": "string"
-                },
-                "pic": {
-                    "description": "图片",
-                    "type": "string"
-                },
-                "sku": {
-                    "type": "string"
-                },
-                "supply_price": {
-                    "description": "批发价",
-                    "type": "number"
-                },
-                "total_sales": {
-                    "type": "number"
-                },
-                "type": {
-                    "description": "型号",
-                    "type": "string"
-                },
-                "weekly_sales": {
+                "member": {},
+                "score": {
                     "type": "number"
                 }
             }
@@ -1164,22 +1121,22 @@ const docTemplate = `{
                 "annually_sales": {
                     "type": "number"
                 },
+                "code": {
+                    "type": "integer"
+                },
                 "daily_sales": {
                     "type": "number"
-                },
-                "devicesRank": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Device"
-                    }
                 },
                 "monthly_sales": {
                     "type": "number"
                 },
+                "msg": {
+                    "type": "string"
+                },
                 "productsRank": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.FactoryProduct"
+                        "$ref": "#/definitions/model.ProductRank"
                     }
                 },
                 "total_sales": {
@@ -1226,14 +1183,14 @@ const docTemplate = `{
                 "productRankList": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/response.FactoryProductsInfo"
+                        "$ref": "#/definitions/model.ProductRank"
                     }
                 },
                 "sales": {
                     "description": "营销额七日增长曲线",
                     "type": "array",
                     "items": {
-                        "type": "number"
+                        "type": "integer"
                     }
                 },
                 "total_sales": {

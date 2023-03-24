@@ -99,47 +99,10 @@ definitions:
       weekly_sales:
         type: number
     type: object
-  model.FactoryProduct:
+  model.ProductRank:
     properties:
-      annually_sales:
-        type: number
-      buy_price:
-        description: 销售价
-        type: number
-      daily_sales:
-        type: number
-      factory_id:
-        type: integer
-      factory_name:
-        description: 场站名字
-        type: string
-      id:
-        type: integer
-      inventory:
-        description: 存货
-        type: integer
-      is_on_shelf:
-        description: 上架状态
-        type: boolean
-      monthly_sales:
-        type: number
-      name:
-        description: 产品名称
-        type: string
-      pic:
-        description: 图片
-        type: string
-      sku:
-        type: string
-      supply_price:
-        description: 批发价
-        type: number
-      total_sales:
-        type: number
-      type:
-        description: 型号
-        type: string
-      weekly_sales:
+      member: {}
+      score:
         type: number
     type: object
   response.ADEfficientInfo:
@@ -386,17 +349,17 @@ definitions:
     properties:
       annually_sales:
         type: number
+      code:
+        type: integer
       daily_sales:
         type: number
-      devicesRank:
-        items:
-          $ref: '#/definitions/model.Device'
-        type: array
       monthly_sales:
         type: number
+      msg:
+        type: string
       productsRank:
         items:
-          $ref: '#/definitions/model.FactoryProduct'
+          $ref: '#/definitions/model.ProductRank'
         type: array
       total_sales:
         type: number
@@ -427,12 +390,12 @@ definitions:
         type: integer
       productRankList:
         items:
-          $ref: '#/definitions/response.FactoryProductsInfo'
+          $ref: '#/definitions/model.ProductRank'
         type: array
       sales:
         description: 营销额七日增长曲线
         items:
-          type: number
+          type: integer
         type: array
       total_sales:
         type: number
@@ -528,11 +491,17 @@ paths:
       summary: 获取单个广告信息
       tags:
       - Platform/Advertisement
-  /pt/ads/list:
+  /pt/ads/list/{page}:
     get:
       consumes:
       - application/json
       - multipart/form-data
+      parameters:
+      - description: 跳转到的页数，起始为第一页
+        in: path
+        name: page
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -815,7 +784,8 @@ paths:
       - multipart/form-data
       description: 展示管理场站的销售数据，获取详细的销售排行信息
       parameters:
-      - description: mode=0 今日排行，mode=1 本月排行 ,mode=2 年度排行
+      - description: 根据模式获取平台商品的排行信息，mode=0 今日排行，mode=1 本周排行 ,mode=2 本月排行,mode=3 本年排行,mode=4
+          总排行
         in: path
         name: mode
         required: true

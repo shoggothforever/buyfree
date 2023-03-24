@@ -22,15 +22,15 @@ func TestLua(t *testing.T) {
 	//t.Log(utils.ModifySales(ctx, rdb, "dsm", "2333"))
 	//t.Log(utils.GetAllProductRankKeys("dsm"))
 	{
-		utils.ModifyProductRanks(ctx, rdb, "dsm", "sku", 123)
-		utils.ModifyProductRanks(ctx, rdb, "dsm", "sku1", 12)
-		utils.ModifyProductRanks(ctx, rdb, "dsm", "sku2", 123)
-		utils.ModifyProductRanks(ctx, rdb, "dsm", "sku3", 1234)
-		utils.ModifyProductRanks(ctx, rdb, "dsm", "sku4", 12345)
+		//utils.ModifyProductRanks(ctx, rdb, "dsm", "sku", 123)
+		//utils.ModifyProductRanks(ctx, rdb, "dsm", "sku1", 12)
+		//utils.ModifyProductRanks(ctx, rdb, "dsm", "sku2", 123)
+		//utils.ModifyProductRanks(ctx, rdb, "dsm", "sku3", 1234)
+		//utils.ModifyProductRanks(ctx, rdb, "dsm", "sku4", 12345)
 	}
-	t.Log(utils.GetRankList(ctx, rdb, "dsm", 0))
+	//t.Log(utils.GetRankList(ctx, rdb, "dsm", 0))
 	//t.Log(utils.SalesOf7Days(ctx, rdb, "dsm"))
-	//t.Log(utils.GetSalesInfo(ctx, rdb, "dsm"))
+	t.Log(utils.GetSalesInfo(ctx, rdb, "dsm"))
 	t.Log("测试通过")
 
 }

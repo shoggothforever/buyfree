@@ -2,9 +2,9 @@ package platform
 
 import (
 	"buyfree/dal"
-	"buyfree/repo/gen"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"buyfree/utils"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -36,7 +36,7 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 	var err error
 	dev := model.Device{}
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
-	dev, err = gen.Device.GetByID(id)
+	dal.Getdb().Model(&model.Device{}).Where("id=?", id).First(&dev)
 	if err != nil {
 		c.JSON(200, response.Response{
 			400,
@@ -44,7 +44,8 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		})
 		return
 	}
-	driver, err := gen.Driver.GetByID(dev.OwnerID)
+	var driver model.Driver
+	dal.Getdb().Model(&model.Driver{}).Where("id=?", dev.OwnerID).First(&driver)
 	if err != nil {
 		c.JSON(200, response.Response{
 			400,
@@ -62,14 +63,26 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		})
 		return
 	}
-
+	iadmin, ok := c.Get("admin")
+	name := iadmin.(model.Platform).Name
+	if ok != true {
+		d.Error(c, 400, "获取用户信息失败")
+	}
+	rdb := dal.Getrdb()
+	info := utils.GetSalesInfo(c, rdb, name)
+	var salesinfo model.SalesData
+	salesinfo.DailySales = info[0]
+	salesinfo.WeeklySales = info[1]
+	salesinfo.MonthlySales = info[2]
+	salesinfo.AnnuallySales = info[3]
+	salesinfo.TotalSales = info[4]
 	if err == nil {
 		c.JSON(200, response.DevInfoResponse{
 			response.Response{
 				200,
-				"获取数据大屏信息成功"},
+				"获取设备详细信息成功"},
 			//TODO:添加数据分析的响应信息
-			model.SalesData{0, 0, 0, 0, 0},
+			salesinfo,
 			response.DevInfo{
 				dev.ID,
 				dev.ActivatedTime,

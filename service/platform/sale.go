@@ -24,7 +24,31 @@ type SalesController struct {
 // @Router /pt/screen [get]
 func (s *SalesController) GetScreenData(c *gin.Context) {
 	var si response.ScreenInfo
-	dal.Getdb().Raw("select count(*) from advertisements").First(&si.DevNums)
+	dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums)
+	dal.Getdb().Raw("select count(*) from devices where is_online = ?", true).First(&si.OnlineDevNums)
+	dal.Getdb().Raw("select * from advertisements order by profit desc limit 10", true).Find(&si.OnlineDevNums)
+	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
+	rdb := dal.Getrdb()
+	iadmin, ok := c.Get("admin")
+	if ok != true {
+		s.Error(c, 400, "获取用户信息失败")
+	}
+	name := iadmin.(model.Platform).Name
+	curve := utils.SalesOf7Days(c, rdb, name)
+
+	info := utils.GetSalesInfo(c, rdb, name)
+	var salesinfo model.SalesData
+	salesinfo.DailySales = info[0]
+	salesinfo.WeeklySales = info[1]
+	salesinfo.MonthlySales = info[2]
+	salesinfo.AnnuallySales = info[3]
+	salesinfo.TotalSales = info[4]
+	ranklist, err := utils.GetRankList(c, rdb, name, 1)
+	if err != nil {
+		s.Error(c, 400, "获取排名信息失败")
+	}
+	si.SalesCurve = curve
+	si.ProductRankList = ranklist
 	c.JSON(200, response.ScreenInfoResponse{
 		response.Response{200, "获取统计数据成功"},
 		si})
@@ -37,7 +61,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 // @Accept json
 // @Accept mpfd
 // @Produce json
-// @Param mode path int true "mode=0 今日排行，mode=1 本周排行 ,mode=2 本月排行,mode=3 本年排行,mode=4 总排行"
+// @Param mode path int true "根据模式获取平台商品的排行信息，mode=0 今日排行，mode=1 本周排行 ,mode=2 本月排行,mode=3 本年排行,mode=4 总排行"
 // @Success 200 {object} response.SaleStaticResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/static/{mode} [get]
@@ -51,11 +75,11 @@ func (s *SalesController) GetSales(c *gin.Context) {
 	rdb := dal.Getrdb()
 	info := utils.GetSalesInfo(c, rdb, name)
 	var salesinfo model.SalesData
-	salesinfo.DailySales = float64(info[0])
-	salesinfo.DailySales = float64(info[1])
-	salesinfo.DailySales = float64(info[2])
-	salesinfo.DailySales = float64(info[3])
-	salesinfo.DailySales = float64(info[4])
+	salesinfo.DailySales = info[0]
+	salesinfo.WeeklySales = info[1]
+	salesinfo.MonthlySales = info[2]
+	salesinfo.AnnuallySales = info[3]
+	salesinfo.TotalSales = info[4]
 	ranklist, err := utils.GetRankList(c, rdb, name, int(mode))
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")

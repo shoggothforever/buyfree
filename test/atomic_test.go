@@ -32,6 +32,6 @@ func TestAtomic(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	_r := rect.Load().(*Rectangle)
+	_r := rect.Load().(Rectangle)
 	t.Logf("rect.width=%d\nrect.length=%d\n", _r.width, _r.length)
 }
