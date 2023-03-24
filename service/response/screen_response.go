@@ -9,8 +9,8 @@ type ScreenInfo struct {
 	//营销额七日增长曲线
 	SalesCurve [7]float64 `json:"sales"`
 	model.SalesData
-	ADList          []*model.Advertisement
-	ProductRankList [5]*FactoryOrderInfo
+	ADList          [10]*model.Advertisement
+	ProductRankList [10]*FactoryProductsInfo
 }
 
 type ScreenInfoResponse struct {

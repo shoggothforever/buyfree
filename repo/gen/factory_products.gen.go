@@ -42,6 +42,7 @@ func newFactoryProduct(db *gorm.DB, opts ...gen.DOOption) factoryProduct {
 	_factoryProduct.MonthlySales = field.NewFloat64(tableName, "monthly_sales")
 	_factoryProduct.AnnuallySales = field.NewFloat64(tableName, "annually_sales")
 	_factoryProduct.TotalSales = field.NewFloat64(tableName, "total_sales")
+	_factoryProduct.IsOnShelf = field.NewBool(tableName, "is_on_shelf")
 
 	_factoryProduct.fillFieldMap()
 
@@ -67,6 +68,7 @@ type factoryProduct struct {
 	MonthlySales  field.Float64
 	AnnuallySales field.Float64
 	TotalSales    field.Float64
+	IsOnShelf     field.Bool
 
 	fieldMap map[string]field.Expr
 }
@@ -98,6 +100,7 @@ func (f *factoryProduct) updateTableName(table string) *factoryProduct {
 	f.MonthlySales = field.NewFloat64(table, "monthly_sales")
 	f.AnnuallySales = field.NewFloat64(table, "annually_sales")
 	f.TotalSales = field.NewFloat64(table, "total_sales")
+	f.IsOnShelf = field.NewBool(table, "is_on_shelf")
 
 	f.fillFieldMap()
 
@@ -114,7 +117,7 @@ func (f *factoryProduct) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (f *factoryProduct) fillFieldMap() {
-	f.fieldMap = make(map[string]field.Expr, 15)
+	f.fieldMap = make(map[string]field.Expr, 16)
 	f.fieldMap["factory_name"] = f.FactoryName
 	f.fieldMap["id"] = f.ID
 	f.fieldMap["factory_id"] = f.FactoryID
@@ -130,6 +133,7 @@ func (f *factoryProduct) fillFieldMap() {
 	f.fieldMap["monthly_sales"] = f.MonthlySales
 	f.fieldMap["annually_sales"] = f.AnnuallySales
 	f.fieldMap["total_sales"] = f.TotalSales
+	f.fieldMap["is_on_shelf"] = f.IsOnShelf
 }
 
 func (f factoryProduct) clone(db *gorm.DB) factoryProduct {
@@ -205,7 +209,7 @@ type IFactoryProductDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.FactoryProduct, err error)
-	GetByName(id int64) (result model.FactoryProduct, err error)
+	GetByName(name string) (result model.FactoryProduct, err error)
 	GetAllDeviceProduct(deviceid int64) (result []model.FactoryProduct, err error)
 	DGetAllOrderProductReferCart(cartrefer int64) (result []model.FactoryProduct, err error)
 	PGetAllOrderProductReferCart(cartrefer int64) (result []model.FactoryProduct, err error)
@@ -213,6 +217,7 @@ type IFactoryProductDo interface {
 	GetAllOrderProductReferDOrder(orderrefer string) (result []model.FactoryProduct, err error)
 	GetAllOrderProductReferPOrder(orderrefer string) (result []model.FactoryProduct, err error)
 	GetBySkuAndFName(sku string, fname string) (result model.FactoryProduct, err error)
+	GetByFName(fname string) (result []model.FactoryProduct, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -230,12 +235,12 @@ func (f factoryProductDo) GetByID(id int64) (result model.FactoryProduct, err er
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (f factoryProductDo) GetByName(id int64) (result model.FactoryProduct, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (f factoryProductDo) GetByName(name string) (result model.FactoryProduct, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM factory_products WHERE name=? ")
 
 	var executeSQL *gorm.DB
@@ -346,6 +351,21 @@ func (f factoryProductDo) GetBySkuAndFName(sku string, fname string) (result mod
 
 	var executeSQL *gorm.DB
 	executeSQL = f.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where factory_name=@fname)
+func (f factoryProductDo) GetByFName(fname string) (result []model.FactoryProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, fname)
+	generateSQL.WriteString("SELECT * FROM factory_products where factory_name=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = f.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

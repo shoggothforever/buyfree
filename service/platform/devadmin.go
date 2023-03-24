@@ -24,10 +24,9 @@ func GetOnlineState(state bool) string {
 }
 
 //TODO:swagger
-
 // @Summary 获取设备信息
 // @Description 传入字段名:mode;mode=0:获取全部设备信息,mode=1，2,3,4分别对应获取在线，离线,激活，未激活的设备信息
-// @Tags Device
+// @Tags Platform/Device
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -99,7 +98,7 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 //TODO:swagger
 // @Summary 添加设备信息
 // @Description 按照Device的定义 传入json格式的数据,设备的ID无需传入
-// @Tags	Device
+// @Tags	Platform/Device
 // @Accept json
 // @Accept mpfd
 // @Produce json

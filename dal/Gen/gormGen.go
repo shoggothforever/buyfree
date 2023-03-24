@@ -1,13 +1,9 @@
 package main
 
 import (
-	"buyfree/config"
 	"buyfree/dal"
 	"buyfree/repo/model"
-	"github.com/sirupsen/logrus"
-	"gorm.io/driver/postgres"
 	"gorm.io/gen"
-	"gorm.io/gorm"
 )
 
 var dsn string
@@ -17,8 +13,8 @@ type Query interface {
 	// SELECT * FROM @@table WHERE id=@id
 	GetByID(id int64) (gen.T, error)
 
-	// SELECT * FROM @@table WHERE name=@id
-	GetByName(id int64) (gen.T, error)
+	// SELECT * FROM @@table WHERE name=@name
+	GetByName(name string) (gen.T, error)
 }
 type LoginQuery interface {
 	// SELECT * FROM @@table WHERE user_id=@uid and password=@psw
@@ -47,6 +43,9 @@ type ProductQuery interface {
 	GetAllOrderProductReferPOrder(orderrefer string) ([]gen.T, error)
 	//sql(SELECT * FROM @@table where sku=@sku and factory_name=@fname)
 	GetBySkuAndFName(sku, fname string) (gen.T, error)
+
+	//sql(SELECT * FROM @@table where factory_name=@fname)
+	GetByFName(fname string) ([]gen.T, error)
 }
 
 type DeviceQuery interface {
@@ -91,25 +90,25 @@ type AdvertisementQuery interface {
 }
 
 func main() {
-	var err error
-	config.Init()
-	dal.ReadPostgresSQLlinfo()
-	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		CreateBatchSize:        1000,
-		PrepareStmt:            true,
-		SkipDefaultTransaction: true,
-	})
-	if err != nil {
-		logrus.WithFields(logrus.Fields{"error": err}).Error("Open PostgresSQL failed")
-	} else {
-		logrus.Info("Open postgresSQL successfully")
-	}
+	//var err error
+	//config.Init()
+	//dal.ReadPostgresSQLlinfo()
+	//DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	//	CreateBatchSize:        1000,
+	//	PrepareStmt:            true,
+	//	SkipDefaultTransaction: true,
+	//})
+	//if err != nil {
+	//	logrus.WithFields(logrus.Fields{"error": err}).Error("Open PostgresSQL failed")
+	//} else {
+	//	logrus.Info("Open postgresSQL successfully")
+	//}
 	//TODO:use gen to simplify CRUD
 	g := gen.NewGenerator(gen.Config{
 		OutPath: "D:\\desktop\\pr\\buyfree\\repo/gen",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
-	g.UseDB(DB)
+	g.UseDB(dal.Getdb())
 	//g.ApplyBasic(&model.User{})
 	g.ApplyInterface(func(Query) {}, &model.Passenger{},
 		&model.Driver{}, &model.Factory{},

@@ -30,7 +30,6 @@ func ReadPostgresSQLlinfo() {
 
 func init() {
 	ReadPostgresSQLlinfo()
-	//fmt.Println(dsn)
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
 		logger.Config{
@@ -41,7 +40,6 @@ func init() {
 		},
 	)
 	var err error
-	//DB, err = gorm.Open("postgres", dsn)
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		CreateBatchSize:        1000,
 		PrepareStmt:            true,
@@ -53,7 +51,7 @@ func init() {
 	} else {
 		logrus.Info("Open postgresSQL successfully")
 	}
-	//Create PassengerEnd TABLES
+	//Create TABLES
 	{
 		DB.AutoMigrate(
 			&model.BankCardInfo{},

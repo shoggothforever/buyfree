@@ -205,7 +205,7 @@ type IDeviceProductDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.DeviceProduct, err error)
-	GetByName(id int64) (result model.DeviceProduct, err error)
+	GetByName(name string) (result model.DeviceProduct, err error)
 	GetAllDeviceProduct(deviceid int64) (result []model.DeviceProduct, err error)
 	DGetAllOrderProductReferCart(cartrefer int64) (result []model.DeviceProduct, err error)
 	PGetAllOrderProductReferCart(cartrefer int64) (result []model.DeviceProduct, err error)
@@ -213,6 +213,7 @@ type IDeviceProductDo interface {
 	GetAllOrderProductReferDOrder(orderrefer string) (result []model.DeviceProduct, err error)
 	GetAllOrderProductReferPOrder(orderrefer string) (result []model.DeviceProduct, err error)
 	GetBySkuAndFName(sku string, fname string) (result model.DeviceProduct, err error)
+	GetByFName(fname string) (result []model.DeviceProduct, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -230,12 +231,12 @@ func (d deviceProductDo) GetByID(id int64) (result model.DeviceProduct, err erro
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (d deviceProductDo) GetByName(id int64) (result model.DeviceProduct, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (d deviceProductDo) GetByName(name string) (result model.DeviceProduct, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM device_products WHERE name=? ")
 
 	var executeSQL *gorm.DB
@@ -346,6 +347,21 @@ func (d deviceProductDo) GetBySkuAndFName(sku string, fname string) (result mode
 
 	var executeSQL *gorm.DB
 	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where factory_name=@fname)
+func (d deviceProductDo) GetByFName(fname string) (result []model.DeviceProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, fname)
+	generateSQL.WriteString("SELECT * FROM device_products where factory_name=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

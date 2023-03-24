@@ -476,7 +476,7 @@ type IDriverDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Driver, err error)
-	GetByName(id int64) (result model.Driver, err error)
+	GetByName(name string) (result model.Driver, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -494,12 +494,12 @@ func (d driverDo) GetByID(id int64) (result model.Driver, err error) {
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (d driverDo) GetByName(id int64) (result model.Driver, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (d driverDo) GetByName(name string) (result model.Driver, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM drivers WHERE name=? ")
 
 	var executeSQL *gorm.DB

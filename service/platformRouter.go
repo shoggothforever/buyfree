@@ -22,7 +22,6 @@ func PlatFormrouter() {
 	r := gin.Default()
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
-	//r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	srv := http.Server{
 		Addr:    ":9003",
 		Handler: r,
@@ -48,14 +47,12 @@ func PlatFormrouter() {
 	//pt.Use(middleware.AuthJwt())
 
 	//数据大屏
+	var gdc platform.GoodsController
 	var salect platform.SalesController
 	psc := pt.Group("/screen")
 	{
 		//TODO:
 		psc.GET("", salect.GetScreenData)
-		//, salect.GetCurve,
-		//			salect.GetDevCnt, salect.AnalyzeAD,
-		//			salect.GetSaleRank, salect.GetLocation,
 	}
 	//设备管理
 	var devct platform.DevadminController
@@ -69,31 +66,24 @@ func PlatFormrouter() {
 
 		////TODO:下架功能取消
 		//rdv.PUT("/shelf", devinfoct.TakeDown)
-		//TODO:当日营销额(还缺少需要的信息，暂时不合并）
-		rdv.GET("/infos/sale", devinfoct.AnaSales)
 	}
 
 	//商品管理
-	var orderct platform.OrderController
-	ord := pt.Group("/orders")
+	//var orderct platform.OrderController
+	ord := pt.Group("/products")
 	{
 
 		//默认展示全部
-		ord.GET("/factory/:mode", orderct.GetFactoryOrders)
-		ord.GET("/infos/:sku", orderct.GetGoodinfo)
-		//TODO:上下架操作整合
-		ord.GET("/shelf/:mode", orderct.ModifyGoods)
+		ord.GET("/factory/:mode/:factory_name/", gdc.GetAllProducts)
+		ord.GET("/infos/:sku", gdc.GetGoodsInfo)
 
+		//TODO:上下架操作整合
+		ord.PUT("/on/:id", gdc.OnShelfGoods)
+		ord.PUT("/down/:id", gdc.DownShelfGoods)
 	}
 	//销售统计
-	//var goodsct platform.GoodsController
-	//sst := pt.Group("/ana-sales")
-	//{
-
 	//TODO:默认显示
 	pt.GET("/static/:mode", salect.GetSales)
-	//sst.GET("/rank/:mode", goodsct.GetRank)
-	//}
 	//广告管理
 	var adct platform.ADController
 	ads := pt.Group("/ads")

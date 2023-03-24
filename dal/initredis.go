@@ -8,11 +8,11 @@ import (
 )
 
 var Ctx = context.Background()
-var Redisclient *redis.Client
+var RDB *redis.Client
 var addr, password string
 
 func Getrd() *redis.Client {
-	return Redisclient
+	return RDB
 }
 func readRedisInfo() {
 	info := config.Reader.GetStringMapString("redis")
@@ -21,21 +21,21 @@ func readRedisInfo() {
 }
 func CloseDB() {
 	//DB.Close()
-	Redisclient.Close()
+	RDB.Close()
 }
-func InitRedis() {
+func init() {
 	readRedisInfo()
-	Redisclient = redis.NewClient(&redis.Options{
+	RDB = redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       10,
 	})
-	pong, err := Redisclient.Ping(Ctx).Result()
+	_, err := RDB.Ping(Ctx).Result()
 	if err != nil {
 		logrus.Info(err)
 
 	} else {
-		logrus.Info(pong, "成功连接redis")
+		logrus.Info("成功连接redis")
 	}
 
 }

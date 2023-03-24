@@ -357,7 +357,7 @@ type IFactoryDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Factory, err error)
-	GetByName(id int64) (result model.Factory, err error)
+	GetByName(name string) (result model.Factory, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -375,12 +375,12 @@ func (f factoryDo) GetByID(id int64) (result model.Factory, err error) {
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (f factoryDo) GetByName(id int64) (result model.Factory, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (f factoryDo) GetByName(name string) (result model.Factory, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM factories WHERE name=? ")
 
 	var executeSQL *gorm.DB
