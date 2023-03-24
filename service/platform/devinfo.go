@@ -52,8 +52,6 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		})
 		return
 	}
-	//products, err := gen.DeviceProduct.GetAllDeviceProduct(dev.ID)
-
 	var prinfos []response.DevProductPartInfo
 	dal.Getdb().Raw("SELECT * FROM device_products where device_id="+
 		"(SELECT id from devices where id=?)", dev.ID).Find(&prinfos)
@@ -64,25 +62,15 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		})
 		return
 	}
-	//n := len(products)
-	//prinfos := make([]response.DevProductPartInfo, n, n)
-	//for i := 0; i < n; i++ {
-	//	prinfos[i].Sku = products[i].Sku
-	//	prinfos[i].Name = products[i].Name
-	//	prinfos[i].Pic = products[i].Pic
-	//	prinfos[i].SupplyPrice = products[i].SupplyPrice
-	//	prinfos[i].MonthlySales = products[i].MonthlySales
-	//	prinfos[i].Inventory = products[i].Inventory
-	//}
+
 	if err == nil {
 		c.JSON(200, response.DevInfoResponse{
 			response.Response{
 				200,
-				"ok"},
+				"获取数据大屏信息成功"},
 			//TODO:添加数据分析的响应信息
-			model.SalesData{
-				0, 0, 0, 0, 0,
-			}, response.DevInfo{
+			model.SalesData{0, 0, 0, 0, 0},
+			response.DevInfo{
 				dev.ID,
 				dev.ActivatedTime,
 				dev.UpdatedTime,

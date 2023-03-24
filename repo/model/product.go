@@ -61,6 +61,11 @@ func (o *OrderProduct) GetChooseAmount() float64 {
 	return price
 }
 
+type ProductRank struct {
+	Score  float64
+	Member interface{}
+}
+
 //func newProduct(name string, in int64) *Product {
 //	return &Product{
 //		name,

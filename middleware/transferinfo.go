@@ -1,6 +1,11 @@
 package middleware
 
-//
-//func TransferOrderInfo() gin.HandlerFunc {
-//model.OrderForm
-//}
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func TransferOrderInfo() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+	}
+}

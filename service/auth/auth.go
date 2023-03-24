@@ -62,6 +62,7 @@ func Login(c *gin.Context) {
 	psw := utils.Messagedigest5(password, pt.PasswordSalt)
 	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", pt.ID, psw).First(&l)
 	if len(l) != 0 {
+		c.Set("name", pt.Name)
 		c.JSON(200, response.LoginResponse{
 			response.Response{
 				200,
@@ -78,4 +79,6 @@ func Login(c *gin.Context) {
 			"",
 		})
 	}
+	c.Set("name", pt.Name)
+	c.Next()
 }

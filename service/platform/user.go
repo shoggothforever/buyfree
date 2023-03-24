@@ -32,6 +32,6 @@ func SavePtLoginInfo(ptadmin model.Platform) (model.LoginInfo, error) {
 		return model.LoginInfo{}, err
 	}
 	c := context.TODO()
-	dal.Getrd().Set(c, loginInfo.Jwt, 1, utils.EXPIRE)
+	dal.Getrdb().Set(c, loginInfo.Jwt, 1, utils.EXPIRE)
 	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
 }

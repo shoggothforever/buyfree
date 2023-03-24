@@ -13,7 +13,7 @@ func TestDatefunc(t *testing.T) {
 	//t.Log(utils.GetTimeKeyByMode("dsm", 3))
 	//t.Log(utils.GetTimeKeyByMode("dsm", 4))
 	//t.Log(utils.GetTimeKeyByMode("dsm", 5))
-	t.Error(utils.GetAllKeys("dsm"))
+	t.Error(utils.GetAllTimeKeys("dsm"))
 	//if y != 2023 || m != int(time.Now().Month()) || d != 20 {
 	//	t.Error("函数实现出错1", y, m, d)
 	//}

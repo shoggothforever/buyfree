@@ -19,7 +19,7 @@ type ScreenInfoResponse struct {
 }
 
 type SaleStaticResponse struct {
+	Response
 	model.SalesData
-	ProductsRank [5]model.FactoryProduct
-	DevicesRank  [5]model.Device
+	ProductsRank [10]model.ProductRank
 }
