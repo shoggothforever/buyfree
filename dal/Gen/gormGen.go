@@ -8,7 +8,7 @@ import (
 
 var dsn string
 
-//需要注意如果传递的参数不止一个且其中包含了uuid，那么需要将uuid编程string
+//需要注意如果传递的参数不止一个且其中包含了uuid，那么需要将uuid变成string
 type Query interface {
 	// SELECT * FROM @@table WHERE id=@id
 	GetByID(id int64) (gen.T, error)

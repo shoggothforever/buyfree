@@ -1,8 +1,8 @@
 package test
 
 import (
+	"buyfree/config"
 	"buyfree/repo/gen"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -47,10 +47,10 @@ func TestGen(t *testing.T) {
 	//dofa, _ := gen.DriverOrderForm.FGetByStateOrderForms(123, 1)
 	//fmt.Println(dofa)
 	/*测试 获取投放了广告@id的所有设备(ok)*/
-	devices, _ := gen.Device.GetDeviceByAdvertiseID(1)
-	fmt.Println(devices)
-	/*获取设备@id投放的所有广告(ok)*/
-	ads, _ := gen.Advertisement.GetAdvertisementByDeviceID(1)
-	fmt.Println(ads)
-
+	//devices, _ := gen.Device.GetDeviceByAdvertiseID(1)
+	//fmt.Println(devices)
+	///*获取设备@id投放的所有广告(ok)*/
+	//ads, _ := gen.Advertisement.GetAdvertisementByDeviceID(1)
+	//fmt.Println(ads)
+	t.Log(config.PWD)
 }
