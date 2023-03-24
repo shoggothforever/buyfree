@@ -22,13 +22,14 @@ type ADController struct {
 // @Accept json
 // @Accept mpfd
 // @Produce json
+// @Param page path int true "跳转到的页数，起始为第一页"
 // @Success 200 {object} response.ADResponse
 // @Failure 400 {object} response.Response
-// @Router /pt/ads/list [get]
+// @Router /pt/ads/list/{page} [get]
 func (a *ADController) GetADList(c *gin.Context) {
-
+	page, _ := strconv.ParseInt(c.Param("page"), 10, 64)
 	var ads []model.Advertisement
-	dal.Getdb().Model(model.Advertisement{}).Find(&ads)
+	dal.Getdb().Model(model.Advertisement{}).Limit(20).Offset(int((page - 1) * 20)).Find(&ads)
 
 	c.JSON(200, response.ADResponse{
 		response.Response{
@@ -50,7 +51,7 @@ func (a *ADController) GetADList(c *gin.Context) {
 func (a *ADController) AddAD(c *gin.Context) {
 	var ad model.Advertisement
 	c.Bind(&ad)
-	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
+	err := dal.Getdb().Model(model.Advertisement{}).Limit(20).Find(&ad).Error
 	if err == nil {
 		ad.ID = utils.IDWorker.NextId()
 		c.JSON(200, response.ADResponse{

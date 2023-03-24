@@ -187,7 +187,7 @@ func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ..
 	res, _ := ret.Result()
 	fmt.Println("列表长度", res)
 }
-func SalesOf7Days(c context.Context, rdb *redis.Client, uname string, val ...string) []int64 {
+func SalesOf7Days(c context.Context, rdb *redis.Client, uname string, val ...string) [7]int64 {
 	script := salesOF7days()
 	sha, _ := script.Load(c, rdb).Result()
 	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname), val)
@@ -196,9 +196,9 @@ func SalesOf7Days(c context.Context, rdb *redis.Client, uname string, val ...str
 	if err == nil {
 		logrus.Info("获取七天销量数据失败")
 	}
-	var sales []int64
-	for _, v := range res.([]interface{}) {
-		sales = append(sales, v.(int64))
+	var sales [7]int64
+	for k, v := range res.([]interface{}) {
+		sales[k] = v.(int64)
 	}
 	return sales
 }
@@ -251,7 +251,7 @@ func ModifyADRanks(c context.Context, rdb *redis.Client, adname, sku string, sal
 }
 
 //获取广告或者商品的排行
-func GetRankList(c context.Context, rdb *redis.Client, queryname string, mode int) ([10]model.ProductRank, error) {
+func GetRankList(c context.Context, rdb *redis.Client, queryname string, mode int) ([]model.ProductRank, error) {
 	if mode < 0 || mode > 5 {
 		mode = 0
 	}
@@ -259,18 +259,18 @@ func GetRankList(c context.Context, rdb *redis.Client, queryname string, mode in
 	res, err := ret.Result()
 	if err != nil {
 		fmt.Println("get ranklist error while getting ranklist", err)
-		return [10]model.ProductRank{}, err
+		return []model.ProductRank{}, err
 	}
 	//fmt.Println(res)
-	var ranklist = [10]model.ProductRank{}
-	for i, v := range res {
-		ranklist[i] = model.ProductRank(v)
+	var ranklist = []model.ProductRank{}
+	for _, v := range res {
+		ranklist = append(ranklist, (model.ProductRank)(v))
 	}
 	return ranklist, nil
 }
 
 //获取销量信息
-func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []int64 {
+func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []float64 {
 	script := getSalesInfo()
 	sha, _ := script.Load(c, rdb).Result()
 	//fmt.Println(sha)
@@ -281,9 +281,9 @@ func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []int64 {
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while getting sales info", err)
 	}
-	var array []int64
+	var array []float64
 	for _, v := range res.([]interface{}) {
-		array = append(array, v.(int64))
+		array = append(array, (float64)(v.(int64)))
 	}
 	return array
 }

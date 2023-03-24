@@ -44,7 +44,7 @@ func PlatFormrouter() {
 
 	}
 	//鉴权
-	//pt.Use(middleware.AuthJwt())
+	pt.Use(middleware.AuthJwt())
 
 	//数据大屏
 	var gdc platform.GoodsController
@@ -89,7 +89,7 @@ func PlatFormrouter() {
 	ads := pt.Group("/ads")
 	{
 		ads.POST("", adct.AddAD)
-		ads.GET("/list", adct.GetADList)
+		ads.GET("/list/:page", adct.GetADList)
 		ads.GET("/infos/:id", adct.GetADContent)
 		ads.GET("/efficient/:id", adct.GetADEfficient)
 
