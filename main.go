@@ -1,8 +1,6 @@
 package main
 
 import (
-	"buyfree/dal"
-	"buyfree/repo/gen"
 	"buyfree/service"
 	"sync"
 )
@@ -36,7 +34,7 @@ var once sync.Once
 func main() {
 	//config.Init()
 	//once.Do(dal.InitPostgresSQL)
-	gen.SetDefault(dal.DB)
+	//gen.SetDefault(dal.DB)
 	//once.Do(dal.InitRedis)
 	//once.Do(utils.InitIDWorker)
 	//defer Exit()

@@ -501,7 +501,7 @@ type IPlatformDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Platform, err error)
-	GetByName(id int64) (result model.Platform, err error)
+	GetByName(name string) (result model.Platform, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -519,12 +519,12 @@ func (p platformDo) GetByID(id int64) (result model.Platform, err error) {
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (p platformDo) GetByName(id int64) (result model.Platform, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (p platformDo) GetByName(name string) (result model.Platform, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM platforms WHERE name=? ")
 
 	var executeSQL *gorm.DB

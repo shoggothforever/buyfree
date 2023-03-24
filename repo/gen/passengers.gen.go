@@ -362,7 +362,7 @@ type IPassengerDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Passenger, err error)
-	GetByName(id int64) (result model.Passenger, err error)
+	GetByName(name string) (result model.Passenger, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -380,12 +380,12 @@ func (p passengerDo) GetByID(id int64) (result model.Passenger, err error) {
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (p passengerDo) GetByName(id int64) (result model.Passenger, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (p passengerDo) GetByName(name string) (result model.Passenger, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM passengers WHERE name=? ")
 
 	var executeSQL *gorm.DB

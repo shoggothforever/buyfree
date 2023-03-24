@@ -1,17 +1,7 @@
 package response
 
-type FactoryOrderInfo struct {
-	FactoryName string  `json:"factory_name"`
-	Sku         string  `json:"sku"`
-	Name        string  `json:"name"`
-	Type        string  `json:"type"`
-	State       bool    `json:"state"`
-	Pic         string  `json:"pic"`
-	Sales       float64 `json:"sales"`
-	Inventory   int64   `json:"inventory"`
-}
-
+//车主端查看订单信息响应
 type OrderResponse struct {
 	Response
-	OrderInfos []FactoryOrderInfo
+	OrderInfos []FactoryProductsInfo
 }

@@ -294,7 +294,7 @@ type IAdvertisementDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Advertisement, err error)
-	GetByName(id int64) (result model.Advertisement, err error)
+	GetByName(name string) (result model.Advertisement, err error)
 	GetAdvertisementByDeviceID(dev_id int64) (result []model.Advertisement, err error)
 	GetAdvertisementProfitAndPlayTimes(ad_id int64, dev_id int64) (result model.Advertisement, err error)
 }
@@ -314,12 +314,12 @@ func (a advertisementDo) GetByID(id int64) (result model.Advertisement, err erro
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (a advertisementDo) GetByName(id int64) (result model.Advertisement, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (a advertisementDo) GetByName(name string) (result model.Advertisement, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM advertisements WHERE name=? ")
 
 	var executeSQL *gorm.DB

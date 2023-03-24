@@ -36,7 +36,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Advertisement"
+                    "Platform/Advertisement"
                 ],
                 "summary": "添加广告信息",
                 "responses": {
@@ -66,7 +66,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Advertisement"
+                    "Platform/Advertisement"
                 ],
                 "summary": "获取单个广告效益",
                 "parameters": [
@@ -105,7 +105,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Advertisement"
+                    "Platform/Advertisement"
                 ],
                 "summary": "获取单个广告信息",
                 "parameters": [
@@ -143,7 +143,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Advertisement"
+                    "Platform/Advertisement"
                 ],
                 "summary": "获取所有广告信息",
                 "responses": {
@@ -173,7 +173,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Device"
+                    "Platform/Device"
                 ],
                 "summary": "添加设备信息",
                 "responses": {
@@ -203,7 +203,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Device"
+                    "Platform/Device"
                 ],
                 "summary": "展示设备详情信息",
                 "parameters": [
@@ -242,7 +242,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Device"
+                    "Platform/Device"
                 ],
                 "summary": "获取设备信息",
                 "parameters": [
@@ -306,7 +306,7 @@ const docTemplate = `{
                 "tags": [
                     "Orderform"
                 ],
-                "summary": "获取场站订单信息(车主在该场站下的订单)",
+                "summary": "获取车主订单信息(车主在该场站下的订单)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -332,7 +332,92 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/orders/infos/{sku}": {
+        "/pt/products/down/{id}": {
+            "put": {
+                "description": "输入商品id,获取场站中对应商品的详细信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "下架场站商品",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "商品ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryGoodsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/products/factory/{mode}/{factory_name}/": {
+            "get": {
+                "description": "传入场站名，获取该场站所有商品信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "获取所有商品",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "根据场站名字获取场站所有商品信息，默认获取所有商品信息",
+                        "name": "factory_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}",
+                        "name": "mode",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryProductsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/products/infos/{sku}": {
             "get": {
                 "description": "输入商品SKU,获取场站中对应商品的详细信息",
                 "consumes": [
@@ -343,7 +428,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orderform"
+                    "Products"
                 ],
                 "summary": "获取商品信息",
                 "parameters": [
@@ -351,6 +436,45 @@ const docTemplate = `{
                         "type": "string",
                         "description": "sku 指向唯一的场站中的商品信息",
                         "name": "sku",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryGoodsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/products/on/{id}": {
+            "put": {
+                "description": "输入商品id,获取场站中对应商品的详细信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "上架场站商品",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "商品ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -644,6 +768,10 @@ const docTemplate = `{
                     "description": "存货",
                     "type": "integer"
                 },
+                "is_on_shelf": {
+                    "description": "上架状态",
+                    "type": "boolean"
+                },
                 "monthly_sales": {
                     "type": "number"
                 },
@@ -678,18 +806,22 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "car_id": {
+                    "description": "车主车牌号",
                     "type": "string"
                 },
                 "device_id": {
                     "type": "integer"
                 },
                 "driver_name": {
+                    "description": "车主姓名",
                     "type": "string"
                 },
                 "played_times": {
+                    "description": "已经播放次数",
                     "type": "integer"
                 },
                 "profit": {
+                    "description": "收益",
                     "type": "number"
                 }
             }
@@ -746,6 +878,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "activated_time": {
+                    "description": "设备激活时间",
                     "type": "string"
                 },
                 "annually_sales": {
@@ -785,6 +918,7 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "updated_time": {
+                    "description": "设备更新时间",
                     "type": "string"
                 },
                 "weekly_sales": {
@@ -805,13 +939,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pic": {
+                    "description": "商品封面图片",
                     "type": "string"
                 },
                 "sku": {
-                    "description": "FactoryName  string  ` + "`" + `json:\"factory_name\"` + "`" + `",
                     "type": "string"
                 },
                 "supply_price": {
+                    "description": "批发价",
                     "type": "number"
                 }
             }
@@ -826,18 +961,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "location": {
+                    "description": "地址信息",
                     "type": "string"
                 },
                 "mobile": {
+                    "description": "车主电话号码",
                     "type": "string"
                 },
                 "sales_of_today": {
+                    "description": "今日营销额",
                     "type": "number"
                 },
                 "seq": {
+                    "description": "顺序编号",
                     "type": "integer"
                 },
                 "state": {
+                    "description": "设备状态信息，state=1，2,3,4分别对应获取在线，离线,激活，未激活",
                     "type": "string"
                 }
             }
@@ -848,7 +988,7 @@ const docTemplate = `{
                 "code": {
                     "type": "integer"
                 },
-                "devResponses": {
+                "devQueryInfos": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.DevQueryInfo"
@@ -889,6 +1029,10 @@ const docTemplate = `{
                     "description": "存货",
                     "type": "integer"
                 },
+                "is_on_shelf": {
+                    "description": "上架状态",
+                    "type": "boolean"
+                },
                 "monthly_sales": {
                     "type": "number"
                 },
@@ -922,7 +1066,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.FactoryOrderInfo": {
+        "response.FactoryProductsInfo": {
             "type": "object",
             "properties": {
                 "factory_name": {
@@ -931,23 +1075,40 @@ const docTemplate = `{
                 "inventory": {
                     "type": "integer"
                 },
+                "is_on_shelf": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
                 "pic": {
                     "type": "string"
                 },
-                "sales": {
-                    "type": "number"
-                },
                 "sku": {
                     "type": "string"
                 },
-                "state": {
-                    "type": "boolean"
+                "total_sales": {
+                    "type": "number"
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "response.FactoryProductsResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.FactoryProductsInfo"
+                    }
                 }
             }
         },
@@ -958,6 +1119,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "jwt": {
+                    "description": "鉴权信息，用于保持用户登录状态",
                     "type": "string"
                 },
                 "msg": {
@@ -980,7 +1142,7 @@ const docTemplate = `{
                 "orderInfos": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/response.FactoryOrderInfo"
+                        "$ref": "#/definitions/response.FactoryProductsInfo"
                     }
                 }
             }
@@ -1064,7 +1226,7 @@ const docTemplate = `{
                 "productRankList": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/response.FactoryOrderInfo"
+                        "$ref": "#/definitions/response.FactoryProductsInfo"
                     }
                 },
                 "sales": {

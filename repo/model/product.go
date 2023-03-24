@@ -27,6 +27,8 @@ type FactoryProduct struct {
 	//场站名字
 	FactoryName string `json:"factory_name"`
 	Product
+	//上架状态
+	IsOnShelf bool `json:"is_on_shelf"`
 }
 
 //购物车，订单中的商品信息

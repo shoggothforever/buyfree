@@ -169,7 +169,7 @@ type IBankCardInfoDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.BankCardInfo, err error)
-	GetByName(id int64) (result model.BankCardInfo, err error)
+	GetByName(name string) (result model.BankCardInfo, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
@@ -187,12 +187,12 @@ func (b bankCardInfoDo) GetByID(id int64) (result model.BankCardInfo, err error)
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (b bankCardInfoDo) GetByName(id int64) (result model.BankCardInfo, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (b bankCardInfoDo) GetByName(name string) (result model.BankCardInfo, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM bank_card_infos WHERE name=? ")
 
 	var executeSQL *gorm.DB

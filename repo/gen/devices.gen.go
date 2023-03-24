@@ -355,7 +355,7 @@ type IDeviceDo interface {
 	schema.Tabler
 
 	GetByID(id int64) (result model.Device, err error)
-	GetByName(id int64) (result model.Device, err error)
+	GetByName(name string) (result model.Device, err error)
 	GetAllDriverDevice(id int64) (result model.Device, err error)
 	GetAllPlatformDevice(id int64) (result model.Device, err error)
 	GetByOnlinePlatformDevice(id int64, mode bool) (result model.Device, err error)
@@ -378,12 +378,12 @@ func (d deviceDo) GetByID(id int64) (result model.Device, err error) {
 	return
 }
 
-// SELECT * FROM @@table WHERE name=@id
-func (d deviceDo) GetByName(id int64) (result model.Device, err error) {
+// SELECT * FROM @@table WHERE name=@name
+func (d deviceDo) GetByName(name string) (result model.Device, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, id)
+	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM devices WHERE name=? ")
 
 	var executeSQL *gorm.DB

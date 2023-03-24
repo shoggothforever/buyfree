@@ -191,6 +191,7 @@ type IOrderProductDo interface {
 	GetAllOrderProductReferDOrder(orderrefer string) (result []model.OrderProduct, err error)
 	GetAllOrderProductReferPOrder(orderrefer string) (result []model.OrderProduct, err error)
 	GetBySkuAndFName(sku string, fname string) (result model.OrderProduct, err error)
+	GetByFName(fname string) (result []model.OrderProduct, err error)
 }
 
 // sql(SELECT * FROM @@table where device_id=(SELECT id from devices where id=@deviceid))
@@ -294,6 +295,21 @@ func (o orderProductDo) GetBySkuAndFName(sku string, fname string) (result model
 
 	var executeSQL *gorm.DB
 	executeSQL = o.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// sql(SELECT * FROM @@table where factory_name=@fname)
+func (o orderProductDo) GetByFName(fname string) (result []model.OrderProduct, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, fname)
+	generateSQL.WriteString("SELECT * FROM order_products where factory_name=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = o.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
