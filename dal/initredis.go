@@ -11,7 +11,7 @@ var Ctx = context.Background()
 var RDB *redis.Client
 var addr, password string
 
-func Getrd() *redis.Client {
+func Getrdb() *redis.Client {
 	return RDB
 }
 func readRedisInfo() {

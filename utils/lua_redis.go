@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"buyfree/repo/model"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -17,6 +19,16 @@ const MonthSalesKey string = "Sales:Monthly"        //+month
 const AnnuallySalesKey string = "Sales:Annually"    //+year
 const TOTALSalesKey string = "Sales:Totally"
 const ExLock time.Duration = 30
+
+const DailyRanksKey string = "Ranks:Daily"       //val:product
+const WeeklyRanksKey string = "Ranks:Weekly"     //不要求连续 val:
+const MonthRanksKey string = "Ranks:Monthly"     //+month
+const AnnuallyRanksKey string = "Ranks:Annually" //+year
+const TOTALRanksKey string = "Ranks:Totally"
+
+func GetProductKey(sku int64) []string {
+	return []string{}
+}
 
 //加锁lua脚本,设置过期时间 ExLock
 func luaLock() *redis.Script {
@@ -65,28 +77,30 @@ func listPopPush() *redis.Script {
 //获取连续七天销量信息
 func salesOF7days() *redis.Script {
 	return redis.NewScript(`
-	local key=tostring(KEYS[1])
-	local st,ed=tonumber(ARGV[1]),tonumber(ARGV[2])
+	local keys={}
+	for i=1,15,1 do
+		keys[i]=KEYS[i]
+	end
 	local array={}
-	local exec=redis.call("ltrim",key,0,6)
-	if exec==0 then 
-	return exec
+	for i=7,1,-1 do
+		local e=tonumber(redis.call("lindex",keys[16-i],0)) or 0
+		array[i]=e
+		redis.call("lpush",keys[7],e)
 	end
-	for i=1,7,1 do
-	local e=tonumber(redis.call("lpop",key))
-	array[i]=tonumber(e)
-	redis.call("rpush",key,e)
-	end
+	redis.call("ltrim",keys[7],0,6)
 	return array
 
 `)
 }
 
-//改变销量信息的lua脚本
-func addSales() *redis.Script {
-	//KEYS[1]今日开始时间,KEYS[2]昨日开始时间,KEYS[3]:日榜，KEYS[4]周榜，KEYS[5]月榜，KEYS[6]年榜，KEYS[7]7天连榜，KEYS[8]总榜
-	//日榜keys[9]-0day,KEYS[10]-1day,keys[11]-2day,KEYS[12]-3day,KEYS[13]-4day,KEYS[14]-5day,KEYS[15]-6day
-	//ARGV[1]订单金额
+/*
+改变销量信息的lua脚本,暂时不支持浮点数
+KEYS[1]今日开始时间,KEYS[2]昨日开始时间,KEYS[3]:日榜，KEYS[4]周榜，KEYS[5]月榜，KEYS[6]年榜，KEYS[7]7天连榜，KEYS[8]总榜
+日榜keys[9]-0day,KEYS[10]-1day,keys[11]-2day,KEYS[12]-3day,KEYS[13]-4day,KEYS[14]-5day,KEYS[15]-6day
+ARGV[1]订单金额
+*/
+func modifySales() *redis.Script {
+
 	return redis.NewScript(`
 	local keys={}
 	local val=tonumber(ARGV[1])
@@ -102,40 +116,54 @@ func addSales() *redis.Script {
 		vals[2]=tonumber(redis.call("lpop",keys[3])) or 0
 		redis.call("lpush",keys[3],val+vals[2])
 	else
-		vals[3]=tonumber(redis.call("lpop",keys[3])) or 0
-		redis.call("lpush",keys[3],vals[3]+val)
-
-		vals[4]=tonumber(redis.call("lpop",keys[4])) or 0
-		redis.call("rpop",keys[4])
-		redis.call("lpush",keys[4],vals[4]+val)
-
-		vals[5]=tonumber(redis.call("lpop",keys[5])) or 0
-		redis.call("rpop",keys[5])
-		redis.call("lpush",keys[5],vals[5]+val)
-
-		vals[6]=tonumber(redis.call("lpop",keys[6])) or 0
-		redis.call("rpop",keys[6])
-		redis.call("lpush",keys[6],vals[6]+val)
-
-		vals[7]=tonumber(redis.call("lpop",keys[7])) or 0
-		redis.call("lpush",keys[7],vals[7]+val)
-
-		vals[8]=tonumber(redis.call("lpop",keys[8])) or 0
-		redis.call("lpush",keys[8],vals[8]+val)
-
+		if val~=0 then
+			for i=3,8,1 do
+				vals[i]=tonumber(redis.call("lpop",keys[i])) or 0
+				redis.call("lpush",keys[i],vals[i]+val)
+			end
+		end
 	end
 	local array={}
 	for i=7,1,-1 do
 		local e=tonumber(redis.call("lindex",keys[16-i],0)) or 0
-		array[8-i]=e
+		array[i]=e
 		redis.call("lpush",keys[7],e)
 	end
-	redis.call("ltrim",keys[7],0,6)
-	redis.call("ltrim",keys[6],0,6)
-	redis.call("ltrim",keys[5],0,6)
-	redis.call("ltrim",keys[4],0,6)
-	redis.call("ltrim",keys[3],0,6)
+	for i=3,7,1 do
+	redis.call("ltrim",keys[i],0,6)
+	end
 	return array
+`)
+}
+
+//改变商品排行信息
+func modifyranks() *redis.Script {
+	return redis.NewScript(`
+	local keys={}
+	for i=1,10,1 do
+		keys[i]=tostring(KEYS[i])
+	end
+	local field =tostring(ARGV[1])
+	local sales =tonumber(ARGV[2])
+	print(field,sales)
+	for i=1,10,1 do
+		redis.call("zincrby",keys[i],sales,field)
+	end
+	return 1
+	
+
+`)
+}
+
+//商品销量信息
+func getSalesInfo() *redis.Script {
+	return redis.NewScript(`
+	local array={}
+	for i=1,5,1 do
+		array[i]=tonumber(redis.call("lindex",KEYS[i+2],0))
+	end
+	return array
+
 `)
 }
 
@@ -159,12 +187,20 @@ func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ..
 	res, _ := ret.Result()
 	fmt.Println("列表长度", res)
 }
-func SalesOf7Days(c context.Context, rdb *redis.Client, key []string, val ...string) []int64 {
+func SalesOf7Days(c context.Context, rdb *redis.Client, uname string, val ...string) []int64 {
 	script := salesOF7days()
 	sha, _ := script.Load(c, rdb).Result()
-	ret := rdb.EvalSha(c, sha, []string{"testlist"}, val)
-	res, _ := ret.Result()
-	return res.([]int64)
+	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname), val)
+	res, err := ret.Result()
+	//fmt.Println(res, err)
+	if err == nil {
+		logrus.Info("获取七天销量数据失败")
+	}
+	var sales []int64
+	for _, v := range res.([]interface{}) {
+		sales = append(sales, v.(int64))
+	}
+	return sales
 }
 func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, val ...string) {
 	script := listPopPush()
@@ -175,14 +211,75 @@ func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, v
 }
 
 //改变销量信息的lua脚本
-func AddSales(c context.Context, rdb *redis.Client, key []string, val ...string) []int64 {
-	script := addSales()
+func ModifySales(c context.Context, rdb *redis.Client, uname string, val ...string) []int64 {
+	script := modifySales()
 	sha, _ := script.Load(c, rdb).Result()
 	//sha := "bec071e3ab167970eee28b4152388cda1af7148c" //lua脚本在redis中的缓存
-	ret := rdb.EvalSha(c, sha, GetAllKeys("dsm"), val)
+	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname), val)
 	res, err := ret.Result()
 	if err != nil {
-		fmt.Println("ERROR HAPPENS", err)
+		fmt.Println("ERROR HAPPENS while modifying Sales", err)
+	}
+	var array []int64
+	for _, v := range res.([]interface{}) {
+		array = append(array, v.(int64))
+	}
+	return array
+}
+func ModifyProductRanks(c context.Context, rdb *redis.Client, uname, sku string, sales int64) {
+	script := modifyranks()
+	sha, _ := script.Load(c, rdb).Result()
+	//fmt.Println(sha)
+	//sha := "4de03aadfd76a083106f6183ce602e36e32fc0cb" //lua脚本在redis中的缓存
+	ret := rdb.EvalSha(c, sha, GetAllProductRankKeys(uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
+	_, err := ret.Result()
+	if err != nil {
+		fmt.Println("ERROR HAPPENS ", err)
+	}
+	//fmt.Println(res)
+}
+func ModifyADRanks(c context.Context, rdb *redis.Client, adname, sku string, sales int64) {
+	script := modifyranks()
+	sha, _ := script.Load(c, rdb).Result()
+	//sha := "bec071e3ab167970eee28b4152388cda1af7148c" //lua脚本在redis中的缓存
+	ret := rdb.EvalSha(c, sha, GetAllADRankKeys(adname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
+	_, err := ret.Result()
+	if err != nil {
+		fmt.Println("ERROR HAPPENS ", err)
+	}
+	//fmt.Println(res)
+}
+
+//获取广告或者商品的排行
+func GetRankList(c context.Context, rdb *redis.Client, queryname string, mode int) ([10]model.ProductRank, error) {
+	if mode < 0 || mode > 5 {
+		mode = 0
+	}
+	ret := rdb.ZRangeWithScores(c, GetRankKeyByMode(queryname, mode), 0, 9)
+	res, err := ret.Result()
+	if err != nil {
+		fmt.Println("get ranklist error while getting ranklist", err)
+		return [10]model.ProductRank{}, err
+	}
+	//fmt.Println(res)
+	var ranklist = [10]model.ProductRank{}
+	for i, v := range res {
+		ranklist[i] = model.ProductRank(v)
+	}
+	return ranklist, nil
+}
+
+//获取销量信息
+func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []int64 {
+	script := getSalesInfo()
+	sha, _ := script.Load(c, rdb).Result()
+	//fmt.Println(sha)
+	//sha := "4de03aadfd76a083106f6183ce602e36e32fc0cb" //lua脚本在redis中的缓存
+	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname))
+	res, err := ret.Result()
+	fmt.Println(res)
+	if err != nil {
+		fmt.Println("ERROR HAPPENS while getting sales info", err)
 	}
 	var array []int64
 	for _, v := range res.([]interface{}) {

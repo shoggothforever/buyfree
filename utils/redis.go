@@ -58,7 +58,7 @@ func StartServer(work DealWithOrderForm) (service chan *model.OrderFormRequest, 
 	go DetectSaleSign(work, service, quit)
 	return service, quit
 }
-func init() {
+func ListenOrderFromRequest() {
 	//TODO:迁移到main.go中去
 	ordqueue, ofsquit := StartServer(HandleOrderForm)
 	defer close(ordqueue)
@@ -66,11 +66,11 @@ func init() {
 	//ordqueue作为服务端暴露给客户端使用
 
 	//服务结束
-	ofsquit <- true
+	<-ofsquit
 	fmt.Println("DealWithOrderForms Service shutdown ...")
 }
 
-//func ListenOrderFromRequest(){
+//func LISTEN(){
 //	var ticker = time.NewTicker(time.Duration(time.Millisecond * 500))
 //	defer ticker.Stop()
 //	for {
