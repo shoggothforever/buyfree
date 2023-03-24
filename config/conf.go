@@ -36,12 +36,14 @@ type Config struct {
 	DB MysqlParam `toml:"mysqldal"`
 }
 
-var Reader *viper.Viper
+var (
+	Reader *viper.Viper
+)
 
 func Init() {
 	Reader = viper.New()
-	path, _ := os.Getwd()
-	Reader.AddConfigPath(path + "./config")
+	Path, _ := os.Getwd()
+	Reader.AddConfigPath(Path + "./config")
 	Reader.SetConfigName("config")
 	Reader.SetConfigType("yaml")
 	err := Reader.ReadInConfig() // 查找并读取配置文件
