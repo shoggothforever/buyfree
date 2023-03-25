@@ -51,7 +51,7 @@ func (a *ADController) GetADList(c *gin.Context) {
 func (a *ADController) AddAD(c *gin.Context) {
 	var ad model.Advertisement
 	c.Bind(&ad)
-	err := dal.Getdb().Model(model.Advertisement{}).Limit(20).Find(&ad).Error
+	err := dal.Getdb().Model(model.Advertisement{}).Limit(20).Create(&ad).Error
 	if err == nil {
 		ad.ID = utils.IDWorker.NextId()
 		c.JSON(200, response.ADResponse{
