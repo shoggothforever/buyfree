@@ -16,8 +16,10 @@ func TestLua(t *testing.T) {
 		DB:       10,
 	})
 	ctx := rdb.Context()
-	utils.Lualock(ctx, rdb, key, val)
-	utils.Luaunlock(ctx, rdb, key, val)
+	//utils.Lualock(ctx, rdb, key, val)
+	//utils.Luaunlock(ctx, rdb, key, val)
+
+	t.Log(utils.AddSales(ctx, rdb, utils.GetAllKeys("dsm"), "233"))
 	t.Log("测试通过")
 
 }
