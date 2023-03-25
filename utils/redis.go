@@ -67,7 +67,7 @@ func init() {
 
 	//服务结束
 	ofsquit <- true
-	fmt.Println("DealwithOrderForms Service shutdown ...")
+	fmt.Println("DealWithOrderForms Service shutdown ...")
 }
 
 //func ListenOrderFromRequest(){

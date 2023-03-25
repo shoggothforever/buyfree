@@ -29,25 +29,6 @@ type OrderForm struct {
 	//商品信息
 	ProductInfo []*OrderProduct `gorm:"foreignKey:OrderRefer"`
 }
-type SingletonOrderForm struct {
-	//订单车主ID
-	UserID int64 `json:"user_id"`
-	//订单编码
-	OrderID string `json:"order_id"`
-	//花费
-	Cost int64 `json:"cost"`
-	//订单状态 订单状态 2-已完成 1-待取货 0-未支付
-	State ORDERSTATE `json:"state"`
-	//支付时存储位置(购物时获取车主位置）
-	Location string `json:"location"`
-	//true:订货，false:退货
-	IsReplenishment bool `json:"is_replenishment"`
-}
-type OrderFormRequest struct {
-	SingletonOrderForm
-	//回复信号
-	ReplySign chan bool
-}
 
 //需要关联创表
 type PassengerOrderForm struct {
@@ -80,4 +61,25 @@ type ReplenInfo struct {
 	FinishCount     int64
 	WaitOrderForm   []*DriverOrderForm
 	FinishOrderForm []*DriverOrderForm
+}
+
+type SingletonOrderForm struct {
+	//订单车主ID
+	UserID int64 `json:"user_id"`
+	//订单编码
+	OrderID string `json:"order_id"`
+	//花费
+	Cost int64 `json:"cost"`
+	//订单状态 订单状态 2-已完成 1-待取货 0-未支付
+	State ORDERSTATE `json:"state"`
+	//支付时存储位置(购物时获取车主位置）
+	Location string `json:"location"`
+	//true:订货，false:退货
+	IsReplenishment bool `json:"is_replenishment"`
+}
+
+type OrderFormRequest struct {
+	SingletonOrderForm
+	//回复信号
+	ReplySign chan bool
 }
