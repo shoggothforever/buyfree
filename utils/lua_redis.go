@@ -160,7 +160,7 @@ func getSalesInfo() *redis.Script {
 	return redis.NewScript(`
 	local array={}
 	for i=1,5,1 do
-		array[i]=tonumber(redis.call("lindex",KEYS[i+2],0))
+		array[i]=tonumber(redis.call("lindex",KEYS[i+2],0)) or 0
 	end
 	return array
 

@@ -23,7 +23,7 @@ func PlatFormrouter() {
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{
-		Addr:    ":9003",
+		Addr:    ":3000",
 		Handler: r,
 	}
 
