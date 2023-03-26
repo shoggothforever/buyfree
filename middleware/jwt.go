@@ -10,6 +10,14 @@ import (
 func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jwt := c.GetHeader("Authorization")
+		if len(jwt) == 0 {
+			ijwt, ok := c.Get("Authorization")
+			if ok != true {
+				c.Set("AUthInfo", "Failed!")
+				return
+			}
+			jwt = ijwt.(string)
+		}
 		if len(jwt) > 7 { //为Bearer Token去除前七位数据
 			jwt = jwt[7:]
 		} else {

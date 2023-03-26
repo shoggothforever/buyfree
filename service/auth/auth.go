@@ -33,6 +33,7 @@ func Register(c *gin.Context) {
 			},
 			logininfo.UserID,
 			logininfo.Jwt})
+		c.Set("Authorization", "Bearer:"+logininfo.Jwt)
 	} else {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -41,6 +42,7 @@ func Register(c *gin.Context) {
 			-1,
 			""})
 	}
+	c.Next()
 }
 
 // PlatformAccount godoc
@@ -70,6 +72,8 @@ func Login(c *gin.Context) {
 			l[0].UserID,
 			l[0].Jwt,
 		})
+		c.Set("Authorization", "Bearer:"+l[0].Jwt)
+		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
 	} else {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -79,6 +83,5 @@ func Login(c *gin.Context) {
 			"",
 		})
 	}
-	c.Set("name", pt.Name)
 	c.Next()
 }

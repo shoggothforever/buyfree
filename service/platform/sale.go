@@ -5,6 +5,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -24,34 +25,55 @@ type SalesController struct {
 // @Router /pt/screen [get]
 func (s *SalesController) GetScreenData(c *gin.Context) {
 	var si response.ScreenInfo
-	dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums)
-	dal.Getdb().Raw("select count(*) from devices where is_online = ?", true).First(&si.OnlineDevNums)
-	dal.Getdb().Raw("select * from advertisements order by profit desc limit 10", true).Find(&si.OnlineDevNums)
-	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
 	rdb := dal.Getrdb()
 	iadmin, ok := c.Get("admin")
 	if ok != true {
 		s.Error(c, 400, "获取用户信息失败")
 	}
-	name := iadmin.(model.Platform).Name
+	admin := iadmin.(model.Platform)
+	name := admin.Name
 	curve := utils.SalesOf7Days(c, rdb, name)
+	dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums)
+	dal.Getdb().Raw("select count(*) from devices where is_online = ?", true).First(&si.OnlineDevNums)
+	dal.Getdb().Raw("select * from advertisements  where platform_id= ? order by profit desc limit 10", admin.ID).Find(&si.ADList)
+	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
 
 	info := utils.GetSalesInfo(c, rdb, name)
+	fmt.Println(info)
 	var salesinfo model.SalesData
 	salesinfo.DailySales = info[0]
 	salesinfo.WeeklySales = info[1]
 	salesinfo.MonthlySales = info[2]
 	salesinfo.AnnuallySales = info[3]
 	salesinfo.TotalSales = info[4]
-	ranklist, err := utils.GetRankList(c, rdb, name, 1)
+	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, name, 1)
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")
 	}
+	si.SalesData = salesinfo
 	si.SalesCurve = curve
 	si.ProductRankList = ranklist
 	c.JSON(200, response.ScreenInfoResponse{
 		response.Response{200, "获取统计数据成功"},
 		si})
+}
+
+func getsalesmessage(mode int64) string {
+	switch mode {
+	case 1:
+		return "获取本周商品销售额排行数据成功"
+
+	case 2:
+		return "获取本月商品销售额排行数据成功"
+
+	case 3:
+		return "获取本年商品销售额排行数据成功"
+	case 4:
+		return "获取总商品销售额排行数据成功"
+	default:
+		return "获取本日商品销售额排行数据成功"
+	}
+
 }
 
 //TODO: 统计数据补全计划
@@ -80,14 +102,14 @@ func (s *SalesController) GetSales(c *gin.Context) {
 	salesinfo.MonthlySales = info[2]
 	salesinfo.AnnuallySales = info[3]
 	salesinfo.TotalSales = info[4]
-	ranklist, err := utils.GetRankList(c, rdb, name, int(mode))
+	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, name, int(mode))
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")
 	}
 	c.JSON(200, response.SaleStaticResponse{
 		response.Response{
 			200,
-			"获取销售数据成功"},
+			getsalesmessage(mode)},
 		salesinfo,
 		ranklist,
 	})
