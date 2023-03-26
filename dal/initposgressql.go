@@ -26,6 +26,7 @@ var dsn string
 func ReadPostgresSQLlinfo() {
 	info := config.Reader.GetStringMapString("postgresql")
 	dsn = info[config.Sqldsn]
+	//dsn = "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
 }
 
 func init() {

@@ -1,7 +1,6 @@
 package test
 
 import (
-	"buyfree/config"
 	"buyfree/repo/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -52,5 +51,5 @@ func TestGen(t *testing.T) {
 	///*获取设备@id投放的所有广告(ok)*/
 	//ads, _ := gen.Advertisement.GetAdvertisementByDeviceID(1)
 	//fmt.Println(ads)
-	t.Log(config.PWD)
+	//t.Log(config.PWD)
 }

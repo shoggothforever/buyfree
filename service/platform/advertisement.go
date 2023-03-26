@@ -82,12 +82,13 @@ func (a *ADController) GetADContent(c *gin.Context) {
 	err := dal.Getdb().Model(&model.Advertisement{}).Where("id=?", id).First(&ad).Error
 	if err != nil {
 		a.Error(c, 400, "获取广告信息失败")
+	} else {
+		c.JSON(200, response.ADResponse{
+			response.Response{
+				200,
+				"获取广告信息成功"},
+			[]model.Advertisement{ad}})
 	}
-	c.JSON(200, response.ADResponse{
-		response.Response{
-			200,
-			"获取广告信息成功"},
-		[]model.Advertisement{ad}})
 }
 
 //TODO:swagger
@@ -105,9 +106,13 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	fmt.Println(id)
 	var ad model.Advertisement
-
+	var err error
 	var devices []model.Device
-	devices, _ = gen.Device.GetDeviceByAdvertiseID(id)
+	devices, err = gen.Device.GetDeviceByAdvertiseID(id)
+	if err != nil {
+		a.Error(c, 400, "获取广告信息失败")
+		return
+	}
 	fmt.Println(devices)
 	n := len(devices)
 	effinfo := make([]response.ADEfficientInfo, n, n)
@@ -117,17 +122,22 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 		effinfo[i].DriverName = driver.Name
 		effinfo[i].CarID = driver.CarID
 		effinfo[i].DeviceID = devices[i].ID
-		ad, _ = gen.Advertisement.GetAdvertisementProfitAndPlayTimes(id, devices[i].ID)
-		fmt.Println(ad)
+		ad, err = gen.Advertisement.GetAdvertisementProfitAndPlayTimes(id, devices[i].ID)
+		if err != nil {
+			a.Error(c, 400, "获取广告信息失败")
+			return
+		}
+		//fmt.Println(ad)
 		effinfo[i].PlayedTimes = ad.PlayTimes
 		effinfo[i].Profit = ad.Profit
 		effinfo[i].Profit = ad.Profit
 	}
-
-	c.JSON(200, response.ADEfficientResponse{
-		response.Response{
-			200,
-			"获取广告播放效果成功",
-		}, effinfo,
-	})
+	if err == nil {
+		c.JSON(200, response.ADEfficientResponse{
+			response.Response{
+				200,
+				"获取广告播放效果成功",
+			}, effinfo,
+		})
+	}
 }

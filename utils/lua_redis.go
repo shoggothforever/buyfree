@@ -1,47 +1,72 @@
 package utils
 
 import (
+	"buyfree/dal"
 	"buyfree/repo/model"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 //热销榜，排行榜data struct ZSET  key:data    val: productname  score sale func:zrankbyscore,
 //清理过去数据使用 ZREMRANGEBYLEX
 //统计七天销售数据 data struct List key:date	val:sales 策略：每天0点 使用lpush操作添加
 const (
-	DailySalesKey          string        = "Sales:Daily"    //val:product
-	Constantly7aysSalesKey string        = "Sales:7days"    //要求连续 val:
-	WeeklySalesKey         string        = "Sales:Weekly"   //不要求连续 val:
-	MonthSalesKey          string        = "Sales:Monthly"  //+month
-	AnnuallySalesKey       string        = "Sales:Annually" //+year
-	TOTALSalesKey          string        = "Sales:Totally"
-	ExLock                 time.Duration = 30
-	DailyRanksKey          string        = "Ranks:Daily"    //val:product
-	WeeklyRanksKey         string        = "Ranks:Weekly"   //不要求连续 val:
-	MonthRanksKey          string        = "Ranks:Monthly"  //+month
-	AnnuallyRanksKey       string        = "Ranks:Annually" //+year
-	TOTALRanksKey          string        = "Ranks:Totally"
-	Ranktype1              string        = "Product"
-	Ranktype2              string        = "Advertisement"
-	Ranktype3              string        = "Device"
+	DailySalesKey          string = "Sales:Daily"    //val:product
+	Constantly7aysSalesKey string = "Sales:7days"    //要求连续 val:
+	WeeklySalesKey         string = "Sales:Weekly"   //不要求连续 val:
+	MonthSalesKey          string = "Sales:Monthly"  //+month
+	AnnuallySalesKey       string = "Sales:Annually" //+year
+	TOTALSalesKey          string = "Sales:Totally"
+	ExLock                 int64  = 30
+	ExpireOfSalesInfo      int64  = 86400 * 366
+	DailyRanksKey          string = "Ranks:Daily"    //val:product
+	WeeklyRanksKey         string = "Ranks:Weekly"   //不要求连续 val:
+	MonthRanksKey          string = "Ranks:Monthly"  //+month
+	AnnuallyRanksKey       string = "Ranks:Annually" //+year
+	TOTALRanksKey          string = "Ranks:Totally"
+	Ranktype1              string = "Product"
+	Ranktype2              string = "Advertisement"
+	Ranktype3              string = "Device"
 )
 
-func GetProductKey(sku int64) []string {
-	return []string{}
+type ScriptSha struct {
+	LockSHA,
+	UnlockSHA,
+	ListPopPushSHA,
+	SalesOf7daysSSHA,
+	ModifySalesSHA,
+	ModifyRanksSHA,
+	GetSalesInfoSHA string
+}
+
+var SHASET ScriptSha
+
+func loadsha(f func() *redis.Script, c context.Context, rdb *redis.Client) string {
+	sha, _ := f().Load(c, rdb).Result()
+	return sha
+}
+func init() {
+	IDWorker.Init(0, 1)
+	rdb := dal.Getrdb()
+	c := rdb.Context()
+	SHASET.LockSHA = loadsha(luaLock, c, rdb)
+	SHASET.ListPopPushSHA = loadsha(listPopPush, c, rdb)
+	SHASET.UnlockSHA = loadsha(luaUnlock, c, rdb)
+	SHASET.GetSalesInfoSHA = loadsha(getSalesInfo, c, rdb)
+	SHASET.ModifySalesSHA = loadsha(modifySales, c, rdb)
+	SHASET.ModifyRanksSHA = loadsha(modifyranks, c, rdb)
+	SHASET.SalesOf7daysSSHA = loadsha(salesOF7days, c, rdb)
 }
 
 //加锁lua脚本,设置过期时间 ExLock
 func luaLock() *redis.Script {
 	return redis.NewScript(`
-	local lockKey = tostring(KEYS[1])
-	local val,dur = tostring(ARGV[1]),tonumber(ARGV[2])
-	local ok= redis.call("set",lockKey,val)
+	local user,dur = ARGV[1],tonumber(ARGV[2])
+	local ok= redis.call("set",KEYS[1],user)
 	if ok~=nil then
-		redis.call("expire",lockKey,dur)
+		redis.call("expire",KEYS[1],dur)
 		return 1
 	end
 	return 0
@@ -174,54 +199,47 @@ func getSalesInfo() *redis.Script {
 }
 
 func Lualock(c context.Context, rdb *redis.Client, key []string, val ...string) {
-	script := luaLock()
-	sha, _ := script.Load(c, rdb).Result()
-	ret := rdb.EvalSha(c, sha, key, val, ExLock)
-	res, _ := ret.Result()
-	fmt.Println("加锁结果", res)
+	ret := rdb.EvalSha(c, SHASET.LockSHA, key, val)
+	res, err := ret.Result()
+	fmt.Println("加锁结果", res, err)
 }
 func Luaunlock(c context.Context, rdb *redis.Client, key []string, val ...string) {
-	script := luaUnlock()
-	sha, _ := script.Load(c, rdb).Result()
-	res, _ := rdb.EvalSha(c, sha, key, val).Result()
-	fmt.Println("解锁结果", res)
+	res, err := rdb.EvalSha(c, SHASET.UnlockSHA, key, val).Result()
+	fmt.Println("解锁结果", res, err)
 }
 func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ...string) {
-	script := listPopPush()
-	sha, _ := script.Load(c, rdb).Result()
-	ret := rdb.EvalSha(c, sha, []string{"testlist"}, val)
-	res, _ := ret.Result()
-	fmt.Println("列表长度", res)
+	ret := rdb.EvalSha(c, SHASET.ListPopPushSHA, key, val)
+	res, err := ret.Result()
+	fmt.Println("列表长度", res, err)
 }
 func SalesOf7Days(c context.Context, rdb *redis.Client, uname string, val ...string) [7]int64 {
-	script := salesOF7days()
-	sha, _ := script.Load(c, rdb).Result()
-	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname), val)
+
+	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(uname), val)
+	fmt.Println(GetAllTimeKeys(uname))
 	res, err := ret.Result()
 	//fmt.Println(res, err)
-	if err == nil {
-		logrus.Info("获取七天销量数据失败")
-	}
 	var sales [7]int64
+	if err != nil {
+		logrus.Info("获取七天销量数据失败")
+		return sales
+	}
+
 	for k, v := range res.([]interface{}) {
 		sales[k] = v.(int64)
 	}
 	return sales
 }
 func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, val ...string) {
-	script := listPopPush()
-	sha, _ := script.Load(c, rdb).Result()
-	ret := rdb.EvalSha(c, sha, []string{"testlist"}, val)
+
+	ret := rdb.EvalSha(c, SHASET.ListPopPushSHA, []string{"testlist"}, val)
 	res, _ := ret.Result()
 	fmt.Println("列表长度", res)
 }
 
 //改变销量信息的lua脚本
 func ModifySales(c context.Context, rdb *redis.Client, uname string, val ...string) []int64 {
-	script := modifySales()
-	sha, _ := script.Load(c, rdb).Result()
-	//sha := "bec071e3ab167970eee28b4152388cda1af7148c" //lua脚本在redis中的缓存
-	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname), val)
+
+	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(uname), val)
 	res, err := ret.Result()
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while modifying Sales", err)
@@ -233,29 +251,13 @@ func ModifySales(c context.Context, rdb *redis.Client, uname string, val ...stri
 	return array
 }
 func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku string, sales int64) {
-	script := modifyranks()
-	sha, _ := script.Load(c, rdb).Result()
-	//fmt.Println(sha)
-	//sha := "4de03aadfd76a083106f6183ce602e36e32fc0cb" //lua脚本在redis中的缓存
-	ret := rdb.EvalSha(c, sha, GetAllTypeRankKeys(adp, uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
+	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
 	if err != nil {
-		fmt.Println("ERROR HAPPENS ", err)
+		logrus.Info("ERROR HAPPENS ", err)
 	}
 	//fmt.Println(res)
 }
-
-//func ModifyTypeRanks(c context.Context, rdb *redis.Client, adname, sku string, sales int64) {
-//	script := modifyranks()
-//	sha, _ := script.Load(c, rdb).Result()
-//	//sha := "bec071e3ab167970eee28b4152388cda1af7148c" //lua脚本在redis中的缓存
-//	ret := rdb.EvalSha(c, sha, GetAllTypeRankKeys("Advertisement", adname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
-//	_, err := ret.Result()
-//	if err != nil {
-//		fmt.Println("ERROR HAPPENS ", err)
-//	}
-//	//fmt.Println(res)
-//}
 
 //获取广告或者商品的排行
 func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mode int) ([]model.ProductRank, error) {
@@ -265,34 +267,29 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 	ret := rdb.ZRevRangeWithScores(c, GetRankKeyByMode(adp, queryname, mode), 0, 9)
 	res, err := ret.Result()
 	if err != nil {
-		fmt.Println("get ranklist error while getting ranklist", err)
+		logrus.Info("get ranklist error while getting ranklist", err)
 		return []model.ProductRank{}, err
 	}
 	//fmt.Println(res)
 	var ranklist = []model.ProductRank{}
 	for _, v := range res {
-		ranklist = append(ranklist, (model.ProductRank)(v))
+		ranklist = append(ranklist, model.ProductRank(v))
 	}
 	return ranklist, nil
 }
 
 //获取销量信息
 func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []float64 {
-	script := getSalesInfo()
-	sha, _ := script.Load(c, rdb).Result()
-	//fmt.Println(sha)
-	//sha := "4de03aadfd76a083106f6183ce602e36e32fc0cb" //lua脚本在redis中的缓存
-	//fmt.Println(GetAllTimeKeys(uname))
-	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname))
+	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(uname))
 	res, err := ret.Result()
 	//fmt.Println(res)
 	if err != nil {
-		fmt.Println("ERROR HAPPENS while getting sales info", err)
+		logrus.Info("ERROR HAPPENS while getting sales info", err)
 	}
 	var array []float64
 	for _, v := range res.([]interface{}) {
 		array = append(array, (float64)(v.(int64)))
 	}
-	fmt.Println(array)
+	//fmt.Println(array)
 	return array
 }

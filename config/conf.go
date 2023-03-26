@@ -1,7 +1,6 @@
 package config
 
 import (
-	"buyfree/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -40,24 +39,6 @@ var (
 	Reader *viper.Viper
 )
 
-func Init() {
-	Reader = viper.New()
-	Path, _ := os.Getwd()
-	Reader.AddConfigPath(Path + "./config")
-	Reader.SetConfigName("config")
-	Reader.SetConfigType("yaml")
-	err := Reader.ReadInConfig() // 查找并读取配置文件
-	if err != nil {              // 处理读取配置文件的错误
-		logrus.Error("Read config file failed: %s \n", err)
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logrus.Info("no error in config file")
-		} else {
-			logrus.Error("found error in config file\n", ok)
-		}
-	}
-	utils.IDWorker.Init(0, 1)
-}
-
 func init() {
 	Reader = viper.New()
 	path, _ := os.Getwd()
@@ -73,5 +54,5 @@ func init() {
 			logrus.Error("found error in config file\n", ok)
 		}
 	}
-	utils.IDWorker.Init(0, 1)
+
 }

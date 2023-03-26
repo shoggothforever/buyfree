@@ -5,7 +5,6 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -39,7 +38,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
 
 	info := utils.GetSalesInfo(c, rdb, name)
-	fmt.Println(info)
+	//fmt.Println(info)
 	var salesinfo model.SalesData
 	salesinfo.DailySales = info[0]
 	salesinfo.WeeklySales = info[1]
