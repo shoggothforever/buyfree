@@ -7,6 +7,7 @@ import (
 	"buyfree/service/platform"
 	"buyfree/service/response"
 	"context"
+	"flag"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	swaggerfiles "github.com/swaggo/files"
@@ -18,8 +19,14 @@ import (
 	"time"
 )
 
+var b = flag.Bool("ginmode", false, "默认为release，true为debug")
+
 func PlatFormrouter() {
-	gin.SetMode(gin.ReleaseMode)
+	if *b == true {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
 	r := gin.New()
 	//r := gin.Default()
 	//r.Static("/static", "./public")
@@ -28,7 +35,6 @@ func PlatFormrouter() {
 		Addr:    ":9003",
 		Handler: r,
 	}
-
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Fatalf("listen: %s\n", err)

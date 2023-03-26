@@ -6,6 +6,7 @@ import (
 	"buyfree/service/response"
 	"buyfree/utils"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strconv"
 )
 
@@ -36,8 +37,8 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 	var err error
 	dev := model.Device{}
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
-	dal.Getdb().Model(&model.Device{}).Where("id=?", id).First(&dev)
-	if err != nil {
+	err = dal.Getdb().Model(&model.Device{}).Where("id=?", id).First(&dev).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
 		c.JSON(200, response.Response{
 			400,
 			"查找对应设备信息失败,请检查输入ID是否正确",
@@ -45,8 +46,8 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		return
 	}
 	var driver model.Driver
-	dal.Getdb().Model(&model.Driver{}).Where("id=?", dev.OwnerID).First(&driver)
-	if err != nil {
+	err = dal.Getdb().Model(&model.Driver{}).Where("id=?", dev.OwnerID).First(&driver).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
 		c.JSON(200, response.Response{
 			400,
 			"查找对应设备绑定的车主信息失败,请检查设备是否合法",
@@ -54,9 +55,9 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		return
 	}
 	var prinfos []response.DevProductPartInfo
-	dal.Getdb().Raw("SELECT * FROM device_products where device_id="+
-		"(SELECT id from devices where id=?)", dev.ID).Find(&prinfos)
-	if err != nil {
+	err = dal.Getdb().Raw("SELECT * FROM device_products where device_id="+
+		"(SELECT id from devices where id=?)", dev.ID).Find(&prinfos).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
 		c.JSON(200, response.Response{
 			400,
 			"查找对应设备的商品信息失败",
@@ -67,9 +68,17 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 	name := iadmin.(model.Platform).Name
 	if ok != true {
 		d.Error(c, 400, "获取用户信息失败")
+		return
 	}
 	rdb := dal.Getrdb()
-	info := utils.GetSalesInfo(c, rdb, name)
+	info, err := utils.GetSalesInfo(c, rdb, name)
+	if err != nil {
+		c.JSON(200, response.Response{
+			400,
+			"获取销量数据失败",
+		})
+		return
+	}
 	var salesinfo model.SalesData
 	salesinfo.DailySales = info[0]
 	salesinfo.WeeklySales = info[1]
