@@ -23,6 +23,7 @@ func CloseDB() {
 	//DB.Close()
 	RDB.Close()
 }
+
 func init() {
 	readRedisInfo()
 	RDB = redis.NewClient(&redis.Options{

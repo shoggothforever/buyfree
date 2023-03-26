@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:9003",
+    "host": "bf.shoggothy.xyz",
     "basePath": "/",
     "paths": {
         "/pt/ads": {

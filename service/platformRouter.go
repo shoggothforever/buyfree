@@ -19,7 +19,9 @@ import (
 )
 
 func PlatFormrouter() {
-	r := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	//r := gin.Default()
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{
