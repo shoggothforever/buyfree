@@ -2,12 +2,12 @@ package platform
 
 import (
 	"buyfree/dal"
-	"buyfree/repo/gen"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strconv"
 )
 
@@ -106,38 +106,43 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	fmt.Println(id)
 	var ad model.Advertisement
-	var err error
+	//var err error
 	var devices []model.Device
-	devices, err = gen.Device.GetDeviceByAdvertiseID(id)
-	if err != nil {
+	//devices, err := gen.Device.GetDeviceByAdvertiseID(id)
+	//获取所有投放该广告的设备
+	err := dal.Getdb().Raw("select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = ?)", id).Find(&devices).Error
+	fmt.Println(devices, err)
+	if err != nil || devices == nil || len(devices) == 0 {
 		a.Error(c, 400, "获取广告信息失败")
 		return
 	}
-	fmt.Println(devices)
 	n := len(devices)
-	effinfo := make([]response.ADEfficientInfo, n, n)
+	var effinfos []response.ADEfficientInfo
 	for i := 0; i < n; i++ {
 		var driver *model.Driver
-		dal.Getdb().Model(&model.Driver{}).Select("name", "car_id").Where("id = ?", devices[i].OwnerID).First(&driver)
-		effinfo[i].DriverName = driver.Name
-		effinfo[i].CarID = driver.CarID
-		effinfo[i].DeviceID = devices[i].ID
-		ad, err = gen.Advertisement.GetAdvertisementProfitAndPlayTimes(id, devices[i].ID)
-		if err != nil {
-			a.Error(c, 400, "获取广告信息失败")
-			return
+		var effinfo response.ADEfficientInfo
+		err := dal.Getdb().Model(&model.Driver{}).Where("id = ?", devices[i].OwnerID).First(&driver).Error
+		if err != gorm.ErrRecordNotFound && err != nil {
+			continue
 		}
-		//fmt.Println(ad)
-		effinfo[i].PlayedTimes = ad.PlayTimes
-		effinfo[i].Profit = ad.Profit
-		effinfo[i].Profit = ad.Profit
+		effinfo.DriverName = driver.Name
+		effinfo.CarID = driver.CarID
+		effinfo.DeviceID = devices[i].ID
+		//ad, err = gen.Advertisement.GetAdvertisementProfitAndPlayTimes(id, devices[i].ID)
+		err = dal.Getdb().Raw("select play_times,profit from ad_devices where advertisement_id=? and  device_id=?", id, devices[i].ID).Scan(&ad).Error
+		if err != gorm.ErrRecordNotFound && err != nil {
+			continue
+		}
+		effinfo.PlayedTimes = ad.PlayTimes
+		effinfo.Profit = ad.Profit
+		effinfos = append(effinfos, effinfo)
 	}
-	if err == nil {
+	if len(effinfos) != 0 {
 		c.JSON(200, response.ADEfficientResponse{
 			response.Response{
 				200,
 				"获取广告播放效果成功",
-			}, effinfo,
+			}, effinfos,
 		})
 	}
 }
