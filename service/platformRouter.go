@@ -23,7 +23,7 @@ func PlatFormrouter() {
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{
-		Addr:    ":3000",
+		Addr:    ":9003",
 		Handler: r,
 	}
 
@@ -39,8 +39,8 @@ func PlatFormrouter() {
 	//注册与登录
 	pt := r.Group("/pt")
 	{
-		pt.POST("/register", auth.Register)
-		pt.POST("/login", auth.Login)
+		pt.POST("/register", auth.Register, middleware.AuthJwt())
+		pt.POST("/login", auth.Login, middleware.AuthJwt())
 
 	}
 	//鉴权
@@ -49,6 +49,8 @@ func PlatFormrouter() {
 	//数据大屏
 	var gdc platform.GoodsController
 	var salect platform.SalesController
+
+	pt.GET("/static/:mode", salect.GetSales)
 	psc := pt.Group("/screen")
 	{
 		//TODO:
@@ -83,7 +85,7 @@ func PlatFormrouter() {
 	}
 	//销售统计
 	//TODO:默认显示
-	pt.GET("/static/:mode", salect.GetSales)
+
 	//广告管理
 	var adct platform.ADController
 	ads := pt.Group("/ads")

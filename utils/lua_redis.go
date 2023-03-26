@@ -12,19 +12,23 @@ import (
 //热销榜，排行榜data struct ZSET  key:data    val: productname  score sale func:zrankbyscore,
 //清理过去数据使用 ZREMRANGEBYLEX
 //统计七天销售数据 data struct List key:date	val:sales 策略：每天0点 使用lpush操作添加
-const DailySalesKey string = "Sales:Daily"          //val:product
-const Constantly7aysSalesKey string = "Sales:7days" //要求连续 val:
-const WeeklySalesKey string = "Sales:Weekly"        //不要求连续 val:
-const MonthSalesKey string = "Sales:Monthly"        //+month
-const AnnuallySalesKey string = "Sales:Annually"    //+year
-const TOTALSalesKey string = "Sales:Totally"
-const ExLock time.Duration = 30
-
-const DailyRanksKey string = "Ranks:Daily"       //val:product
-const WeeklyRanksKey string = "Ranks:Weekly"     //不要求连续 val:
-const MonthRanksKey string = "Ranks:Monthly"     //+month
-const AnnuallyRanksKey string = "Ranks:Annually" //+year
-const TOTALRanksKey string = "Ranks:Totally"
+const (
+	DailySalesKey          string        = "Sales:Daily"    //val:product
+	Constantly7aysSalesKey string        = "Sales:7days"    //要求连续 val:
+	WeeklySalesKey         string        = "Sales:Weekly"   //不要求连续 val:
+	MonthSalesKey          string        = "Sales:Monthly"  //+month
+	AnnuallySalesKey       string        = "Sales:Annually" //+year
+	TOTALSalesKey          string        = "Sales:Totally"
+	ExLock                 time.Duration = 30
+	DailyRanksKey          string        = "Ranks:Daily"    //val:product
+	WeeklyRanksKey         string        = "Ranks:Weekly"   //不要求连续 val:
+	MonthRanksKey          string        = "Ranks:Monthly"  //+month
+	AnnuallyRanksKey       string        = "Ranks:Annually" //+year
+	TOTALRanksKey          string        = "Ranks:Totally"
+	Ranktype1              string        = "Product"
+	Ranktype2              string        = "Advertisement"
+	Ranktype3              string        = "Device"
+)
 
 func GetProductKey(sku int64) []string {
 	return []string{}
@@ -159,9 +163,11 @@ func modifyranks() *redis.Script {
 func getSalesInfo() *redis.Script {
 	return redis.NewScript(`
 	local array={}
-	for i=1,5,1 do
-		array[i]=tonumber(redis.call("lindex",KEYS[i+2],0)) or 0
-	end
+	array[5]=tonumber(redis.call("lindex",KEYS[8],0)) or 0
+	array[4]=tonumber(redis.call("lindex",KEYS[6],0)) or 0
+	array[3]=tonumber(redis.call("lindex",KEYS[5],0)) or 0
+	array[2]=tonumber(redis.call("lindex",KEYS[4],0)) or 0
+	array[1]=tonumber(redis.call("lindex",KEYS[3],0)) or 0
 	return array
 
 `)
@@ -226,23 +232,12 @@ func ModifySales(c context.Context, rdb *redis.Client, uname string, val ...stri
 	}
 	return array
 }
-func ModifyProductRanks(c context.Context, rdb *redis.Client, uname, sku string, sales int64) {
+func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku string, sales int64) {
 	script := modifyranks()
 	sha, _ := script.Load(c, rdb).Result()
 	//fmt.Println(sha)
 	//sha := "4de03aadfd76a083106f6183ce602e36e32fc0cb" //lua脚本在redis中的缓存
-	ret := rdb.EvalSha(c, sha, GetAllProductRankKeys(uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
-	_, err := ret.Result()
-	if err != nil {
-		fmt.Println("ERROR HAPPENS ", err)
-	}
-	//fmt.Println(res)
-}
-func ModifyADRanks(c context.Context, rdb *redis.Client, adname, sku string, sales int64) {
-	script := modifyranks()
-	sha, _ := script.Load(c, rdb).Result()
-	//sha := "bec071e3ab167970eee28b4152388cda1af7148c" //lua脚本在redis中的缓存
-	ret := rdb.EvalSha(c, sha, GetAllADRankKeys(adname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
+	ret := rdb.EvalSha(c, sha, GetAllTypeRankKeys(adp, uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
 	if err != nil {
 		fmt.Println("ERROR HAPPENS ", err)
@@ -250,12 +245,24 @@ func ModifyADRanks(c context.Context, rdb *redis.Client, adname, sku string, sal
 	//fmt.Println(res)
 }
 
+//func ModifyTypeRanks(c context.Context, rdb *redis.Client, adname, sku string, sales int64) {
+//	script := modifyranks()
+//	sha, _ := script.Load(c, rdb).Result()
+//	//sha := "bec071e3ab167970eee28b4152388cda1af7148c" //lua脚本在redis中的缓存
+//	ret := rdb.EvalSha(c, sha, GetAllTypeRankKeys("Advertisement", adname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
+//	_, err := ret.Result()
+//	if err != nil {
+//		fmt.Println("ERROR HAPPENS ", err)
+//	}
+//	//fmt.Println(res)
+//}
+
 //获取广告或者商品的排行
-func GetRankList(c context.Context, rdb *redis.Client, queryname string, mode int) ([]model.ProductRank, error) {
+func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mode int) ([]model.ProductRank, error) {
 	if mode < 0 || mode > 5 {
 		mode = 0
 	}
-	ret := rdb.ZRangeWithScores(c, GetRankKeyByMode(queryname, mode), 0, 9)
+	ret := rdb.ZRevRangeWithScores(c, GetRankKeyByMode(adp, queryname, mode), 0, 9)
 	res, err := ret.Result()
 	if err != nil {
 		fmt.Println("get ranklist error while getting ranklist", err)
@@ -275,9 +282,10 @@ func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []float64 
 	sha, _ := script.Load(c, rdb).Result()
 	//fmt.Println(sha)
 	//sha := "4de03aadfd76a083106f6183ce602e36e32fc0cb" //lua脚本在redis中的缓存
+	//fmt.Println(GetAllTimeKeys(uname))
 	ret := rdb.EvalSha(c, sha, GetAllTimeKeys(uname))
 	res, err := ret.Result()
-	fmt.Println(res)
+	//fmt.Println(res)
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while getting sales info", err)
 	}
@@ -285,5 +293,6 @@ func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []float64 
 	for _, v := range res.([]interface{}) {
 		array = append(array, (float64)(v.(int64)))
 	}
+	fmt.Println(array)
 	return array
 }
