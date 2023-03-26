@@ -279,17 +279,19 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 }
 
 //获取销量信息
-func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) []float64 {
+func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
 	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(uname))
 	res, err := ret.Result()
 	//fmt.Println(res)
+	var array []float64
 	if err != nil {
 		logrus.Info("ERROR HAPPENS while getting sales info", err)
+		return []float64{0, 0, 0, 0, 0}, nil
 	}
-	var array []float64
+
 	for _, v := range res.([]interface{}) {
 		array = append(array, (float64)(v.(int64)))
 	}
 	//fmt.Println(array)
-	return array
+	return array, nil
 }

@@ -6,6 +6,7 @@ import (
 	"buyfree/service/response"
 	"buyfree/utils"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strconv"
 )
 
@@ -28,16 +29,33 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	iadmin, ok := c.Get("admin")
 	if ok != true {
 		s.Error(c, 400, "获取用户信息失败")
+		return
 	}
 	admin := iadmin.(model.Platform)
 	name := admin.Name
 	curve := utils.SalesOf7Days(c, rdb, name)
-	dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums)
-	dal.Getdb().Raw("select count(*) from devices where is_online = ?", true).First(&si.OnlineDevNums)
-	dal.Getdb().Raw("select * from advertisements  where platform_id= ? order by profit desc limit 10", admin.ID).Find(&si.ADList)
+	err := dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
+		s.Error(c, 400, "无法获取设备数量")
+		return
+	}
+	err = dal.Getdb().Raw("select count(*) from devices where is_online = ?", true).First(&si.OnlineDevNums).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
+		s.Error(c, 400, "无法获取上线设备信息")
+		return
+	}
+	err = dal.Getdb().Raw("select * from advertisements  where platform_id= ? order by profit desc limit 10", admin.ID).Find(&si.ADList).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
+		s.Error(c, 400, "无法获取广告信息")
+		return
+	}
 	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
 
-	info := utils.GetSalesInfo(c, rdb, name)
+	info, err := utils.GetSalesInfo(c, rdb, name)
+	if err != nil {
+		s.Error(c, 400, "获取用户信息失败")
+		return
+	}
 	//fmt.Println(info)
 	var salesinfo model.SalesData
 	salesinfo.DailySales = info[0]
@@ -88,13 +106,22 @@ func getsalesmessage(mode int64) string {
 // @Router /pt/static/{mode} [get]
 func (s *SalesController) GetSales(c *gin.Context) {
 	iadmin, ok := c.Get("admin")
-	mode, _ := strconv.ParseInt(c.Param("mode"), 10, 64)
-	name := iadmin.(model.Platform).Name
 	if ok != true {
 		s.Error(c, 400, "获取用户信息失败")
+		return
 	}
+	mode, err := strconv.ParseInt(c.Param("mode"), 10, 64)
+	if err != nil {
+		s.Error(c, 400, "请输入正确的模式信息")
+		return
+	}
+	name := iadmin.(model.Platform).Name
 	rdb := dal.Getrdb()
-	info := utils.GetSalesInfo(c, rdb, name)
+	info, err := utils.GetSalesInfo(c, rdb, name)
+	if err != nil {
+		s.Error(c, 400, "无法获取销量信息")
+		return
+	}
 	var salesinfo model.SalesData
 	salesinfo.DailySales = info[0]
 	salesinfo.WeeklySales = info[1]
@@ -104,14 +131,15 @@ func (s *SalesController) GetSales(c *gin.Context) {
 	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, name, int(mode))
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")
+	} else {
+		c.JSON(200, response.SaleStaticResponse{
+			response.Response{
+				200,
+				getsalesmessage(mode)},
+			salesinfo,
+			ranklist,
+		})
 	}
-	c.JSON(200, response.SaleStaticResponse{
-		response.Response{
-			200,
-			getsalesmessage(mode)},
-		salesinfo,
-		ranklist,
-	})
 }
 
 ////从数据库获取相关信息
