@@ -46,8 +46,8 @@ func AuthJwt() gin.HandlerFunc {
 			c.Set("Jwt", jwt)
 			var id int64
 			dal.Getdb().Raw("select user_id from login_infos where jwt=?", jwt).First(&id)
-			var admin model.Platform
-			dal.Getdb().Model(&model.Platform{}).Where("id=?", id).First(&admin)
+			var admin model.User
+			dal.Getdb().Model(&model.User{}).Where("id=?", id).First(&admin)
 			c.Set("admin", admin)
 			c.Next()
 		}

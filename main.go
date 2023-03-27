@@ -2,7 +2,6 @@ package main
 
 import (
 	"buyfree/service"
-	"os"
 	"sync"
 )
 
@@ -32,11 +31,6 @@ var once sync.Once
 //	close(utils.Refundchannel)
 //	close(utils.Orderchannel)
 //}
-var PWD string
-
-func init() {
-	PWD, _ = os.Getwd()
-}
 
 func main() {
 	//config.Init()

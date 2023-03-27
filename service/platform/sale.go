@@ -16,7 +16,7 @@ type SalesController struct {
 
 // @Summary	展示销售数据
 // @Description	在数据大屏上展示管理场站的销售数据
-// @Tags Platform
+// @Tags User
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -31,7 +31,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 		s.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.Platform)
+	admin := iadmin.(model.User)
 	name := admin.Name
 	curve := utils.SalesOf7Days(c, rdb, name)
 	err := dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums).Error
@@ -96,7 +96,7 @@ func getsalesmessage(mode int64) string {
 //TODO: 统计数据补全计划
 // @Summary	销售数据统计
 // @Description	展示管理场站的销售数据，获取详细的销售排行信息
-// @Tags Platform
+// @Tags User
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -115,7 +115,7 @@ func (s *SalesController) GetSales(c *gin.Context) {
 		s.Error(c, 400, "请输入正确的模式信息")
 		return
 	}
-	name := iadmin.(model.Platform).Name
+	name := iadmin.(model.User).Name
 	rdb := dal.Getrdb()
 	info, err := utils.GetSalesInfo(c, rdb, name)
 	if err != nil {

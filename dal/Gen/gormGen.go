@@ -112,7 +112,7 @@ func main() {
 	//g.ApplyBasic(&model.User{})
 	g.ApplyInterface(func(Query) {}, &model.Passenger{},
 		&model.Driver{}, &model.Factory{},
-		&model.Platform{}, &model.DeviceProduct{}, &model.FactoryProduct{},
+		&model.User{}, &model.DeviceProduct{}, &model.FactoryProduct{},
 		&model.Device{}, &model.Advertisement{}, &model.BankCardInfo{})
 	g.ApplyInterface(func(LoginQuery) {}, &model.LoginInfo{})
 	g.ApplyInterface(func(CartQuery) {}, &model.PassengerCart{}, &model.DriverCart{})

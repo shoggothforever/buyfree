@@ -56,7 +56,7 @@ func TestRedis(t *testing.T) {
 	//	rs, _ := RC.HGet(ctx, key, "user_id").Result()
 	//	fmt.Println(rs)
 	//}
-	pt := model.Platform{}
+	pt := model.User{}
 	pt.ID = 97111
 	pt.PasswordSalt = "123"
 	pt.Password = "123"

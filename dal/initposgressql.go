@@ -61,7 +61,7 @@ func init() {
 			&model.PassengerCart{},
 			&model.PassengerOrderForm{},
 			&model.Factory{},
-			&model.Platform{},
+			&model.User{},
 			&model.Driver{},
 			&model.OrderProduct{},
 			&model.Device{},

@@ -9,18 +9,18 @@ import (
 )
 
 //注册 后续可以增加修改密码功能
-func SavePtUser(ptadmin model.Platform) (model.LoginInfo, error) {
+func SavePtUser(ptadmin model.User) (model.LoginInfo, error) {
 	ptadmin.Role = 3
 	ptadmin.ID = utils.GetSnowFlake()
 	logininfo, err := SavePtLoginInfo(ptadmin)
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
-	return logininfo, dal.Getdb().Model(&model.Platform{}).Create(&ptadmin).Error
+	return logininfo, dal.Getdb().Model(&model.User{}).Create(&ptadmin).Error
 
 }
 
-func SavePtLoginInfo(ptadmin model.Platform) (model.LoginInfo, error) {
+func SavePtLoginInfo(ptadmin model.User) (model.LoginInfo, error) {
 	var loginInfo model.LoginInfo
 	var err error
 	loginInfo.UserID = ptadmin.ID

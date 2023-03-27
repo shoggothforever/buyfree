@@ -23,7 +23,7 @@ func newPlatform(db *gorm.DB, opts ...gen.DOOption) platform {
 	_platform := platform{}
 
 	_platform.platformDo.UseDB(db, opts...)
-	_platform.platformDo.UseModel(&model.Platform{})
+	_platform.platformDo.UseModel(&model.User{})
 
 	tableName := _platform.platformDo.TableName()
 	_platform.ALL = field.NewAsterisk(tableName)
@@ -264,7 +264,7 @@ func (a platformHasManyAuthorizedDrivers) WithContext(ctx context.Context) *plat
 	return &a
 }
 
-func (a platformHasManyAuthorizedDrivers) Model(m *model.Platform) *platformHasManyAuthorizedDriversTx {
+func (a platformHasManyAuthorizedDrivers) Model(m *model.User) *platformHasManyAuthorizedDriversTx {
 	return &platformHasManyAuthorizedDriversTx{a.db.Model(m).Association(a.Name())}
 }
 
@@ -330,7 +330,7 @@ func (a platformHasManyDevices) WithContext(ctx context.Context) *platformHasMan
 	return &a
 }
 
-func (a platformHasManyDevices) Model(m *model.Platform) *platformHasManyDevicesTx {
+func (a platformHasManyDevices) Model(m *model.User) *platformHasManyDevicesTx {
 	return &platformHasManyDevicesTx{a.db.Model(m).Association(a.Name())}
 }
 
@@ -396,7 +396,7 @@ func (a platformHasManyAdvertisements) WithContext(ctx context.Context) *platfor
 	return &a
 }
 
-func (a platformHasManyAdvertisements) Model(m *model.Platform) *platformHasManyAdvertisementsTx {
+func (a platformHasManyAdvertisements) Model(m *model.User) *platformHasManyAdvertisementsTx {
 	return &platformHasManyAdvertisementsTx{a.db.Model(m).Association(a.Name())}
 }
 
@@ -469,17 +469,17 @@ type IPlatformDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IPlatformDo
 	Unscoped() IPlatformDo
-	Create(values ...*model.Platform) error
-	CreateInBatches(values []*model.Platform, batchSize int) error
-	Save(values ...*model.Platform) error
-	First() (*model.Platform, error)
-	Take() (*model.Platform, error)
-	Last() (*model.Platform, error)
-	Find() ([]*model.Platform, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.Platform, err error)
-	FindInBatches(result *[]*model.Platform, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*model.User) error
+	CreateInBatches(values []*model.User, batchSize int) error
+	Save(values ...*model.User) error
+	First() (*model.User, error)
+	Take() (*model.User, error)
+	Last() (*model.User, error)
+	Find() ([]*model.User, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.User, err error)
+	FindInBatches(result *[]*model.User, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*model.Platform) (info gen.ResultInfo, err error)
+	Delete(...*model.User) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -491,21 +491,21 @@ type IPlatformDo interface {
 	Assign(attrs ...field.AssignExpr) IPlatformDo
 	Joins(fields ...field.RelationField) IPlatformDo
 	Preload(fields ...field.RelationField) IPlatformDo
-	FirstOrInit() (*model.Platform, error)
-	FirstOrCreate() (*model.Platform, error)
-	FindByPage(offset int, limit int) (result []*model.Platform, count int64, err error)
+	FirstOrInit() (*model.User, error)
+	FirstOrCreate() (*model.User, error)
+	FindByPage(offset int, limit int) (result []*model.User, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IPlatformDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	GetByID(id int64) (result model.Platform, err error)
-	GetByName(name string) (result model.Platform, err error)
+	GetByID(id int64) (result model.User, err error)
+	GetByName(name string) (result model.User, err error)
 }
 
 // SELECT * FROM @@table WHERE id=@id
-func (p platformDo) GetByID(id int64) (result model.Platform, err error) {
+func (p platformDo) GetByID(id int64) (result model.User, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -520,7 +520,7 @@ func (p platformDo) GetByID(id int64) (result model.Platform, err error) {
 }
 
 // SELECT * FROM @@table WHERE name=@name
-func (p platformDo) GetByName(name string) (result model.Platform, err error) {
+func (p platformDo) GetByName(name string) (result model.User, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -630,57 +630,57 @@ func (p platformDo) Unscoped() IPlatformDo {
 	return p.withDO(p.DO.Unscoped())
 }
 
-func (p platformDo) Create(values ...*model.Platform) error {
+func (p platformDo) Create(values ...*model.User) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return p.DO.Create(values)
 }
 
-func (p platformDo) CreateInBatches(values []*model.Platform, batchSize int) error {
+func (p platformDo) CreateInBatches(values []*model.User, batchSize int) error {
 	return p.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (p platformDo) Save(values ...*model.Platform) error {
+func (p platformDo) Save(values ...*model.User) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return p.DO.Save(values)
 }
 
-func (p platformDo) First() (*model.Platform, error) {
+func (p platformDo) First() (*model.User, error) {
 	if result, err := p.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Platform), nil
+		return result.(*model.User), nil
 	}
 }
 
-func (p platformDo) Take() (*model.Platform, error) {
+func (p platformDo) Take() (*model.User, error) {
 	if result, err := p.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Platform), nil
+		return result.(*model.User), nil
 	}
 }
 
-func (p platformDo) Last() (*model.Platform, error) {
+func (p platformDo) Last() (*model.User, error) {
 	if result, err := p.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Platform), nil
+		return result.(*model.User), nil
 	}
 }
 
-func (p platformDo) Find() ([]*model.Platform, error) {
+func (p platformDo) Find() ([]*model.User, error) {
 	result, err := p.DO.Find()
-	return result.([]*model.Platform), err
+	return result.([]*model.User), err
 }
 
-func (p platformDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.Platform, err error) {
-	buf := make([]*model.Platform, 0, batchSize)
+func (p platformDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.User, err error) {
+	buf := make([]*model.User, 0, batchSize)
 	err = p.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -688,7 +688,7 @@ func (p platformDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) er
 	return results, err
 }
 
-func (p platformDo) FindInBatches(result *[]*model.Platform, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (p platformDo) FindInBatches(result *[]*model.User, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return p.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -714,23 +714,23 @@ func (p platformDo) Preload(fields ...field.RelationField) IPlatformDo {
 	return &p
 }
 
-func (p platformDo) FirstOrInit() (*model.Platform, error) {
+func (p platformDo) FirstOrInit() (*model.User, error) {
 	if result, err := p.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Platform), nil
+		return result.(*model.User), nil
 	}
 }
 
-func (p platformDo) FirstOrCreate() (*model.Platform, error) {
+func (p platformDo) FirstOrCreate() (*model.User, error) {
 	if result, err := p.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Platform), nil
+		return result.(*model.User), nil
 	}
 }
 
-func (p platformDo) FindByPage(offset int, limit int) (result []*model.Platform, count int64, err error) {
+func (p platformDo) FindByPage(offset int, limit int) (result []*model.User, count int64, err error) {
 	result, err = p.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -759,7 +759,7 @@ func (p platformDo) Scan(result interface{}) (err error) {
 	return p.DO.Scan(result)
 }
 
-func (p platformDo) Delete(models ...*model.Platform) (result gen.ResultInfo, err error) {
+func (p platformDo) Delete(models ...*model.User) (result gen.ResultInfo, err error) {
 	return p.DO.Delete(models)
 }
 

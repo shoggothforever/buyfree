@@ -45,9 +45,6 @@ type OrderProduct struct {
 	Count      int64   `gorm:"comment:需求量" json:"count"`
 	Price      float64 `gorm:"comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价" json:"price"`
 }
-type OrderProductImplement interface {
-	Refund()
-}
 
 func (o *OrderProduct) GetAmount() float64 {
 	price := o.Price * float64(o.Count)

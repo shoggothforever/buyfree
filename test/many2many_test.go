@@ -21,7 +21,7 @@ func TestAD_Device(t *testing.T) {
 	} else {
 		logrus.Info("Open postgresSQL successfully")
 	}
-	//DB.AutoMigrate(&model.Platform{}, &model.Driver{}, &model.Device{}, &model.Advertisement{})
+	//DB.AutoMigrate(&model.User{}, &model.Driver{}, &model.Device{}, &model.Advertisement{})
 	var id int64 = 1
 	var ad model.Advertisement
 	//var drivers []*model.Driver

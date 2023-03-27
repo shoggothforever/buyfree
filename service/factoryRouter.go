@@ -16,7 +16,7 @@ import (
 func Factoryrouter() {
 	//r := gin.Default()
 	r := gin.New()
-	r.Static("/static", "./public")
+	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{
 		Addr:    ":9002",

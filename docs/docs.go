@@ -27,7 +27,7 @@ const docTemplate = `{
     "paths": {
         "/pt/ads": {
             "post": {
-                "description": "按照Advertisement定义的内容传递json格式的数据",
+                "description": "按照Advertisement定义的内容传递json格式的数据,无需传入平台ID",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -39,6 +39,17 @@ const docTemplate = `{
                     "Platform/Advertisement"
                 ],
                 "summary": "添加广告信息",
+                "parameters": [
+                    {
+                        "description": "传入广告描述，投放资金，广告主，预期播放次数，广告视频地址",
+                        "name": "ADInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Advertisement"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -145,7 +156,7 @@ const docTemplate = `{
                 "tags": [
                     "Platform/Advertisement"
                 ],
-                "summary": "获取所有广告信息",
+                "summary": "获取该平台的所有广告信息",
                 "parameters": [
                     {
                         "type": "integer",
@@ -173,7 +184,7 @@ const docTemplate = `{
         },
         "/pt/dev-admin/devs": {
             "post": {
-                "description": "按照Device的定义 传入json格式的数据,设备的ID无需传入",
+                "description": "按照Device的定义 传入json格式的数据,添加的设备默认为未激活，未上线状态",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -185,6 +196,17 @@ const docTemplate = `{
                     "Platform/Device"
                 ],
                 "summary": "添加设备信息",
+                "parameters": [
+                    {
+                        "description": "填入设备的基本信息,然而并不需要任何基本信息，都自动设定好了",
+                        "name": "DeviceInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Device"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -286,6 +308,17 @@ const docTemplate = `{
                     "Platform"
                 ],
                 "summary": "平台用户登录",
+                "parameters": [
+                    {
+                        "description": "输入昵称，密码 需要用户id和盐",
+                        "name": "loginInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.LoginInfo"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -517,6 +550,17 @@ const docTemplate = `{
                     "Platform"
                 ],
                 "summary": "平台用户注册",
+                "parameters": [
+                    {
+                        "description": "只需要用户名，密码，password_salt为可选项",
+                        "name": "RegisterInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Platform"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -747,6 +791,350 @@ const docTemplate = `{
                 },
                 "weekly_sales": {
                     "type": "number"
+                }
+            }
+        },
+        "model.Driver": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "description": "账户余额",
+                    "type": "number"
+                },
+                "car_id": {
+                    "type": "string"
+                },
+                "cart": {
+                    "description": "购物车信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DriverCart"
+                        }
+                    ]
+                },
+                "created_at": {
+                    "description": "注册时间",
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "description": "注销选项\tGORM.",
+                    "type": "string"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Device"
+                    }
+                },
+                "driverOrderForms": {
+                    "description": "购物订单",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DriverOrderForm"
+                    }
+                },
+                "id": {
+                    "description": "唯一标志符",
+                    "type": "integer"
+                },
+                "id_card": {
+                    "type": "string"
+                },
+                "is_auth": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "description": "用户等级，成长制度待定",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.LEVEL"
+                        }
+                    ]
+                },
+                "location": {
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "用户昵称",
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "用户头像(需要添加修改头像功能）",
+                    "type": "string"
+                },
+                "platform_id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "description": "用户身份标志符，注册时确认",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DriverCart": {
+            "type": "object",
+            "properties": {
+                "cart_id": {
+                    "type": "integer"
+                },
+                "distance": {
+                    "description": "距离场站距离",
+                    "type": "integer"
+                },
+                "driver_id": {
+                    "description": "外键 Driver.Uuid",
+                    "type": "string"
+                },
+                "factory_name": {
+                    "description": "添加进购物车时自动获取",
+                    "type": "string"
+                },
+                "products": {
+                    "description": "存储",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderProduct"
+                    }
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.DriverOrderForm": {
+            "type": "object",
+            "properties": {
+                "car_id": {
+                    "description": "车牌号",
+                    "type": "string"
+                },
+                "comment": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "cost": {
+                    "description": "花费",
+                    "type": "integer"
+                },
+                "driver_id": {
+                    "description": "Driver外键",
+                    "type": "integer"
+                },
+                "factory_id": {
+                    "type": "integer"
+                },
+                "factory_name": {
+                    "type": "string"
+                },
+                "get_time": {
+                    "description": "自取时间",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "支付时存储位置(购物时获取车主位置）",
+                    "type": "string"
+                },
+                "order_id": {
+                    "description": "订单编码",
+                    "type": "string"
+                },
+                "pay_time": {
+                    "description": "支付时间（更改操作先于发送订单请求，支付时更新即可）",
+                    "type": "string"
+                },
+                "place_time": {
+                    "description": "下单时间（创建时更新即可）",
+                    "type": "string"
+                },
+                "productInfo": {
+                    "description": "商品信息",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderProduct"
+                    }
+                },
+                "state": {
+                    "description": "订单状态",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ORDERSTATE"
+                        }
+                    ]
+                }
+            }
+        },
+        "model.LEVEL": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+            ],
+            "x-enum-varnames": [
+                "ZERO",
+                "I",
+                "II",
+                "IIV",
+                "IV",
+                "V",
+                "VI"
+            ]
+        },
+        "model.LoginInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "jwt": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "salt": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ORDERSTATE": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "CANCLE",
+                "WAIT",
+                "DONE"
+            ]
+        },
+        "model.OrderProduct": {
+            "type": "object",
+            "properties": {
+                "cart_refer": {
+                    "description": "外键",
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "factory_id": {
+                    "type": "integer"
+                },
+                "is_chosen": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_refer": {
+                    "type": "string"
+                },
+                "pic": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Platform": {
+            "type": "object",
+            "properties": {
+                "advertisements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Advertisement"
+                    }
+                },
+                "authorized_drivers": {
+                    "description": "登记的司机",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Driver"
+                    }
+                },
+                "balance": {
+                    "description": "账户余额",
+                    "type": "number"
+                },
+                "created_at": {
+                    "description": "注册时间",
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "description": "注销选项\tGORM.",
+                    "type": "string"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Device"
+                    }
+                },
+                "id": {
+                    "description": "唯一标志符",
+                    "type": "integer"
+                },
+                "id_card": {
+                    "type": "string"
+                },
+                "level": {
+                    "description": "用户等级，成长制度待定",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.LEVEL"
+                        }
+                    ]
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "用户昵称",
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "password_salt": {
+                    "description": "密码盐",
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "用户头像(需要添加修改头像功能）",
+                    "type": "string"
+                },
+                "role": {
+                    "description": "用户身份标志符，注册时确认",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },

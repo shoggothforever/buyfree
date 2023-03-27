@@ -1,7 +1,6 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -33,7 +32,7 @@ type User struct {
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime:milli" json:"updated_at"`
 	//注销选项	GORM.
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+	DeletedAt time.Time `json:"deleted_at"`
 	//账户余额
 	Balance float64 `gorm:"comment:账户余额" json:"balance"`
 	//用户头像(需要添加修改头像功能）
@@ -41,18 +40,35 @@ type User struct {
 	//用户昵称
 	Name     string `gorm:"notnull;unique;size:32;comment:用户昵称" json:"name"`
 	Password string `gorm:"size:32:comment:用户密码" json:"password"`
-	Mobile   string `gorm:"comment:手机号" json:"mobile"`
-	IDCard   string `gorm:"comment:身份证" json:"id_card"`
+	//密码盐
+	PasswordSalt string `gorm:"comment:年销售量" json:"password_salt"`
+	Mobile       string `gorm:"comment:手机号" json:"mobile"`
+	IDCard       string `gorm:"comment:身份证" json:"id_card"`
 	//用户身份标志符，注册时确认
 	Role int `gorm:"notnull;type:int;comment:身份 0-乘客 1-司机 2-场站管理员 3-平台管理员 " json:"role"`
 	//用户等级，成长制度待定
 	Level LEVEL `gorm:"notnull;type:int;comment:用户等级" json:"level"`
 }
 
-type Admin struct {
+//创建此表时还会创建用户的购物车表以及订单表
+type Passenger struct {
+	//积分
 	User
-	//密码盐
-	PasswordSalt string `gorm:"comment:年销售量" json:"password_salt"`
+	Score int64 `gorm:"comment:用户积分" json:"score"`
+	//用户的购物车(如果一次只能买一件，可以不用）
+	Cart *PassengerCart `gorm:"foreignKey:PassengerID" json:"cart"`
+	//订单
+	OrderForms *PassengerOrderForm `gorm:"foreignKey:PassengerID" json:"order_forms"`
+	//购物券
+	//Tickets []*Ticket `gorm:"foreignKey:PassengerID"`
+}
+
+type Platform struct {
+	User
+	//登记的司机
+	AuthorizedDrivers []*Driver        `gorm:"foreignkey:PlatformID" json:"authorized_drivers"`
+	Devices           []*Device        `gorm:"foreignkey:PlatformID" json:"devices"`
+	Advertisements    []*Advertisement `gorm:"foreignkey:PlatformID" json:"advertisements"`
 }
 
 type Possesion struct {
