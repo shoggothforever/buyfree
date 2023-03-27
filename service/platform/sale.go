@@ -16,7 +16,7 @@ type SalesController struct {
 
 // @Summary	展示销售数据
 // @Description	在数据大屏上展示管理场站的销售数据
-// @Tags User
+// @Tags Platform
 // @Accept json
 // @Accept mpfd
 // @Produce json

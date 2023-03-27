@@ -305,9 +305,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Platform"
+                    "User"
                 ],
-                "summary": "平台用户登录",
+                "summary": "车主用户登录",
                 "parameters": [
                     {
                         "description": "输入昵称，密码 需要用户id和盐",
@@ -539,7 +539,7 @@ const docTemplate = `{
         },
         "/pt/register": {
             "post": {
-                "description": "Input info as model.Platform",
+                "description": "Input info as model.User",
                 "consumes": [
                     "application/json"
                 ],
@@ -547,17 +547,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Platform"
+                    "Driver"
                 ],
-                "summary": "平台用户注册",
+                "summary": "车主用户注册",
                 "parameters": [
                     {
-                        "description": "只需要用户名，密码，password_salt为可选项",
+                        "description": "一定要填入已有的平台ID,用户名，密码，password_salt为可选项",
                         "name": "RegisterInfo",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Platform"
+                            "$ref": "#/definitions/model.Driver"
                         }
                     }
                 ],
@@ -618,7 +618,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Platform"
+                    "User"
                 ],
                 "summary": "销售数据统计",
                 "parameters": [
@@ -862,6 +862,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "password_salt": {
+                    "description": "密码盐",
                     "type": "string"
                 },
                 "pic": {

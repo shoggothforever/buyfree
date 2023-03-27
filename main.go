@@ -33,13 +33,9 @@ var once sync.Once
 //}
 
 func main() {
-	//config.Init()
-	//once.Do(dal.InitPostgresSQL)
-	//gen.SetDefault(dal.DB)
-	//once.Do(dal.InitRedis)
-	//once.Do(utils.InitIDWorker)
 	//defer Exit()
-
-	service.PlatFormrouter()
+	//go service.Factoryrouter()
+	service.Driverrouter()
+	//service.PlatFormrouter()
 
 }
