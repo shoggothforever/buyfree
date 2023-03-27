@@ -19,10 +19,11 @@ import (
 	"time"
 )
 
-var b = flag.Bool("ginmode", false, "默认为release，true为debug")
+var b = flag.Bool("b", false, "默认为release，true为debug")
 
 func PlatFormrouter() {
-	if *b == true {
+	flag.Parse()
+	if *b == false {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		gin.SetMode(gin.DebugMode)

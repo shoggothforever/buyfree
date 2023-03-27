@@ -11,16 +11,17 @@ import (
 
 // PlatformAccount godoc
 // @Summary 平台用户注册
-// @Description 	Input info as model.Platform
-// @Tags			Platform
+// @Description 	Input info as model.User
+// @Tags			User
 // @accept			json
 // @Produce			json
+// @Param	RegisterInfo body model.User true "只需要用户名，密码，password_salt为可选项"
 // @Success			200 {object} response.LoginResponse
 // @failure			500 {object} response.LoginResponse
 // @Router			/pt/register [post]
 func Register(c *gin.Context) {
 	//一定要定义成值类型，在bind里要传地址
-	var ptadmin model.Platform
+	var ptadmin model.User
 	c.ShouldBind(&ptadmin)
 	//fmt.Println(ptadmin)
 	//fmt.Println(ptadmin.ID)
@@ -48,16 +49,17 @@ func Register(c *gin.Context) {
 // PlatformAccount godoc
 // @Summary 平台用户登录
 // @Description 	Input user's nickname and password
-// @Tags			Platform
+// @Tags			User
 // @accept			json
 // @Produce			json
+// @Param loginInfo body model.LoginInfo true "输入昵称，密码 需要用户id和盐"
 // @Success			200 {object} response.LoginResponse
 // @Failure			500 {object} response.LoginResponse
 // @Router			/pt/login [post]
 func Login(c *gin.Context) {
 	var l []model.LoginInfo
-	var pt model.Platform
-	//输入昵称，密码 需要用户id和盐
+	var pt model.User
+
 	c.ShouldBind(&pt)
 	var password string = pt.Password
 	dal.Getdb().Raw("select id,password_salt from platforms where name = ?", pt.Name).First(&pt)

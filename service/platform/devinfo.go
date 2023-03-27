@@ -24,7 +24,7 @@ func (d *DevinfoController) AnaSales(c *gin.Context) {
 //TODO:swagger
 // @Summary 展示设备详情信息
 // @Description	输入设备的ID以查看对应设备的销量,绑定车主以及库存的信息
-// @Tags	Platform/Device
+// @Tags	User/Device
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -65,11 +65,12 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		return
 	}
 	iadmin, ok := c.Get("admin")
-	name := iadmin.(model.Platform).Name
 	if ok != true {
 		d.Error(c, 400, "获取用户信息失败")
 		return
 	}
+	admin := iadmin.(model.User)
+	name := admin.Name
 	rdb := dal.Getrdb()
 	info, err := utils.GetSalesInfo(c, rdb, name)
 	if err != nil {

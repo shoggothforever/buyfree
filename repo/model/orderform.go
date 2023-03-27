@@ -63,7 +63,7 @@ type ReplenInfo struct {
 	FinishOrderForm []*DriverOrderForm
 }
 
-type SingletonOrderForm struct {
+type SingleOrderForm struct {
 	//订单车主ID
 	UserID int64 `json:"user_id"`
 	//订单编码
@@ -78,8 +78,4 @@ type SingletonOrderForm struct {
 	IsReplenishment bool `json:"is_replenishment"`
 }
 
-type OrderFormRequest struct {
-	SingletonOrderForm
-	//回复信号
-	ReplySign chan bool
-}
+//工作站

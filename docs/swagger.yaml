@@ -99,6 +99,244 @@ definitions:
       weekly_sales:
         type: number
     type: object
+  model.Driver:
+    properties:
+      balance:
+        description: 账户余额
+        type: number
+      car_id:
+        type: string
+      cart:
+        allOf:
+        - $ref: '#/definitions/model.DriverCart'
+        description: 购物车信息
+      created_at:
+        description: 注册时间
+        type: string
+      deleted_at:
+        description: "注销选项\tGORM."
+        type: string
+      devices:
+        items:
+          $ref: '#/definitions/model.Device'
+        type: array
+      driverOrderForms:
+        description: 购物订单
+        items:
+          $ref: '#/definitions/model.DriverOrderForm'
+        type: array
+      id:
+        description: 唯一标志符
+        type: integer
+      id_card:
+        type: string
+      is_auth:
+        type: boolean
+      level:
+        allOf:
+        - $ref: '#/definitions/model.LEVEL'
+        description: 用户等级，成长制度待定
+      location:
+        type: string
+      mobile:
+        type: string
+      name:
+        description: 用户昵称
+        type: string
+      password:
+        type: string
+      pic:
+        description: 用户头像(需要添加修改头像功能）
+        type: string
+      platform_id:
+        type: integer
+      role:
+        description: 用户身份标志符，注册时确认
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.DriverCart:
+    properties:
+      cart_id:
+        type: integer
+      distance:
+        description: 距离场站距离
+        type: integer
+      driver_id:
+        description: 外键 Driver.Uuid
+        type: string
+      factory_name:
+        description: 添加进购物车时自动获取
+        type: string
+      products:
+        description: 存储
+        items:
+          $ref: '#/definitions/model.OrderProduct'
+        type: array
+      total_amount:
+        type: number
+      total_count:
+        type: integer
+    type: object
+  model.DriverOrderForm:
+    properties:
+      car_id:
+        description: 车牌号
+        type: string
+      comment:
+        description: 备注
+        type: string
+      cost:
+        description: 花费
+        type: integer
+      driver_id:
+        description: Driver外键
+        type: integer
+      factory_id:
+        type: integer
+      factory_name:
+        type: string
+      get_time:
+        description: 自取时间
+        type: string
+      location:
+        description: 支付时存储位置(购物时获取车主位置）
+        type: string
+      order_id:
+        description: 订单编码
+        type: string
+      pay_time:
+        description: 支付时间（更改操作先于发送订单请求，支付时更新即可）
+        type: string
+      place_time:
+        description: 下单时间（创建时更新即可）
+        type: string
+      productInfo:
+        description: 商品信息
+        items:
+          $ref: '#/definitions/model.OrderProduct'
+        type: array
+      state:
+        allOf:
+        - $ref: '#/definitions/model.ORDERSTATE'
+        description: 订单状态
+    type: object
+  model.LEVEL:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    type: integer
+    x-enum-varnames:
+    - ZERO
+    - I
+    - II
+    - IIV
+    - IV
+    - V
+    - VI
+  model.LoginInfo:
+    properties:
+      id:
+        type: integer
+      jwt:
+        type: string
+      password:
+        type: string
+      salt:
+        type: string
+    type: object
+  model.ORDERSTATE:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - CANCLE
+    - WAIT
+    - DONE
+  model.OrderProduct:
+    properties:
+      cart_refer:
+        description: 外键
+        type: integer
+      count:
+        type: integer
+      factory_id:
+        type: integer
+      is_chosen:
+        type: boolean
+      name:
+        type: string
+      order_refer:
+        type: string
+      pic:
+        type: string
+      price:
+        type: number
+      sku:
+        type: string
+      type:
+        type: string
+    type: object
+  model.Platform:
+    properties:
+      advertisements:
+        items:
+          $ref: '#/definitions/model.Advertisement'
+        type: array
+      authorized_drivers:
+        description: 登记的司机
+        items:
+          $ref: '#/definitions/model.Driver'
+        type: array
+      balance:
+        description: 账户余额
+        type: number
+      created_at:
+        description: 注册时间
+        type: string
+      deleted_at:
+        description: "注销选项\tGORM."
+        type: string
+      devices:
+        items:
+          $ref: '#/definitions/model.Device'
+        type: array
+      id:
+        description: 唯一标志符
+        type: integer
+      id_card:
+        type: string
+      level:
+        allOf:
+        - $ref: '#/definitions/model.LEVEL'
+        description: 用户等级，成长制度待定
+      mobile:
+        type: string
+      name:
+        description: 用户昵称
+        type: string
+      password:
+        type: string
+      password_salt:
+        description: 密码盐
+        type: string
+      pic:
+        description: 用户头像(需要添加修改头像功能）
+        type: string
+      role:
+        description: 用户身份标志符，注册时确认
+        type: integer
+      updated_at:
+        type: string
+    type: object
   model.ProductRank:
     properties:
       member: {}
@@ -424,7 +662,14 @@ paths:
       consumes:
       - application/json
       - multipart/form-data
-      description: 按照Advertisement定义的内容传递json格式的数据
+      description: 按照Advertisement定义的内容传递json格式的数据,无需传入平台ID
+      parameters:
+      - description: 传入广告描述，投放资金，广告主，预期播放次数，广告视频地址
+        in: body
+        name: ADInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Advertisement'
       produces:
       - application/json
       responses:
@@ -513,7 +758,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 获取所有广告信息
+      summary: 获取该平台的所有广告信息
       tags:
       - Platform/Advertisement
   /pt/dev-admin/devs:
@@ -521,7 +766,14 @@ paths:
       consumes:
       - application/json
       - multipart/form-data
-      description: 按照Device的定义 传入json格式的数据,设备的ID无需传入
+      description: 按照Device的定义 传入json格式的数据,添加的设备默认为未激活，未上线状态
+      parameters:
+      - description: 填入设备的基本信息,然而并不需要任何基本信息，都自动设定好了
+        in: body
+        name: DeviceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Device'
       produces:
       - application/json
       responses:
@@ -589,6 +841,13 @@ paths:
       consumes:
       - application/json
       description: Input user's nickname and password
+      parameters:
+      - description: 输入昵称，密码 需要用户id和盐
+        in: body
+        name: loginInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginInfo'
       produces:
       - application/json
       responses:
@@ -743,6 +1002,13 @@ paths:
       consumes:
       - application/json
       description: Input info as model.Platform
+      parameters:
+      - description: 只需要用户名，密码，password_salt为可选项
+        in: body
+        name: RegisterInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Platform'
       produces:
       - application/json
       responses:

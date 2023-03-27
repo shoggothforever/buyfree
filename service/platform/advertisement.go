@@ -16,9 +16,9 @@ type ADController struct {
 }
 
 //TODO:swagger
-// @Summary 获取所有广告信息
+// @Summary 获取该平台的所有广告信息
 // @Description
-// @Tags	Platform/Advertisement
+// @Tags	User/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -28,8 +28,14 @@ type ADController struct {
 // @Router /pt/ads/list/{page} [get]
 func (a *ADController) GetADList(c *gin.Context) {
 	page, _ := strconv.ParseInt(c.Param("page"), 10, 64)
+	iadmin, ok := c.Get("admin")
+	if ok != true {
+		a.Error(c, 400, "获取用户信息失败")
+		return
+	}
+	admin := iadmin.(model.User)
 	var ads []model.Advertisement
-	dal.Getdb().Model(model.Advertisement{}).Limit(20).Offset(int((page - 1) * 20)).Find(&ads)
+	dal.Getdb().Model(model.Advertisement{}).Limit(20).Where("platform_id = ? ", admin.ID).Offset(int((page - 1) * 20)).Find(&ads)
 
 	c.JSON(200, response.ADResponse{
 		response.Response{
@@ -40,18 +46,28 @@ func (a *ADController) GetADList(c *gin.Context) {
 
 //TODO:swagger
 // @Summary 添加广告信息
-// @Description 按照Advertisement定义的内容传递json格式的数据
-// @Tags	Platform/Advertisement
+// @Description 按照Advertisement定义的内容传递json格式的数据,无需传入平台ID
+// @Tags	User/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
+// @Param ADInfo body model.Advertisement true "传入广告描述，投放资金，广告主，预期播放次数，广告视频地址"
 // @Success 201 {object} response.ADResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/ads [post]
 func (a *ADController) AddAD(c *gin.Context) {
 	var ad model.Advertisement
 	c.Bind(&ad)
+	iadmin, ok := c.Get("admin")
+	if ok != true {
+		a.Error(c, 400, "获取用户信息失败")
+		return
+	}
+	admin := iadmin.(model.User)
+	ad.PlatformID = admin.ID
 	err := dal.Getdb().Model(model.Advertisement{}).Limit(20).Create(&ad).Error
+	ad.Profit = 0
+	ad.PlayTimes = 0
 	if err == nil {
 		ad.ID = utils.IDWorker.NextId()
 		c.JSON(200, response.ADResponse{
@@ -67,7 +83,7 @@ func (a *ADController) AddAD(c *gin.Context) {
 //TODO:swagger
 // @Summary 获取单个广告信息
 // @Description 传入广告ID
-// @Tags	Platform/Advertisement
+// @Tags	User/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -94,7 +110,7 @@ func (a *ADController) GetADContent(c *gin.Context) {
 //TODO:swagger
 // @Summary 获取单个广告效益
 // @Description 传入广告ID
-// @Tags	Platform/Advertisement
+// @Tags	User/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -104,7 +120,7 @@ func (a *ADController) GetADContent(c *gin.Context) {
 // @Router /pt/ads/efficient/{id} [get]
 func (a *ADController) GetADEfficient(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
-	fmt.Println(id)
+	//fmt.Println(id)
 	var ad model.Advertisement
 	//var err error
 	var devices []model.Device

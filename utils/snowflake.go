@@ -130,7 +130,7 @@ func (p *SnowFlakeIdWorker) timeGen() int64 {
 //}
 
 func GetSnowFlake() int64 {
-	//IDWorker = SnowFlakeIdWorker{}
-	//IDWorker.Init(0, 1)
+	IDWorker = SnowFlakeIdWorker{}
+	IDWorker.Init(0, 1)
 	return IDWorker.NextId()
 }
