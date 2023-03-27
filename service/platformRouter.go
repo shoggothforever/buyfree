@@ -20,6 +20,8 @@ import (
 )
 
 var b = flag.Bool("b", false, "默认为release，true为debug")
+var QuitPlatformChan chan os.Signal
+var PlatFormSrv http.Server
 
 func PlatFormrouter() {
 	flag.Parse()
@@ -32,12 +34,12 @@ func PlatFormrouter() {
 	//r := gin.Default()
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
-	srv := http.Server{
+	PlatFormSrv = http.Server{
 		Addr:    ":9003",
 		Handler: r,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := PlatFormSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Fatalf("listen: %s\n", err)
 		}
 	}()
@@ -48,8 +50,8 @@ func PlatFormrouter() {
 	//注册与登录
 	pt := r.Group("/pt")
 	{
-		pt.POST("/register", auth.Register, middleware.AuthJwt())
-		pt.POST("/login", auth.Login, middleware.AuthJwt())
+		pt.POST("/register", auth.PlatformRegister, middleware.AuthJwt())
+		pt.POST("/login", auth.PlatformLogin, middleware.AuthJwt())
 
 	}
 	//鉴权
@@ -105,14 +107,15 @@ func PlatFormrouter() {
 		ads.GET("/efficient/:id", adct.GetADEfficient)
 
 	}
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	log.Println("Shutdown Server ...")
+	QuitPlatformChan = make(chan os.Signal)
+	time.Sleep(5 * time.Second)
+	signal.Notify(QuitPlatformChan, os.Interrupt)
+	<-QuitPlatformChan
+	log.Println("Shutdown  PlatForm Server ...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
+	if err := PlatFormSrv.Shutdown(ctx); err != nil {
+		log.Fatal("PlatForm Server Shutdown:", err)
 	}
-	log.Println("Server exiting")
+	log.Println("Plat Form Server exiting")
 }

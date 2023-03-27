@@ -4,6 +4,7 @@ import (
 	"buyfree/middleware"
 	"buyfree/service/auth"
 	"context"
+	"flag"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"log"
@@ -13,17 +14,27 @@ import (
 	"time"
 )
 
+var d = flag.Bool("d", false, "默认为release，true为debug")
+var QuitDriverChan chan os.Signal
+var DriverSrv http.Server
+
 func Driverrouter() {
-	//r := gin.Default()
-	r := gin.New()
-	r.Static("/static", "./public")
+	flag.Parse()
+	//if *d == false {
+	//	gin.SetMode(gin.ReleaseMode)
+	//} else {
+	//	gin.SetMode(gin.DebugMode)
+	//}
+	//r := gin.New()
+	r := gin.Default()
+	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
-	srv := http.Server{
+	DriverSrv = http.Server{
 		Addr:    ":9001",
 		Handler: r,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := DriverSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Fatalf("listen: %s\n", err)
 		}
 	}()
@@ -31,22 +42,24 @@ func Driverrouter() {
 		w := c.Writer
 		w.Write([]byte("welecome to driver.buyfree.com"))
 	})
-	r.POST("/register", auth.Register)
-	r.POST("/login", auth.Login)
-	dr := r.Group("/driver")
+	dr := r.Group("/dr")
+	{
+		dr.POST("/register", auth.DriverRegister)
+		dr.POST("/login", auth.DriverLogin)
+	}
 	{
 		dr.POST("/reple", func(c *gin.Context) {
 
 		})
 	}
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	log.Println("Shutdown Server ...")
+	QuitDriverChan = make(chan os.Signal)
+	signal.Notify(QuitDriverChan, os.Interrupt)
+	<-QuitDriverChan
+	log.Println("Shutdown Driver Server ...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
+	if err := DriverSrv.Shutdown(ctx); err != nil {
+		log.Fatal("Driver Server Shutdown:", err)
 	}
-	log.Println("Server exiting")
+	log.Println("Driver Server exiting")
 }

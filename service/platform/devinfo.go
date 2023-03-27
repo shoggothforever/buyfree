@@ -24,7 +24,7 @@ func (d *DevinfoController) AnaSales(c *gin.Context) {
 //TODO:swagger
 // @Summary 展示设备详情信息
 // @Description	输入设备的ID以查看对应设备的销量,绑定车主以及库存的信息
-// @Tags	User/Device
+// @Tags	Platform/Device
 // @Accept json
 // @Accept mpfd
 // @Produce json

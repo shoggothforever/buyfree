@@ -145,6 +145,9 @@ definitions:
         type: string
       password:
         type: string
+      password_salt:
+        description: 密码盐
+        type: string
       pic:
         description: 用户头像(需要添加修改头像功能）
         type: string
@@ -859,9 +862,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
-      summary: 平台用户登录
+      summary: 车主用户登录
       tags:
-      - Platform
+      - User
   /pt/orders/factory/{mode}:
     get:
       consumes:
@@ -1001,14 +1004,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Input info as model.Platform
+      description: Input info as model.User
       parameters:
-      - description: 只需要用户名，密码，password_salt为可选项
+      - description: 一定要填入已有的平台ID,用户名，密码，password_salt为可选项
         in: body
         name: RegisterInfo
         required: true
         schema:
-          $ref: '#/definitions/model.Platform'
+          $ref: '#/definitions/model.Driver'
       produces:
       - application/json
       responses:
@@ -1020,9 +1023,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
-      summary: 平台用户注册
+      summary: 车主用户注册
       tags:
-      - Platform
+      - Driver
   /pt/screen:
     get:
       consumes:
@@ -1069,7 +1072,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: 销售数据统计
       tags:
-      - Platform
+      - User
 securityDefinitions:
   BasicAuth:
     type: basic

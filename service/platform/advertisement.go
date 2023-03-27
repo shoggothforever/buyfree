@@ -18,7 +18,7 @@ type ADController struct {
 //TODO:swagger
 // @Summary 获取该平台的所有广告信息
 // @Description
-// @Tags	User/Advertisement
+// @Tags	Platform/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -47,7 +47,7 @@ func (a *ADController) GetADList(c *gin.Context) {
 //TODO:swagger
 // @Summary 添加广告信息
 // @Description 按照Advertisement定义的内容传递json格式的数据,无需传入平台ID
-// @Tags	User/Advertisement
+// @Tags	Platform/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -83,7 +83,7 @@ func (a *ADController) AddAD(c *gin.Context) {
 //TODO:swagger
 // @Summary 获取单个广告信息
 // @Description 传入广告ID
-// @Tags	User/Advertisement
+// @Tags	Platform/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
@@ -110,7 +110,7 @@ func (a *ADController) GetADContent(c *gin.Context) {
 //TODO:swagger
 // @Summary 获取单个广告效益
 // @Description 传入广告ID
-// @Tags	User/Advertisement
+// @Tags	Platform/Advertisement
 // @Accept json
 // @Accept mpfd
 // @Produce json
