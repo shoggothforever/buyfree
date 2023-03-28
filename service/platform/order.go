@@ -10,7 +10,7 @@ import (
 )
 
 type OrderController struct {
-	BaseController
+	BasePtController
 }
 
 // @Summary 获取车主订单信息(车主在该场站下的订单)

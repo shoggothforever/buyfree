@@ -250,6 +250,8 @@ func ModifySales(c context.Context, rdb *redis.Client, uname string, val ...stri
 	}
 	return array
 }
+
+//adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku：商品唯一标志符 sales:销售额，用于更改zset的分数
 func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku string, sales int64) {
 	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
@@ -260,6 +262,7 @@ func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku strin
 }
 
 //获取广告或者商品的排行
+//adp: rank类型 queryname:填入广告或者商品的唯一标志符，广告的ID，商品的SKU
 func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mode int) ([]model.ProductRank, error) {
 	if mode < 0 || mode > 5 {
 		mode = 0

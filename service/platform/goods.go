@@ -9,7 +9,7 @@ import (
 )
 
 type GoodsController struct {
-	BaseController
+	BasePtController
 }
 
 // @Summary 获取所有商品

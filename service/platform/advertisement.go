@@ -12,7 +12,7 @@ import (
 )
 
 type ADController struct {
-	BaseController
+	BasePtController
 }
 
 //TODO:swagger

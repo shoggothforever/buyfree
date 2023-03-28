@@ -11,7 +11,7 @@ import (
 )
 
 type DevadminController struct {
-	BaseController
+	BasePtController
 }
 
 func GetOnlineState(state bool) string {

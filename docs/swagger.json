@@ -18,6 +18,291 @@
     "host": "bf.shoggothy.xyz",
     "basePath": "/",
     "paths": {
+        "/dr/factory": {
+            "get": {
+                "description": "按照场站距离展示数据，距离进的排名靠前",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "场站信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/factory/infos/{id}": {
+            "get": {
+                "description": "根据场站ID获取场站具体信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "场站详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "场站ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/home": {
+            "get": {
+                "description": "展示销售数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver"
+                ],
+                "summary": "车主端首页",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.HomePageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/inventory": {
+            "get": {
+                "description": "展示车主拥有的设备库存数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver"
+                ],
+                "summary": "车主设备库存",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.InventoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/login": {
+            "post": {
+                "description": "Input user's nickname and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "车主用户登录",
+                "parameters": [
+                    {
+                        "description": "输入昵称，密码",
+                        "name": "loginInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.LoginInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/order": {
+            "post": {
+                "description": "点击结算，展示订单信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "订单界面",
+                "parameters": [
+                    {
+                        "description": "车主订单信息",
+                        "name": "OrderForm",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DriverOrderForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.OrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/order/pay": {
+            "put": {
+                "description": "结算",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "补货订单结算",
+                "parameters": [
+                    {
+                        "description": "传入订单信息",
+                        "name": "OrderForm",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DriverOrderForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PayResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/register": {
+            "post": {
+                "description": "Input info as model.User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "车主用户注册",
+                "parameters": [
+                    {
+                        "description": "一定要填入已有的平台ID,用户名，密码，password_salt为可选项",
+                        "name": "RegisterInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Driver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/pt/ads": {
             "post": {
                 "description": "按照Advertisement定义的内容传递json格式的数据,无需传入平台ID",
@@ -300,10 +585,10 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "车主用户登录",
+                "summary": "平台用户登录",
                 "parameters": [
                     {
-                        "description": "输入昵称，密码 需要用户id和盐",
+                        "description": "输入昵称，密码",
                         "name": "loginInfo",
                         "in": "body",
                         "required": true,
@@ -540,17 +825,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Driver"
+                    "User"
                 ],
-                "summary": "车主用户注册",
+                "summary": "平台用户注册",
                 "parameters": [
                     {
-                        "description": "一定要填入已有的平台ID,用户名，密码，password_salt为可选项",
+                        "description": "只需要用户名，密码，password_salt为可选项",
                         "name": "RegisterInfo",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Driver"
+                            "$ref": "#/definitions/model.Platform"
                         }
                     }
                 ],
@@ -611,7 +896,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Platform"
                 ],
                 "summary": "销售数据统计",
                 "parameters": [
@@ -969,6 +1254,67 @@
                             "$ref": "#/definitions/model.ORDERSTATE"
                         }
                     ]
+                }
+            }
+        },
+        "model.FactoryProduct": {
+            "type": "object",
+            "properties": {
+                "annually_sales": {
+                    "type": "number"
+                },
+                "buy_price": {
+                    "description": "销售价",
+                    "type": "number"
+                },
+                "daily_sales": {
+                    "type": "number"
+                },
+                "factory_id": {
+                    "type": "integer"
+                },
+                "factory_name": {
+                    "description": "场站名字",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "inventory": {
+                    "description": "存货",
+                    "type": "integer"
+                },
+                "is_on_shelf": {
+                    "description": "上架状态",
+                    "type": "boolean"
+                },
+                "monthly_sales": {
+                    "type": "number"
+                },
+                "name": {
+                    "description": "产品名称",
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "图片",
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "supply_price": {
+                    "description": "批发价",
+                    "type": "number"
+                },
+                "total_sales": {
+                    "type": "number"
+                },
+                "type": {
+                    "description": "型号",
+                    "type": "string"
+                },
+                "weekly_sales": {
+                    "type": "number"
                 }
             }
         },
@@ -1408,6 +1754,106 @@
                 }
             }
         },
+        "response.FactoryInfo": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "场站地理位置",
+                    "type": "string"
+                },
+                "balance": {
+                    "description": "账户余额",
+                    "type": "number"
+                },
+                "created_at": {
+                    "description": "注册时间",
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "description": "注销选项\tGORM.",
+                    "type": "string"
+                },
+                "distance": {
+                    "type": "number"
+                },
+                "factoryProducts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FactoryProduct"
+                    }
+                },
+                "id": {
+                    "description": "唯一标志符",
+                    "type": "integer"
+                },
+                "id_card": {
+                    "type": "string"
+                },
+                "level": {
+                    "description": "用户等级，成长制度待定",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.LEVEL"
+                        }
+                    ]
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "用户昵称",
+                    "type": "string"
+                },
+                "orderForms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DriverOrderForm"
+                    }
+                },
+                "password": {
+                    "type": "string"
+                },
+                "password_salt": {
+                    "description": "密码盐",
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "用户头像(需要添加修改头像功能）",
+                    "type": "string"
+                },
+                "products": {
+                    "description": "供应的商品",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FactoryProduct"
+                    }
+                },
+                "role": {
+                    "description": "用户身份标志符，注册时确认",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.FactoryInfoResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "factoryInfos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.FactoryInfo"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "response.FactoryProductsInfo": {
             "type": "object",
             "properties": {
@@ -1454,6 +1900,49 @@
                 }
             }
         },
+        "response.HomePageResponse": {
+            "type": "object",
+            "properties": {
+                "adlist": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Advertisement"
+                    }
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "daily_sales": {
+                    "type": "number"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "productRankList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ProductRank"
+                    }
+                }
+            }
+        },
+        "response.InventoryResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DeviceProduct"
+                    }
+                }
+            }
+        },
         "response.LoginResponse": {
             "type": "object",
             "properties": {
@@ -1486,6 +1975,17 @@
                     "items": {
                         "$ref": "#/definitions/response.FactoryProductsInfo"
                     }
+                }
+            }
+        },
+        "response.PayResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
                 }
             }
         },

@@ -9,10 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type RegisterInfo struct {
+	Name, Password, PasswordSalt string
+}
+
 // PlatformAccount godoc
 // @Summary 平台用户注册
 // @Description 	Input info as model.User
-// @Tags			Platform
+// @Tags			User
 // @accept			json
 // @Produce			json
 // @Param	RegisterInfo body model.Platform true "只需要用户名，密码，password_salt为可选项"
@@ -49,10 +53,10 @@ func PlatformRegister(c *gin.Context) {
 // PlatformAccount godoc
 // @Summary 平台用户登录
 // @Description 	Input user's nickname and password
-// @Tags			Platform
+// @Tags			User
 // @accept			json
 // @Produce			json
-// @Param loginInfo body model.LoginInfo true "输入昵称，密码 需要用户id和盐"
+// @Param loginInfo body model.LoginInfo true "输入昵称，密码"
 // @Success			200 {object} response.LoginResponse
 // @Failure			500 {object} response.LoginResponse
 // @Router			/pt/login [post]
@@ -90,13 +94,13 @@ func PlatformLogin(c *gin.Context) {
 
 // @Summary 车主用户注册
 // @Description 	Input info as model.User
-// @Tags			Driver
+// @Tags			User
 // @accept			json
 // @Produce			json
 // @Param	RegisterInfo body model.Driver true "一定要填入已有的平台ID,用户名，密码，password_salt为可选项"
 // @Success			200 {object} response.LoginResponse
 // @failure			500 {object} response.LoginResponse
-// @Router			/pt/register [post]
+// @Router			/dr/register [post]
 func DriverRegister(c *gin.Context) {
 	//一定要定义成值类型，在bind里要传地址
 	var admin model.Driver
@@ -127,10 +131,10 @@ func DriverRegister(c *gin.Context) {
 // @Tags			User
 // @accept			json
 // @Produce			json
-// @Param loginInfo body model.LoginInfo true "输入昵称，密码 需要用户id和盐"
+// @Param loginInfo body model.LoginInfo true "输入昵称，密码"
 // @Success			200 {object} response.LoginResponse
 // @Failure			500 {object} response.LoginResponse
-// @Router			/pt/login [post]
+// @Router			/dr/login [post]
 func DriverLogin(c *gin.Context) {
 	var l []model.LoginInfo
 	var admin model.Driver
