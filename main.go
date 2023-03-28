@@ -2,6 +2,8 @@ package main
 
 import (
 	"buyfree/service"
+	"fmt"
+	"os/exec"
 	"sync"
 )
 
@@ -31,7 +33,14 @@ var once sync.Once
 //	close(utils.Refundchannel)
 //	close(utils.Orderchannel)
 //}
-
+func init() {
+	cmd := exec.Command("swag", "init")
+	err := cmd.Run()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("swagger.json生成成功")
+}
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
