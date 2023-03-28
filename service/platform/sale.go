@@ -11,7 +11,7 @@ import (
 )
 
 type SalesController struct {
-	BaseController
+	BasePtController
 }
 
 // @Summary	展示销售数据
@@ -96,7 +96,7 @@ func getsalesmessage(mode int64) string {
 //TODO: 统计数据补全计划
 // @Summary	销售数据统计
 // @Description	展示管理场站的销售数据，获取详细的销售排行信息
-// @Tags User
+// @Tags Platform
 // @Accept json
 // @Accept mpfd
 // @Produce json

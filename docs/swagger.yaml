@@ -225,6 +225,49 @@ definitions:
         - $ref: '#/definitions/model.ORDERSTATE'
         description: 订单状态
     type: object
+  model.FactoryProduct:
+    properties:
+      annually_sales:
+        type: number
+      buy_price:
+        description: 销售价
+        type: number
+      daily_sales:
+        type: number
+      factory_id:
+        type: integer
+      factory_name:
+        description: 场站名字
+        type: string
+      id:
+        type: integer
+      inventory:
+        description: 存货
+        type: integer
+      is_on_shelf:
+        description: 上架状态
+        type: boolean
+      monthly_sales:
+        type: number
+      name:
+        description: 产品名称
+        type: string
+      pic:
+        description: 图片
+        type: string
+      sku:
+        type: string
+      supply_price:
+        description: 批发价
+        type: number
+      total_sales:
+        type: number
+      type:
+        description: 型号
+        type: string
+      weekly_sales:
+        type: number
+    type: object
   model.LEVEL:
     enum:
     - 0
@@ -526,6 +569,74 @@ definitions:
       weekly_sales:
         type: number
     type: object
+  response.FactoryInfo:
+    properties:
+      address:
+        description: 场站地理位置
+        type: string
+      balance:
+        description: 账户余额
+        type: number
+      created_at:
+        description: 注册时间
+        type: string
+      deleted_at:
+        description: "注销选项\tGORM."
+        type: string
+      distance:
+        type: number
+      factoryProducts:
+        items:
+          $ref: '#/definitions/model.FactoryProduct'
+        type: array
+      id:
+        description: 唯一标志符
+        type: integer
+      id_card:
+        type: string
+      level:
+        allOf:
+        - $ref: '#/definitions/model.LEVEL'
+        description: 用户等级，成长制度待定
+      mobile:
+        type: string
+      name:
+        description: 用户昵称
+        type: string
+      orderForms:
+        items:
+          $ref: '#/definitions/model.DriverOrderForm'
+        type: array
+      password:
+        type: string
+      password_salt:
+        description: 密码盐
+        type: string
+      pic:
+        description: 用户头像(需要添加修改头像功能）
+        type: string
+      products:
+        description: 供应的商品
+        items:
+          $ref: '#/definitions/model.FactoryProduct'
+        type: array
+      role:
+        description: 用户身份标志符，注册时确认
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  response.FactoryInfoResponse:
+    properties:
+      code:
+        type: integer
+      factoryInfos:
+        items:
+          $ref: '#/definitions/response.FactoryInfo'
+        type: array
+      msg:
+        type: string
+    type: object
   response.FactoryProductsInfo:
     properties:
       factory_name:
@@ -556,6 +667,34 @@ definitions:
           $ref: '#/definitions/response.FactoryProductsInfo'
         type: array
     type: object
+  response.HomePageResponse:
+    properties:
+      adlist:
+        items:
+          $ref: '#/definitions/model.Advertisement'
+        type: array
+      code:
+        type: integer
+      daily_sales:
+        type: number
+      msg:
+        type: string
+      productRankList:
+        items:
+          $ref: '#/definitions/model.ProductRank'
+        type: array
+    type: object
+  response.InventoryResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/model.DeviceProduct'
+        type: array
+    type: object
   response.LoginResponse:
     properties:
       code:
@@ -578,6 +717,13 @@ definitions:
         items:
           $ref: '#/definitions/response.FactoryProductsInfo'
         type: array
+    type: object
+  response.PayResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
     type: object
   response.Response:
     properties:
@@ -660,6 +806,192 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /dr/factory:
+    get:
+      consumes:
+      - application/json
+      description: 按照场站距离展示数据，距离进的排名靠前
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 场站信息
+      tags:
+      - Driver/Replenish
+  /dr/factory/infos/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据场站ID获取场站具体信息
+      parameters:
+      - description: 场站ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 场站详情
+      tags:
+      - Driver/Replenish
+  /dr/home:
+    get:
+      consumes:
+      - application/json
+      description: 展示销售数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.HomePageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 车主端首页
+      tags:
+      - Driver
+  /dr/inventory:
+    get:
+      consumes:
+      - application/json
+      description: 展示车主拥有的设备库存数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.InventoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 车主设备库存
+      tags:
+      - Driver
+  /dr/login:
+    post:
+      consumes:
+      - application/json
+      description: Input user's nickname and password
+      parameters:
+      - description: 输入昵称，密码
+        in: body
+        name: loginInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+      summary: 车主用户登录
+      tags:
+      - User
+  /dr/order:
+    post:
+      consumes:
+      - application/json
+      description: 点击结算，展示订单信息
+      parameters:
+      - description: 车主订单信息
+        in: body
+        name: OrderForm
+        required: true
+        schema:
+          $ref: '#/definitions/model.DriverOrderForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 订单界面
+      tags:
+      - Driver/Replenish
+  /dr/order/pay:
+    put:
+      consumes:
+      - application/json
+      description: 结算
+      parameters:
+      - description: 传入订单信息
+        in: body
+        name: OrderForm
+        required: true
+        schema:
+          $ref: '#/definitions/model.DriverOrderForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PayResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 补货订单结算
+      tags:
+      - Driver/Replenish
+  /dr/register:
+    post:
+      consumes:
+      - application/json
+      description: Input info as model.User
+      parameters:
+      - description: 一定要填入已有的平台ID,用户名，密码，password_salt为可选项
+        in: body
+        name: RegisterInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Driver'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+      summary: 车主用户注册
+      tags:
+      - User
   /pt/ads:
     post:
       consumes:
@@ -845,7 +1177,7 @@ paths:
       - application/json
       description: Input user's nickname and password
       parameters:
-      - description: 输入昵称，密码 需要用户id和盐
+      - description: 输入昵称，密码
         in: body
         name: loginInfo
         required: true
@@ -862,7 +1194,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
-      summary: 车主用户登录
+      summary: 平台用户登录
       tags:
       - User
   /pt/orders/factory/{mode}:
@@ -1006,12 +1338,12 @@ paths:
       - application/json
       description: Input info as model.User
       parameters:
-      - description: 一定要填入已有的平台ID,用户名，密码，password_salt为可选项
+      - description: 只需要用户名，密码，password_salt为可选项
         in: body
         name: RegisterInfo
         required: true
         schema:
-          $ref: '#/definitions/model.Driver'
+          $ref: '#/definitions/model.Platform'
       produces:
       - application/json
       responses:
@@ -1023,9 +1355,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
-      summary: 车主用户注册
+      summary: 平台用户注册
       tags:
-      - Driver
+      - User
   /pt/screen:
     get:
       consumes:
@@ -1072,7 +1404,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: 销售数据统计
       tags:
-      - User
+      - Platform
 securityDefinitions:
   BasicAuth:
     type: basic

@@ -11,7 +11,7 @@ import (
 )
 
 type DevinfoController struct {
-	BaseController
+	BasePtController
 }
 
 //TODO: 利用redis对车主端的数据进行统计，

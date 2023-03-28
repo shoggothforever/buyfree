@@ -70,6 +70,7 @@ func GetRankKeyByMode(adp, uname string, mode int) string {
 	y, timem, d := now.Date()
 	m := int(timem)
 	if mode == 0 {
+		//uname:adp..DailyRanksKey:y-m-d
 		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+DailyRanksKey, y, m, d)
 	} else if mode == 1 {
 		offset := int(time.Monday - now.Weekday())

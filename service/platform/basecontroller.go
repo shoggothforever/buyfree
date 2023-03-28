@@ -5,10 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type BaseController struct {
+type BasePtController struct {
 }
 
-func (con BaseController) Success(c *gin.Context, code int64, msg string, Res ...interface{}) {
+func (con BasePtController) Success(c *gin.Context, code int64, msg string, Res ...interface{}) {
 	c.JSON(200, gin.H{
 		"code": code,
 		"msg":  msg,
@@ -16,6 +16,6 @@ func (con BaseController) Success(c *gin.Context, code int64, msg string, Res ..
 	})
 }
 
-func (con BaseController) Error(c *gin.Context, code int64, msg string) {
+func (con BasePtController) Error(c *gin.Context, code int64, msg string) {
 	c.JSON(200, response.Response{Code: code, Msg: msg})
 }
