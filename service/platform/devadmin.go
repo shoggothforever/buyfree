@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -37,12 +38,12 @@ func GetOnlineState(state bool) string {
 func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	//mode =0 全部 1 在线 2离线 3已激活 4 未激活
 	mode := c.Param("mode")
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		d.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.User)
+	admin := iadmin.(model.Platform)
 	var pid = admin.ID
 	var devs []*model.Device
 	var driver model.Driver
@@ -127,12 +128,12 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 		return
 	}
 	//fmt.Println(dev)
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		d.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.User)
+	admin := iadmin.(model.Platform)
 	dev.PlatformID = admin.ID
 	err = dal.Getdb().Model(&model.Device{}).Create(&dev).Error
 	if err == nil {

@@ -11,55 +11,56 @@ func GetBeginningOfTheDay(offset int) string {
 	return fmt.Sprintf("%d-%d-%d 00:00:00", y, m, d)
 }
 
-func GetDailySalesKey(uname string, offset int) string {
+func GetDailySalesKey(adp, uname string, offset int) string {
 	y, timem, d := time.Now().In(time.Local).AddDate(0, 0, offset).Date()
 	m := int(timem)
-	return fmt.Sprintf("%s:%s:%d-%d-%d", uname, DailySalesKey, y, m, d)
+	return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+DailySalesKey, y, m, d)
 }
 
-func GetAllTimeKeys(uname string) []string {
+//平台获取所有时间节点的销量信息
+func GetAllTimeKeys(adp, uname string) []string {
 	keys := []string{
 		GetBeginningOfTheDay(0),
 		GetBeginningOfTheDay(-1),
-		GetTimeKeyByMode(uname, 0),
-		GetTimeKeyByMode(uname, 1),
-		GetTimeKeyByMode(uname, 2),
-		GetTimeKeyByMode(uname, 3),
-		GetTimeKeyByMode(uname, 4),
-		GetTimeKeyByMode(uname, 5),
-		GetDailySalesKey(uname, 0),
-		GetDailySalesKey(uname, -1),
-		GetDailySalesKey(uname, -2),
-		GetDailySalesKey(uname, -3),
-		GetDailySalesKey(uname, -4),
-		GetDailySalesKey(uname, -5),
-		GetDailySalesKey(uname, -6),
+		GetSalesKeyByMode(adp, uname, 0),
+		GetSalesKeyByMode(adp, uname, 1),
+		GetSalesKeyByMode(adp, uname, 2),
+		GetSalesKeyByMode(adp, uname, 3),
+		GetSalesKeyByMode(adp, uname, 4),
+		GetSalesKeyByMode(adp, uname, 5),
+		GetDailySalesKey(adp, uname, 0),
+		GetDailySalesKey(adp, uname, -1),
+		GetDailySalesKey(adp, uname, -2),
+		GetDailySalesKey(adp, uname, -3),
+		GetDailySalesKey(adp, uname, -4),
+		GetDailySalesKey(adp, uname, -5),
+		GetDailySalesKey(adp, uname, -6),
 	}
 	return keys
 }
 
 //根据模式获取相应的时间 0一天的开始，1：一周的开始，2：当月第一天，3：当年第一天.4:连续七天,5:总榜
-func GetTimeKeyByMode(uname string, mode int) string {
+func GetSalesKeyByMode(adp, uname string, mode int) string {
 	now := time.Now().In(time.Local)
 	y, timem, d := now.Date()
 	m := int(timem)
 	if mode == 0 {
-		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, DailySalesKey, y, m, d)
+		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+DailySalesKey, y, m, d)
 	} else if mode == 1 {
 		offset := int(time.Monday - now.Weekday())
 		if offset > 0 {
 			offset = -6
 		}
 		y, m, d := time.Now().In(time.Local).AddDate(0, 0, offset).Date()
-		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, WeeklySalesKey, y, m, d)
+		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+WeeklySalesKey, y, m, d)
 	} else if mode == 2 {
-		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, MonthSalesKey, y, m, 1)
+		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+MonthSalesKey, y, m, 1)
 	} else if mode == 3 {
-		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, AnnuallySalesKey, y, 1, 1)
+		return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+AnnuallySalesKey, y, 1, 1)
 	} else if mode == 4 {
-		return fmt.Sprintf("%s:%s", uname, Constantly7aysSalesKey)
+		return fmt.Sprintf("%s:%s", uname, adp+Constantly7aysSalesKey)
 	} else if mode == 5 {
-		return fmt.Sprintf("%s:%s", uname, TOTALSalesKey)
+		return fmt.Sprintf("%s:%s", uname, adp+TOTALSalesKey)
 	}
 	return "root:root:2006-1-2 15:-4:-5"
 }
@@ -99,19 +100,22 @@ func GetAllTypeRankKeys(adp, uname string) []string {
 	return s
 }
 
-//func GetAllADRankKeys(adid string) []string {
-//	s := []string{
-//		GetRankKeyByMode(adid, 0),
-//		GetRankKeyByMode("AD", 0),
-//		GetRankKeyByMode(adid, 1),
-//		GetRankKeyByMode("AD", 1),
-//		GetRankKeyByMode(adid, 2),
-//		GetRankKeyByMode("AD", 2),
-//		GetRankKeyByMode(adid, 3),
-//		GetRankKeyByMode("AD", 3),
-//		GetRankKeyByMode(adid, 4),
-//		GetRankKeyByMode("AD", 4),
-//	}
-//	fmt.Println(s)
-//	return s
-//}
+func GetDriverSalesKeys(uname string) []string {
+	now := time.Now().In(time.Local)
+	offset := int(time.Monday - now.Weekday())
+	if offset > 0 {
+		offset = -6
+	}
+	y, m, d := time.Now().In(time.Local).AddDate(0, 0, offset).Date()
+	weekkey := fmt.Sprintf("%s:%s:%d-%d-%d", uname, WeeklySalesKey, y, m, d)
+	y, m, d = time.Now().In(time.Local).AddDate(0, 0, offset-7).Date()
+	lastweekkey := fmt.Sprintf("%s:%s:%d-%d-%d", uname, WeeklySalesKey, y, m, d)
+	return []string{
+		GetDailySalesKey(Ranktype1, uname, 0),
+		GetDailySalesKey(Ranktype1, uname, -1),
+		weekkey,
+		lastweekkey,
+		GetSalesKeyByMode(Ranktype1, uname, 2),
+		GetSalesKeyByMode(Ranktype2, uname, 0),
+	}
+}

@@ -11,7 +11,7 @@ type FactoryController struct {
 }
 
 // @Summary 场站信息
-// @Description 按照场站距离展示数据，距离进的排名靠前
+// @Description 按照场站距离展示数据，距离近的排名靠前
 // @Tags Driver/Replenish
 // @Accept json
 // @Produce json
@@ -56,24 +56,20 @@ func (i *FactoryController) Detail(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param OrderForm body model.DriverOrderForm true "车主订单信息"
-// @Success 200 {object} response.OrderResponse
+// @Success 201 {object} response.OrderResponse
 // @Failure 400 {onject} response.Response
-// @Router /dr/order [post]
+// @Router /dr/order/submit [post]
 func (i *FactoryController) Order(c *gin.Context) {
-	//id := c.Param("id")
 	//var orderform model.DriverOrderForm
-	//var detail []response.FactoryInfo
-	//
-	//c.JSON(200, response.FactoryInfoResponse{
-	//	response.Response{200, "成功获取该场站商品信息"},
-	//	detail,
-	//})
-	//c.Set("Orderform", orderform)
-	//c.Set("id", id)
-	var OrderInfos []response.FactoryProductsInfo
-	c.JSON(200, response.OrderResponse{
-		response.Response{200, "支付成功"},
-		OrderInfos,
+	//id := strconv.FormatInt(utils.IDWorker.NextId(), 10)
+	var OrderForm model.DriverOrderForm
+	c.ShouldBind(&OrderForm)
+	OrderForm.State = 0
+	//var Prdoucts []model.OrderProduct
+
+	c.JSON(200, response.DriverOrdersResponse{
+		response.Response{200, "订单提交成功"},
+		[]model.DriverOrderForm{OrderForm},
 	})
 	c.Next()
 }
@@ -84,7 +80,7 @@ func (i *FactoryController) Order(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param OrderForm body model.DriverOrderForm true "传入订单信息"
-// @Success 200 {object} response.PayResponse
+// @Success 201 {object} response.PayResponse
 // @Failure 400 {onject} response.Response
 // @Router /dr/order/pay [put]
 func (i *FactoryController) Pay(c *gin.Context) {
@@ -92,7 +88,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	//TODO:业务逻辑
 	//fmt.Println(id)
 	c.JSON(200, response.PayResponse{
-		response.Response{200, "支付成功"},
+		response.Response{201, "支付成功"},
 	})
 
 }

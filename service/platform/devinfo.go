@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -64,15 +65,15 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		})
 		return
 	}
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		d.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.User)
+	admin := iadmin.(model.Platform)
 	name := admin.Name
 	rdb := dal.Getrdb()
-	info, err := utils.GetSalesInfo(c, rdb, name)
+	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
 	if err != nil {
 		c.JSON(200, response.Response{
 			400,

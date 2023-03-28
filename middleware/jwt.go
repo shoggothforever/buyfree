@@ -6,6 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	PTADMIN string = "ptadmin"
+	DRADMIN string = "dradmin"
+	FADMIN  string = "fadmin"
+)
+
 //使用中间件实现鉴权
 func AuthJwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -46,9 +52,15 @@ func AuthJwt() gin.HandlerFunc {
 			c.Set("Jwt", jwt)
 			var id int64
 			dal.Getdb().Raw("select user_id from login_infos where jwt=?", jwt).First(&id)
-			var admin model.User
-			dal.Getdb().Model(&model.User{}).Where("id=?", id).First(&admin)
-			c.Set("admin", admin)
+			var ptadmin model.Platform
+			dal.Getdb().Model(&model.Platform{}).Where("id=?", id).First(&ptadmin)
+			c.Set(PTADMIN, ptadmin)
+			var dradmin model.Driver
+			dal.Getdb().Model(&model.Driver{}).Where("id=?", id).First(&dradmin)
+			c.Set(DRADMIN, dradmin)
+			var fadmin model.Driver
+			dal.Getdb().Model(&model.Factory{}).Where("id=?", id).First(&fadmin)
+			c.Set(FADMIN, fadmin)
 			c.Next()
 		}
 	}

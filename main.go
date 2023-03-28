@@ -35,7 +35,7 @@ var once sync.Once
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
-	go service.Driverrouter()
+	//service.Driverrouter()
 	service.PlatFormrouter()
 
 }

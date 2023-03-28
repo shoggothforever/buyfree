@@ -2,9 +2,11 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strconv"
@@ -26,14 +28,14 @@ type SalesController struct {
 func (s *SalesController) GetScreenData(c *gin.Context) {
 	var si response.ScreenInfo
 	rdb := dal.Getrdb()
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		s.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.User)
+	admin := iadmin.(model.Platform)
 	name := admin.Name
-	curve := utils.SalesOf7Days(c, rdb, name)
+	curve := utils.SalesOf7Days(c, rdb, utils.Ranktype1, name)
 	err := dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		s.Error(c, 400, "无法获取设备数量")
@@ -51,7 +53,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	}
 	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
 
-	info, err := utils.GetSalesInfo(c, rdb, name)
+	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
 	if err != nil {
 		s.Error(c, 400, "获取用户信息失败")
 		return
@@ -105,7 +107,7 @@ func getsalesmessage(mode int64) string {
 // @Failure 400 {object} response.Response
 // @Router /pt/static/{mode} [get]
 func (s *SalesController) GetSales(c *gin.Context) {
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		s.Error(c, 400, "获取用户信息失败")
 		return
@@ -115,9 +117,12 @@ func (s *SalesController) GetSales(c *gin.Context) {
 		s.Error(c, 400, "请输入正确的模式信息")
 		return
 	}
-	name := iadmin.(model.User).Name
+	name := iadmin.(model.Platform).Name
+	fmt.Println(iadmin)
+	fmt.Println(name)
 	rdb := dal.Getrdb()
-	info, err := utils.GetSalesInfo(c, rdb, name)
+	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
+	fmt.Println(info, err)
 	if err != nil {
 		s.Error(c, 400, "无法获取销量信息")
 		return

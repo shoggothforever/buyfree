@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -28,12 +29,12 @@ type ADController struct {
 // @Router /pt/ads/list/{page} [get]
 func (a *ADController) GetADList(c *gin.Context) {
 	page, _ := strconv.ParseInt(c.Param("page"), 10, 64)
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		a.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.User)
+	admin := iadmin.(model.Platform)
 	var ads []model.Advertisement
 	dal.Getdb().Model(model.Advertisement{}).Limit(20).Where("platform_id = ? ", admin.ID).Offset(int((page - 1) * 20)).Find(&ads)
 
@@ -58,12 +59,12 @@ func (a *ADController) GetADList(c *gin.Context) {
 func (a *ADController) AddAD(c *gin.Context) {
 	var ad model.Advertisement
 	c.Bind(&ad)
-	iadmin, ok := c.Get("admin")
+	iadmin, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		a.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.User)
+	admin := iadmin.(model.Platform)
 	ad.PlatformID = admin.ID
 	err := dal.Getdb().Model(model.Advertisement{}).Limit(20).Create(&ad).Error
 	ad.Profit = 0

@@ -17,10 +17,11 @@ func TestLua(t *testing.T) {
 		DB:       10,
 	})
 	ctx := context.TODO()
-	utils.Lualock(ctx, rdb, []string{"mylock"}, val, "30")
-	utils.Luaunlock(ctx, rdb, key, val)
-	utils.ChangeTodaySales(ctx, rdb, key, "123")
-	//t.Log(utils.ModifySales(ctx, rdb, "dsm", "2333"))
+	//utils.Lualock(ctx, rdb, []string{"mylock"}, val, "30")
+	//utils.Luaunlock(ctx, rdb, key, val)
+	//utils.ChangeTodaySales(ctx, rdb, key, "123")
+	t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, "dsm", "2333"))
+	t.Log(utils.GetSalesInfo(ctx, rdb, utils.Ranktype1, "dsm"))
 	//t.Log(utils.GetAllTypeRankKeys(utils.Ranktype1, "dsm"))
 	{
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "0", 123)
@@ -43,5 +44,6 @@ func TestLua(t *testing.T) {
 	//t.Log(utils.SalesOf7Days(ctx, rdb, "dsm"))
 	//t.Log(utils.GetSalesInfo(ctx, rdb, "dsm"))
 	//t.Log("测试通过")
+	//t.Log(utils.GetDriverSalesKeys("dsm"))
 
 }

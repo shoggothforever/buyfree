@@ -58,7 +58,7 @@ func PlatformRegister(c *gin.Context) {
 // @Produce			json
 // @Param loginInfo body model.LoginInfo true "输入昵称，密码"
 // @Success			200 {object} response.LoginResponse
-// @Failure			500 {object} response.LoginResponse
+// @Failure			400 {object} response.LoginResponse
 // @Router			/pt/login [post]
 func PlatformLogin(c *gin.Context) {
 	var l []model.LoginInfo
@@ -99,7 +99,7 @@ func PlatformLogin(c *gin.Context) {
 // @Produce			json
 // @Param	RegisterInfo body model.Driver true "一定要填入已有的平台ID,用户名，密码，password_salt为可选项"
 // @Success			200 {object} response.LoginResponse
-// @failure			500 {object} response.LoginResponse
+// @failure			400 {object} response.LoginResponse
 // @Router			/dr/register [post]
 func DriverRegister(c *gin.Context) {
 	//一定要定义成值类型，在bind里要传地址

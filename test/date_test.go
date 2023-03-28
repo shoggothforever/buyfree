@@ -1,19 +1,18 @@
 package test
 
 import (
-	"buyfree/utils"
 	"testing"
 )
 
 func TestDatefunc(t *testing.T) {
 	//y, m, d := utils.GetFirstDayOfWeek()
-	//t.Error(utils.GetTimeKeyByMode("dsm", 0))
-	//t.Log(utils.GetTimeKeyByMode("dsm", 1))
-	//t.Log(utils.GetTimeKeyByMode("dsm", 2))
-	//t.Log(utils.GetTimeKeyByMode("dsm", 3))
-	//t.Log(utils.GetTimeKeyByMode("dsm", 4))
-	//t.Log(utils.GetTimeKeyByMode("dsm", 5))
-	t.Error(utils.GetAllTimeKeys("dsm"))
+	//t.Error(utils.GetSalesKeyByMode(utils.Ranktype1, "dsm", 0))
+	//t.Log(utils.GetSalesKeyByMode(utils.Ranktype1, "dsm", 1))
+	//t.Log(utils.GetSalesKeyByMode(utils.Ranktype1, "dsm", 2))
+	//t.Log(utils.GetSalesKeyByMode(utils.Ranktype1, "dsm", 3))
+	//t.Log(utils.GetSalesKeyByMode(utils.Ranktype1, "dsm", 4))
+	//t.Log(utils.GetSalesKeyByMode(utils.Ranktype1, "dsm", 5))
+	//t.Error(utils.GetAllTimeKeys(utils.Ranktype1, "dsm"))
 	//if y != 2023 || m != int(time.Now().Month()) || d != 20 {
 	//	t.Error("函数实现出错1", y, m, d)
 	//}
