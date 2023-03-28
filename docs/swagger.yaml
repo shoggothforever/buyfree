@@ -437,6 +437,15 @@ definitions:
       msg:
         type: string
     type: object
+  response.CartResponse:
+    properties:
+      cart:
+        $ref: '#/definitions/model.DriverCart'
+      code:
+        type: integer
+      msg:
+        type: string
+    type: object
   response.DevInfoResponse:
     properties:
       activated_time:
@@ -521,6 +530,43 @@ definitions:
         type: array
       msg:
         type: string
+    type: object
+  response.DriverDeviceResponse:
+    properties:
+      code:
+        type: integer
+      devices:
+        items:
+          $ref: '#/definitions/model.Device'
+        type: array
+      msg:
+        type: string
+    type: object
+  response.DriverOrderDetailResponse:
+    properties:
+      code:
+        type: integer
+      distance:
+        type: number
+      factory_address:
+        type: string
+      msg:
+        type: string
+      orderInfos:
+        $ref: '#/definitions/model.DriverOrderForm'
+      reserve_mobile:
+        type: string
+    type: object
+  response.DriverOrdersResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      orderInfos:
+        items:
+          $ref: '#/definitions/model.DriverOrderForm'
+        type: array
     type: object
   response.FactoryGoodsResponse:
     properties:
@@ -669,20 +715,26 @@ definitions:
     type: object
   response.HomePageResponse:
     properties:
-      adlist:
-        items:
-          $ref: '#/definitions/model.Advertisement'
-        type: array
+      ad_daily_sales:
+        type: number
+      ad_play_times:
+        type: integer
       code:
         type: integer
+      daily_ratio:
+        type: number
       daily_sales:
+        type: number
+      monthly_sales:
         type: number
       msg:
         type: string
       productRankList:
         items:
-          $ref: '#/definitions/model.ProductRank'
+          $ref: '#/definitions/model.DeviceProduct'
         type: array
+      weekly_ratio:
+        type: number
     type: object
   response.InventoryResponse:
     properties:
@@ -810,7 +862,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 按照场站距离展示数据，距离进的排名靠前
+      description: 按照场站距离展示数据，距离近的排名靠前
       produces:
       - application/json
       responses:
@@ -865,10 +917,79 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: onject
+            $ref: '#/definitions/response.Response'
       summary: 车主端首页
       tags:
       - Driver
+  /dr/infos/device:
+    get:
+      consumes:
+      - application/json
+      description: 获取激活设备信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DriverDeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 我的信息界面获取车主设备信息
+      tags:
+      - Driver/info
+  /dr/infos/orderdetail/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据传入id查看具体的订单信息
+      parameters:
+      - description: 订单的编号
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DriverOrderDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取订单信息
+      tags:
+      - Driver/info
+  /dr/infos/orderform/{mode}:
+    get:
+      consumes:
+      - application/json
+      description: 根据输入mode查看全部，代付款，待取货订单
+      parameters:
+      - description: mode=0查看全部订单，mode=1查看待付款订单，mode=2查看待取货订单
+        in: path
+        name: mode
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DriverOrdersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取订单信息
+      tags:
+      - Driver/info
   /dr/inventory:
     get:
       consumes:
@@ -914,30 +1035,29 @@ paths:
       summary: 车主用户登录
       tags:
       - User
-  /dr/order:
-    post:
+  /dr/order/cart/{id}:
+    get:
       consumes:
       - application/json
-      description: 点击结算，展示订单信息
+      description: 展示所有添加的商品，点击结算，跳转到订单提交界面
       parameters:
-      - description: 车主订单信息
-        in: body
-        name: OrderForm
+      - description: 车主id
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/model.DriverOrderForm'
+        type: integer
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            $ref: '#/definitions/response.OrderResponse'
+            $ref: '#/definitions/response.CartResponse'
         "400":
           description: Bad Request
           schema:
             type: onject
-      summary: 订单界面
+      summary: 购物车界面
       tags:
       - Driver/Replenish
   /dr/order/pay:
@@ -955,8 +1075,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/response.PayResponse'
         "400":
@@ -964,6 +1084,32 @@ paths:
           schema:
             type: onject
       summary: 补货订单结算
+      tags:
+      - Driver/Replenish
+  /dr/order/submit:
+    post:
+      consumes:
+      - application/json
+      description: 点击结算，展示订单信息
+      parameters:
+      - description: 车主订单信息
+        in: body
+        name: OrderForm
+        required: true
+        schema:
+          $ref: '#/definitions/model.DriverOrderForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 订单界面
       tags:
       - Driver/Replenish
   /dr/register:
@@ -985,8 +1131,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.LoginResponse'
-        "500":
-          description: Internal Server Error
+        "400":
+          description: Bad Request
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 车主用户注册
@@ -1190,8 +1336,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.LoginResponse'
-        "500":
-          description: Internal Server Error
+        "400":
+          description: Bad Request
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 平台用户登录
