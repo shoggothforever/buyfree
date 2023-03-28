@@ -27,7 +27,7 @@ const docTemplate = `{
     "paths": {
         "/dr/factory": {
             "get": {
-                "description": "按照场站距离展示数据，距离进的排名靠前",
+                "description": "按照场站距离展示数据，距离近的排名靠前",
                 "consumes": [
                     "application/json"
                 ],
@@ -115,7 +115,112 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/infos/device": {
+            "get": {
+                "description": "获取激活设备信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/info"
+                ],
+                "summary": "我的信息界面获取车主设备信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DriverDeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/infos/orderdetail/{id}": {
+            "get": {
+                "description": "根据传入id查看具体的订单信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/info"
+                ],
+                "summary": "获取订单信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "订单的编号",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DriverOrderDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/infos/orderform/{mode}": {
+            "get": {
+                "description": "根据输入mode查看全部，代付款，待取货订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/info"
+                ],
+                "summary": "获取订单信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "mode=0查看全部订单，mode=1查看待付款订单，mode=2查看待取货订单",
+                        "name": "mode",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DriverOrdersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -190,9 +295,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/dr/order": {
-            "post": {
-                "description": "点击结算，展示订单信息",
+        "/dr/order/cart/{id}": {
+            "get": {
+                "description": "展示所有添加的商品，点击结算，跳转到订单提交界面",
                 "consumes": [
                     "application/json"
                 ],
@@ -202,23 +307,21 @@ const docTemplate = `{
                 "tags": [
                     "Driver/Replenish"
                 ],
-                "summary": "订单界面",
+                "summary": "购物车界面",
                 "parameters": [
                     {
-                        "description": "车主订单信息",
-                        "name": "OrderForm",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.DriverOrderForm"
-                        }
+                        "type": "integer",
+                        "description": "车主id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/response.OrderResponse"
+                            "$ref": "#/definitions/response.CartResponse"
                         }
                     },
                     "400": {
@@ -255,10 +358,50 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/response.PayResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/order/submit": {
+            "post": {
+                "description": "点击结算，展示订单信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "订单界面",
+                "parameters": [
+                    {
+                        "description": "车主订单信息",
+                        "name": "OrderForm",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DriverOrderForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.OrderResponse"
                         }
                     },
                     "400": {
@@ -301,8 +444,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
                         }
@@ -611,8 +754,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
                         }
@@ -1569,6 +1712,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.CartResponse": {
+            "type": "object",
+            "properties": {
+                "cart": {
+                    "$ref": "#/definitions/model.DriverCart"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "response.DevInfoResponse": {
             "type": "object",
             "properties": {
@@ -1691,6 +1848,63 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "response.DriverDeviceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Device"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DriverOrderDetailResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "distance": {
+                    "type": "number"
+                },
+                "factory_address": {
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "orderInfos": {
+                    "$ref": "#/definitions/model.DriverOrderForm"
+                },
+                "reserve_mobile": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DriverOrdersResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "orderInfos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DriverOrderForm"
+                    }
                 }
             }
         },
@@ -1910,16 +2124,22 @@ const docTemplate = `{
         "response.HomePageResponse": {
             "type": "object",
             "properties": {
-                "adlist": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Advertisement"
-                    }
+                "ad_daily_sales": {
+                    "type": "number"
+                },
+                "ad_play_times": {
+                    "type": "integer"
                 },
                 "code": {
                     "type": "integer"
                 },
+                "daily_ratio": {
+                    "type": "number"
+                },
                 "daily_sales": {
+                    "type": "number"
+                },
+                "monthly_sales": {
                     "type": "number"
                 },
                 "msg": {
@@ -1928,8 +2148,11 @@ const docTemplate = `{
                 "productRankList": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.ProductRank"
+                        "$ref": "#/definitions/model.DeviceProduct"
                     }
+                },
+                "weekly_ratio": {
+                    "type": "number"
                 }
             }
         },

@@ -26,8 +26,8 @@ func Driverrouter() {
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
-	//r := gin.New()
-	r := gin.Default()
+	r := gin.New()
+	//r := gin.Default()
 	r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	DriverSrv = http.Server{
