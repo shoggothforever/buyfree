@@ -137,19 +137,10 @@ func modifySales() *redis.Script {
 	for i=1,15,1 do
 	keys[i]=tostring(KEYS[i])
 	end
-	local bit =tonumber(redis.call("getbit",keys[1],0))
-    if bit == 0 then
-		redis.call("setbit",keys[1],0,1)
-		redis.call("del",keys[2])
-		redis.call("lpush",keys[3],0)
-		vals[2]=tonumber(redis.call("lpop",keys[3])) or 0
-		redis.call("lpush",keys[3],val+vals[2])
-	else
-		if val~=0 then
-			for i=3,8,1 do
-				vals[i]=tonumber(redis.call("lpop",keys[i])) or 0
-				redis.call("lpush",keys[i],vals[i]+val)
-			end
+	if val~=0 then
+		for i=3,8,1 do
+			vals[i]=tonumber(redis.call("lpop",keys[i])) or 0
+			redis.call("lpush",keys[i],vals[i]+val)
 		end
 	end
 	local array={}
@@ -199,12 +190,12 @@ func getSalesInfo() *redis.Script {
 }
 
 func Lualock(c context.Context, rdb *redis.Client, key []string, val ...string) {
-	ret := rdb.EvalSha(c, SHASET.LockSHA, key, val)
+	ret := rdb.EvalSha(c, SHASET.LockSHA, []string{"lock"}, val)
 	res, err := ret.Result()
 	fmt.Println("加锁结果", res, err)
 }
 func Luaunlock(c context.Context, rdb *redis.Client, key []string, val ...string) {
-	res, err := rdb.EvalSha(c, SHASET.UnlockSHA, key, val).Result()
+	res, err := rdb.EvalSha(c, SHASET.UnlockSHA, []string{"lock"}, val).Result()
 	fmt.Println("解锁结果", res, err)
 }
 func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ...string) {
@@ -212,10 +203,10 @@ func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ..
 	res, err := ret.Result()
 	fmt.Println("列表长度", res, err)
 }
-func SalesOf7Days(c context.Context, rdb *redis.Client, uname string, val ...string) [7]int64 {
+func SalesOf7Days(c context.Context, rdb *redis.Client, adp, uname string, val ...string) [7]int64 {
 
-	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(uname), val)
-	fmt.Println(GetAllTimeKeys(uname))
+	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(adp, uname), val)
+	fmt.Println(GetAllTimeKeys(adp, uname))
 	res, err := ret.Result()
 	//fmt.Println(res, err)
 	var sales [7]int64
@@ -237,9 +228,10 @@ func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, v
 }
 
 //改变销量信息的lua脚本
-func ModifySales(c context.Context, rdb *redis.Client, uname string, val ...string) []int64 {
+func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) []int64 {
 
-	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(uname), val)
+	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(adp, uname), val)
+	fmt.Println(GetAllTimeKeys(adp, uname))
 	res, err := ret.Result()
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while modifying Sales", err)
@@ -282,10 +274,10 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 }
 
 //获取销量信息
-func GetSalesInfo(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
-	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(uname))
+func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]float64, error) {
+	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(adp, uname))
 	res, err := ret.Result()
-	//fmt.Println(res)
+	fmt.Println(res)
 	var array []float64
 	if err != nil {
 		logrus.Info("ERROR HAPPENS while getting sales info", err)

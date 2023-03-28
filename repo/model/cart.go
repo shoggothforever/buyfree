@@ -10,9 +10,9 @@ type CartService interface {
 	AccountWithTicket(...Ticket)
 }
 type Cart struct {
-	CartID      int64   `gorm:"primaryKey" json:"cart_id"`
-	TotalCount  int64   `gorm:"comment:全选金额" json:"total_count"`
-	TotalAmount float64 `gorm:"comment:全部商品数量" json:"total_amount"`
+	CartID      int64   `gorm:"primaryKey" json:"cart_id" form:"cart_id"`
+	TotalCount  int64   `gorm:"comment:全选金额" json:"total_count" form:"total_count"`
+	TotalAmount float64 `gorm:"comment:全部商品数量" json:"total_amount" form:"total_amount"`
 	//存储
 	Products []*OrderProduct `gorm:"foreignKey:CartRefer"`
 }
@@ -20,16 +20,16 @@ type Cart struct {
 //需要创建OrderProudct表
 type PassengerCart struct {
 	//外键 Passenger.Uuid
-	PassengerID int64 `json:"passenger_id"`
+	PassengerID int64 `json:"passenger_id" form:"passenger_id"`
 	Cart
 }
 type DriverCart struct {
 	//外键 Driver.Uuid
-	DriverID string `json:"driver_id"`
+	DriverID string `json:"driver_id" form:"driver_id"`
 	//添加进购物车时自动获取
-	FactoryName string `gorm:"comment:购物场站名称" json:"factory_name"`
+	FactoryName string `gorm:"comment:购物场站名称" json:"factory_name" form:"factory_name"`
 	//距离场站距离
-	Distance int64 `gorm:"comment:距离场站距离" json:"distance"`
+	Distance int64 `gorm:"comment:距离场站距离" json:"distance" form:"distance"`
 	Cart
 }
 

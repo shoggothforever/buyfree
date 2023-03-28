@@ -21,11 +21,11 @@ var DriverSrv http.Server
 
 func Driverrouter() {
 	flag.Parse()
-	//if *d == false {
-	//	gin.SetMode(gin.ReleaseMode)
-	//} else {
-	//	gin.SetMode(gin.DebugMode)
-	//}
+	if *d == true {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
 	//r := gin.New()
 	r := gin.Default()
 	r.Static("/static", "../public")
@@ -43,6 +43,8 @@ func Driverrouter() {
 	var ht driverapp.HomePageController
 	var it driverapp.InventoryController
 	var ft driverapp.FactoryController
+	var dft driverapp.InfoController
+	var cat driverapp.CartController
 	r.GET("/", base.Ping)
 
 	dr := r.Group("/dr")
@@ -60,8 +62,16 @@ func Driverrouter() {
 	}
 	od := dr.Group("/order")
 	{
-		od.POST("", ft.Order)
+		od.POST("/submit", ft.Order)
 		od.PUT("/pay", ft.Pay)
+		od.GET("/cart/:id", cat.GetCart)
+	}
+	pr := dr.Group("/infos")
+	{
+
+		pr.GET("/device", dft.Getdevice)
+		pr.GET("/orderform/:mode", dft.GetOrders)
+		pr.GET("/orderdetail/:id", dft.GetOrder)
 	}
 	QuitDriverChan = make(chan os.Signal)
 	signal.Notify(QuitDriverChan, os.Interrupt)

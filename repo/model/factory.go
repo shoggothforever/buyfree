@@ -12,7 +12,7 @@ import "github.com/google/uuid"
 type Factory struct {
 	User
 	//场站地理位置
-	Address string `gorm:"comment:场站位置信息" json:"address"`
+	Address string `gorm:"comment:场站位置信息" json:"address" form:"address"`
 	//供应的商品
 	Products   []*FactoryProduct  `gorm:"foreignkey:FactoryID" `
 	OrderForms []*DriverOrderForm `gorm:"foreignkey:FactoryID"`

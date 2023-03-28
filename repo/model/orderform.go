@@ -39,7 +39,7 @@ type PassengerOrderForm struct {
 	OrderForm
 }
 
-//需要关联创表
+//需要关联创表,其实是场站存放的司机发起的订单
 type DriverOrderForm struct {
 	FactoryID   int64  `gorm:"comment:指向factory.id" json:"factory_id"`
 	FactoryName string `gorm:"comment:订单发货场站名" json:"factory_name"`
@@ -65,17 +65,17 @@ type ReplenInfo struct {
 
 type SingleOrderForm struct {
 	//订单车主ID
-	UserID int64 `json:"user_id"`
+	UserID int64 `json:"user_id" form:"user_id"`
 	//订单编码
-	OrderID string `json:"order_id"`
+	OrderID string `json:"order_id" form:"order_id"`
 	//花费
-	Cost int64 `json:"cost"`
+	Cost int64 `json:"cost" form:"cost"`
 	//订单状态 订单状态 2-已完成 1-待取货 0-未支付
-	State ORDERSTATE `json:"state"`
+	State ORDERSTATE `json:"state" form:"state"`
 	//支付时存储位置(购物时获取车主位置）
-	Location string `json:"location"`
+	Location string `json:"location" form:"location"`
 	//true:订货，false:退货
-	IsReplenishment bool `json:"is_replenishment"`
+	IsReplenishment bool `json:"is_replenishment" form:"is_replenishment"`
 }
 
 //工作站

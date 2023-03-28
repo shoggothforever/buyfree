@@ -25,13 +25,13 @@ var PlatFormSrv http.Server
 
 func PlatFormrouter() {
 	flag.Parse()
-	if *b == false {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		gin.SetMode(gin.DebugMode)
-	}
-	r := gin.New()
-	//r := gin.Default()
+	//if *b == false {
+	//	gin.SetMode(gin.ReleaseMode)
+	//} else {
+	//	gin.SetMode(gin.DebugMode)
+	//}
+	//r := gin.New()
+	r := gin.Default()
 	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	PlatFormSrv = http.Server{
