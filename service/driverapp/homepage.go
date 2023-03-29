@@ -16,7 +16,7 @@ type HomePageController struct {
 }
 
 // @Summary 车主端首页
-// @Description 展示销售数据
+// @Description 展示销售数据(日收入，日环比，周环比，本月收入，今日广告收入以及播放次数，两件热销商品)
 // @Tags Driver
 // @Accept json
 // @Produce json
@@ -38,6 +38,7 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		h.Error(c, 400, "获取车主端首页信息失败")
 		return
 	}
+	//fmt.Println(array)
 	var static response.HomeStatic
 	static.ADDailySales = array[5]
 	static.MonthlySales = array[4]
@@ -54,19 +55,26 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		static.WeeklyRatio = (array[2] - array[3]) / array[3]
 	}
 	var ids []int64
-	err = dal.Getdb().Raw("select id from devices where owner_id = ? ", admin.ID).First(&static.ADPlayTimes).Error
+	//fmt.Println(admin.ID)
+	db := dal.Getdb()
+	err = db.Raw("select id from devices where owner_id = ? ", admin.ID).Find(&ids).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		fmt.Println(err)
-		h.Error(c, 400, "获取设备信息失败")
-		return
+		h.Error(c, 400, "没有绑定设备信息")
 	}
+	//fmt.Println(ids)
 	if len(ids) != 0 {
-		err = dal.Getdb().Raw("select sum(play_times) from ad_devices where device_id in ?", ids).First(&static.ADPlayTimes).Error
+		err = db.Raw("select sum(play_times),sum(profit) from ad_devices where device_id in ?", ids).Row().Scan(&static.ADPlayTimes, &static.ADDailySales)
 		if err != gorm.ErrRecordNotFound && err != nil {
 			fmt.Println(err)
-			h.Error(c, 400, "获取车主端首页信息失败")
-			return
+			h.Error(c, 400, "无法获取车主端广告信息")
 		}
 	}
-	c.JSON(200, response.HomePageResponse{response.Response{200, "获取首页信息成功"}, static})
+	err = db.Raw("select * from device_products where device_id in ? order by monthly_sales DESC limit 2", ids).Find(&static.ProductRankList).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
+		fmt.Println(err)
+		h.Error(c, 400, "无法获取车主端商品排行信息")
+	}
+	fmt.Println(static)
+	c.JSON(200, response.HomePageResponse{response.Response{200, "首页信息:"}, static})
 }
