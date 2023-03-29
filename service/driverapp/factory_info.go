@@ -84,7 +84,7 @@ func (i *FactoryController) Order(c *gin.Context) {
 // @Failure 400 {onject} response.Response
 // @Router /dr/order/pay [put]
 func (i *FactoryController) Pay(c *gin.Context) {
-	//id, _ := c.Get("id")
+	//id, _ := c.GetInventory("id")
 	//TODO:业务逻辑
 	//fmt.Println(id)
 	c.JSON(200, response.PayResponse{
