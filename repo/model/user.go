@@ -7,7 +7,7 @@ import (
 type ROLE int
 
 const (
-	PASSENGER ROLE = iota
+	PASSENGER int64 = iota
 	DRIVER
 	FACTORYADMIN
 	PLATFORMADMIN
@@ -80,6 +80,7 @@ type Possesion struct {
 
 type LoginInfo struct {
 	UserID   int64  `json:"id" form:"user_id"`
+	ROLE     int64  `gorm:"commenr:0代表乘客，1代表司机，2代表场站，3代表平台" json:"role" form:"role"`
 	Password string `json:"password" form:"password"`
 	Salt     string `gorm:"comment:加密盐" json:"salt" form:"salt"`
 	Jwt      string `gorm:"comment:鉴权值" json:"jwt" form:"jwt"`

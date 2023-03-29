@@ -10,7 +10,7 @@ import (
 
 //注册 后续可以增加修改密码功能
 func SavePtUser(admin *model.Platform) (model.LoginInfo, error) {
-	admin.Role = 3
+	admin.Role = int(model.PLATFORMADMIN)
 	admin.ID = utils.GetSnowFlake()
 	logininfo, err := SavePtLoginInfo(admin)
 	if err != nil {
@@ -20,7 +20,7 @@ func SavePtUser(admin *model.Platform) (model.LoginInfo, error) {
 
 }
 func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
-	admin.Role = 1
+	admin.Role = int(model.DRIVER)
 	admin.ID = utils.GetSnowFlake()
 	logininfo, err := SaveDrLoginInfo(admin)
 	if err != nil {
@@ -34,6 +34,7 @@ func SavePtLoginInfo(admin *model.Platform) (model.LoginInfo, error) {
 	var err error
 	loginInfo.UserID = admin.ID
 	loginInfo.Salt = admin.PasswordSalt
+	loginInfo.ROLE = model.PLATFORMADMIN
 	loginInfo.Password = utils.Messagedigest5(admin.Password, admin.PasswordSalt)
 	loginInfo.Jwt, err = utils.GeneraterJwt(admin.ID, admin.Name, admin.PasswordSalt)
 	if err != nil {
@@ -50,6 +51,7 @@ func SaveDrLoginInfo(admin *model.Driver) (model.LoginInfo, error) {
 	var err error
 	loginInfo.UserID = admin.ID
 	loginInfo.Salt = admin.PasswordSalt
+	loginInfo.ROLE = model.DRIVER
 	loginInfo.Password = utils.Messagedigest5(admin.Password, admin.PasswordSalt)
 	loginInfo.Jwt, err = utils.GeneraterJwt(admin.ID, admin.Name, admin.PasswordSalt)
 	if err != nil {

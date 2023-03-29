@@ -38,6 +38,7 @@ type ScriptSha struct {
 	SalesOf7daysSSHA,
 	ModifySalesSHA,
 	ModifyRanksSHA,
+	GetHomeStatic,
 	GetSalesInfoSHA string
 }
 
@@ -58,6 +59,7 @@ func init() {
 	SHASET.ModifySalesSHA = loadsha(modifySales, c, rdb)
 	SHASET.ModifyRanksSHA = loadsha(modifyranks, c, rdb)
 	SHASET.SalesOf7daysSSHA = loadsha(salesOF7days, c, rdb)
+	SHASET.GetHomeStatic = loadsha(getHomeStatic, c, rdb)
 }
 
 //加锁lua脚本,设置过期时间 ExLock
@@ -189,6 +191,18 @@ func getSalesInfo() *redis.Script {
 `)
 }
 
+//获取车主端主页信息
+func getHomeStatic() *redis.Script {
+	return redis.NewScript(`
+	local array={}
+	local len =#KEYS
+	for i=1,len,1 do
+	array[i]=tonumber(redis.call("lindex",KEYS[i],0)) or 0
+	end
+	return array
+`)
+}
+
 func Lualock(c context.Context, rdb *redis.Client, key []string, val ...string) {
 	ret := rdb.EvalSha(c, SHASET.LockSHA, []string{"lock"}, val)
 	res, err := ret.Result()
@@ -253,7 +267,7 @@ func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku strin
 	//fmt.Println(res)
 }
 
-//获取广告或者商品的排行
+//获取平台广告或者商品的排行
 //adp: rank类型 queryname:填入广告或者商品的唯一标志符，广告的ID，商品的SKU
 func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mode int) ([]model.ProductRank, error) {
 	if mode < 0 || mode > 5 {
@@ -273,7 +287,7 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 	return ranklist, nil
 }
 
-//获取销量信息
+//获取平台销量信息
 func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]float64, error) {
 	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(adp, uname))
 	res, err := ret.Result()
@@ -289,4 +303,21 @@ func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]fl
 	}
 	//fmt.Println(array)
 	return array, nil
+}
+
+//依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
+func GetHomeStatic(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
+	var arr []float64
+	ret := rdb.EvalSha(c, SHASET.GetHomeStatic, GetDriverSalesKeys(uname))
+	res, err := ret.Result()
+	if err != nil {
+		logrus.Info("获取车主端首页数据失败")
+		return []float64{0, 0, 0, 0, 0}, err
+	}
+	//fmt.Println(res, err)
+	for _, v := range res.([]interface{}) {
+		arr = append(arr, float64(v.(int64)))
+	}
+	fmt.Println(arr, err)
+	return arr, nil
 }
