@@ -8,13 +8,19 @@ import "github.com/google/uuid"
 //	notifyAll()
 //}
 //
-
+type Geo struct {
+	//场站地址
+	Address string `gorm:"comment:场站位置信息" json:"address" form:"address"`
+	//经度
+	Longitude string `gorm:"comment:经度" json:"longitude" form:"longitude"`
+	//纬度
+	Latitude string `gorm:"comment:纬度" json:"latitude" form:"latitude"`
+}
 type Factory struct {
 	User
-	//场站地理位置
-	Address string `gorm:"comment:场站位置信息" json:"address" form:"address"`
+	Geo
 	//供应的商品
-	Products   []*FactoryProduct  `gorm:"foreignkey:FactoryID" `
+	Products   []*FactoryProduct  `gorm:"foreignkey:FactoryID"`
 	OrderForms []*DriverOrderForm `gorm:"foreignkey:FactoryID"`
 }
 

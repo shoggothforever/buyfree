@@ -46,9 +46,9 @@ func TestLua(t *testing.T) {
 	//测试根据Ranktype 和 用户名获得 七日销售数据
 	//t.Log(utils.SalesOf7Days(ctx, rdb, utils.Ranktype1, "dsm"))
 	//t.Log(utils.GetSalesInfo(ctx, rdb, "dsm"))
-	t.Log(utils.GetDriverSalesKeys("dsm"))
-	t.Log(utils.GetHomeStatic(ctx, rdb, "dsm"))
 	//t.Log(utils.GetDriverSalesKeys("dsm"))
+	t.Log(utils.GetHomeStatic(ctx, rdb, "dsm"))
+	t.Log(utils.GetDriverSalesKeys("dsm"))
 
 	//t.Log("测试通过")
 }

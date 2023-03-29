@@ -2,6 +2,7 @@ package service
 
 import (
 	"buyfree/middleware"
+	"buyfree/service/auth"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -30,8 +31,12 @@ func Factoryrouter() {
 		w := c.Writer
 		w.Write([]byte("welecome to factory.buyfree.com"))
 	})
-	//r.POST("/register", auth.Register)
-	//r.POST("/login", auth.Login)
+	fa := r.Group("/fa")
+	{
+		fa.POST("/register", auth.FactoryRegister)
+		fa.POST("/login", auth.FactoryLogin)
+	}
+	r.Use(middleware.AuthJwt())
 	fr := r.Group("/factory")
 	{
 		fr.POST("/supply", func(c *gin.Context) {

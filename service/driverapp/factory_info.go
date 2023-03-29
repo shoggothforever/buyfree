@@ -1,9 +1,14 @@
 package driverapp
 
 import (
+	"buyfree/dal"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type FactoryController struct {
@@ -11,19 +16,65 @@ type FactoryController struct {
 }
 
 // @Summary 场站信息
+
 // @Description 按照场站距离展示数据，距离近的排名靠前
 // @Tags Driver/Replenish
 // @Accept json
 // @Produce json
+// @Param locInfo body model.Geo true "传入进行该操作时的司机地理位置信息，Address为可选项,其余为必填项"
 // @Success 200 {object} response.FactoryInfoResponse
 // @Failure 400 {onject} response.Response
-// @Router /dr/factory [get]
-func (i *FactoryController) Get(c *gin.Context) {
-	var detail []response.FactoryInfo
+// @Router /dr/factory [post]
+func (i *FactoryController) FactoryOverview(c *gin.Context) {
+	var locinfo model.Geo
+	err := c.ShouldBind(&locinfo)
+	if err != nil || locinfo.Longitude == "" || locinfo.Latitude == "" {
+		i.Error(c, 400, "地理信息获取失败,请传入正确的地理信息")
+		return
+	}
+	fmt.Println(locinfo)
+	//可能不需要获取车主信息
+	//iadmin, ok := c.Get(middleware.DRADMIN)
+	//if ok != true {
+	//	i.Error(c, 400, "获取用户信息失败")
+	//	return
+	//}
+	//admin, ok := iadmin.(model.Driver)
+	//if ok != true {
+	//	i.Error(c, 400, "获取车主信息失败")
+	//	return
+	//}
 
+	rdb := dal.Getrdb()
+	db := dal.Getdb()
+	ctx := rdb.Context()
+	ires, err := utils.LocRadiusWithDist(ctx, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "10", "km")
+	if err != nil {
+		i.Error(c, 400, "附近场站信息获取失败,请传入正确的地理信息")
+		return
+	}
+	//t.Log(res, len(res.([]interface{})))
+	res := ires.([]interface{})
+	n := len(res)
+	views := make([]response.FactoryInfo, n)
+	for k, iv := range res {
+		v := iv.([]interface{})
+		views[k].FactoryName = v[0].(string)
+		views[k].Distance = v[1].(string)
+		err := db.Raw("select pic,name from factory_products where factory_name = ?", views[k].FactoryName).Limit(5).Find(&views[k].ProductViews).Error
+		if err != gorm.ErrRecordNotFound && err != nil {
+			logrus.Info("获取"+views[k].FactoryName+"的商品信息失败", err)
+			continue
+		}
+		if len(views[k].ProductViews) == 0 {
+			defaultfp := response.FactoryProductOverview{"void", "void"}
+			views[k].ProductViews = []response.FactoryProductOverview{defaultfp}
+		}
+		fmt.Println(views[k].ProductViews)
+	}
 	c.JSON(200, response.FactoryInfoResponse{
 		response.Response{200, "成功获取附近场站信息"},
-		detail,
+		views,
 	})
 	c.Next()
 }

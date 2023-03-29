@@ -58,7 +58,7 @@ func Driverrouter() {
 	dr.GET("/inventory", it.GetInventory)
 	fa := dr.Group("/factory")
 	{
-		fa.GET("", ft.Get)
+		fa.POST("", ft.FactoryOverview)
 		fa.GET("/infos/:id", ft.Detail)
 	}
 	od := dr.Group("/order")

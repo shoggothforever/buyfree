@@ -163,3 +163,82 @@ func DriverLogin(c *gin.Context) {
 	}
 	c.Next()
 }
+
+// @Summary 场站用户注册
+// @Description 	Input info as model.User
+// @Tags			User
+// @accept			json
+// @Produce			json
+// @Param	RegisterInfo body model.Factory true "填入用户名，密码，password_salt为可选项"
+// @Success			200 {object} response.LoginResponse
+// @failure			400 {object} response.LoginResponse
+// @Router			/fa/register [post]
+func FactoryRegister(c *gin.Context) {
+	//一定要定义成值类型，在bind里要传地址
+	var admin model.Factory
+	c.ShouldBind(&admin)
+	rdb := dal.Getrdb()
+	ctx := rdb.Context()
+	//向redis中写入场站的地理位置信息
+	utils.LocAdd(ctx, rdb, utils.LOCATION, admin.Longitude, admin.Latitude, admin.Name)
+	logininfo, err := SaveFUser(&admin)
+	if err == nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				200,
+				"注册成功",
+			},
+			logininfo.UserID,
+			logininfo.Jwt})
+		c.Set("Authorization", "Bearer:"+logininfo.Jwt)
+	} else {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"注册失败"},
+			-1,
+			""})
+	}
+	c.Next()
+}
+
+// @Summary 场站用户登录
+// @Description 	Input user's nickname and password
+// @Tags			User
+// @accept			json
+// @Produce			json
+// @Param loginInfo body model.LoginInfo true "输入昵称，密码"
+// @Success			200 {object} response.LoginResponse
+// @Failure			500 {object} response.LoginResponse
+// @Router			/fa/login [post]
+func FactoryLogin(c *gin.Context) {
+	var l []model.LoginInfo
+	var admin model.Driver
+	//输入昵称，密码 需要用户id和盐
+	c.ShouldBind(&admin)
+	var password string = admin.Password
+	//查找数据库获得用户的密码盐
+	dal.Getdb().Raw("select id,password_salt from factorys where name = ? and role = ?", admin.Name, model.FACTORYADMIN).First(&admin)
+	psw := utils.Messagedigest5(password, admin.PasswordSalt)
+	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
+	if len(l) != 0 {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				200,
+				"登录成功"},
+			l[0].UserID,
+			l[0].Jwt,
+		})
+		c.Set("Authorization", "Bearer:"+l[0].Jwt)
+		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
+	} else {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+	}
+	c.Next()
+}

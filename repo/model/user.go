@@ -41,7 +41,7 @@ type User struct {
 	Name     string `gorm:"notnull;unique;size:32;comment:用户昵称" json:"name" form:"name"`
 	Password string `gorm:"size:32:comment:用户密码" json:"password" form:"password"`
 	//密码盐
-	PasswordSalt string `gorm:"comment:年销售量" json:"password_salt" form:"password_salt"`
+	PasswordSalt string `gorm:"comment:密码盐" json:"password_salt" form:"password_salt"`
 	Mobile       string `gorm:"comment:手机号" json:"mobile" form:"mobile"`
 	IDCard       string `gorm:"comment:身份证" json:"id_card" form:"id_card"`
 	//用户身份标志符，注册时确认

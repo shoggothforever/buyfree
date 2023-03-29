@@ -98,7 +98,7 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 				dev.ID,
 				dev.ActivatedTime,
 				dev.UpdatedTime,
-				driver.Location,
+				driver.Address,
 				driver.Name,
 				driver.Mobile,
 				prinfos,
