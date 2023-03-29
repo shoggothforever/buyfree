@@ -94,7 +94,7 @@ const docTemplate = `{
         },
         "/dr/home": {
             "get": {
-                "description": "展示销售数据",
+                "description": "展示销售数据(日收入，日环比，周环比，本月收入，今日广告收入以及播放次数，两件热销商品)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1500,6 +1500,9 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
+                },
+                "role": {
+                    "type": "integer"
                 },
                 "salt": {
                     "type": "string"

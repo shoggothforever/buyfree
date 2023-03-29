@@ -8,6 +8,7 @@ import (
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +31,11 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		return
 	}
 	rdb := dal.Getrdb()
-	admin := iadmin.(model.Driver)
+	admin, ok := iadmin.(model.Driver)
+	if ok != true {
+		h.Error(c, 400, "获取车主信息失败")
+		return
+	}
 	fmt.Println(admin)
 	array, err := utils.GetHomeStatic(c, rdb, admin.Name)
 	fmt.Println(array, err)
@@ -66,15 +71,15 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 	if len(ids) != 0 {
 		err = db.Raw("select sum(play_times),sum(profit) from ad_devices where device_id in ?", ids).Row().Scan(&static.ADPlayTimes, &static.ADDailySales)
 		if err != gorm.ErrRecordNotFound && err != nil {
-			fmt.Println(err)
+			logrus.Info(err)
 			h.Error(c, 400, "无法获取车主端广告信息")
 		}
 	}
-	err = db.Raw("select * from device_products where device_id in ? order by monthly_sales DESC limit 2", ids).Find(&static.ProductRankList).Error
+	err = db.Where("device_id in ?", ids).Order("monthly_sales DESC").Limit(2).Find(&static.ProductRankList).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
-		fmt.Println(err)
+		logrus.Info(err)
 		h.Error(c, 400, "无法获取车主端商品排行信息")
 	}
-	fmt.Println(static)
+	//fmt.Println(static)
 	c.JSON(200, response.HomePageResponse{response.Response{200, "首页信息:"}, static})
 }

@@ -55,7 +55,7 @@ func Driverrouter() {
 	}
 	dr.Use(middleware.AuthJwt())
 	dr.GET("/home", ht.GetStatic)
-	dr.GET("/inventory", it.Get)
+	dr.GET("/inventory", it.GetInventory)
 	fa := dr.Group("/factory")
 	{
 		fa.GET("", ft.Get)
