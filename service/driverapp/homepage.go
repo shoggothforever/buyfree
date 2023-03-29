@@ -36,7 +36,7 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		h.Error(c, 400, "获取车主信息失败")
 		return
 	}
-	fmt.Println(admin)
+	//fmt.Println(admin)
 	array, err := utils.GetHomeStatic(c, rdb, admin.Name)
 	fmt.Println(array, err)
 	if err != nil {

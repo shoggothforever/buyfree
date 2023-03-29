@@ -16,7 +16,7 @@
 -- Table structure for login_infos
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."login_infos";
-CREATE TABLE "public"."login_infos" ( "user_id" INT8, "password" TEXT COLLATE "pg_catalog"."default", "salt" TEXT COLLATE "pg_catalog"."default", "jwt" TEXT COLLATE "pg_catalog"."default" );
+CREATE TABLE "public"."login_infos" ( "user_id" INT8,"role" INT8, "password" TEXT COLLATE "pg_catalog"."default", "salt" TEXT COLLATE "pg_catalog"."default", "jwt" TEXT COLLATE "pg_catalog"."default" );
 ALTER TABLE "public"."login_infos" OWNER TO "bf";
 COMMENT ON COLUMN "public"."login_infos"."salt" IS '加密盐';
 COMMENT ON COLUMN "public"."login_infos"."jwt" IS '鉴权值';
@@ -33,6 +33,7 @@ CREATE TABLE "public"."passengers" (
                                        "pic" TEXT COLLATE "pg_catalog"."default",
                                        "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
                                        "password" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                       "password_salt" TEXT COLLATE "pg_catalog"."default",
                                        "mobile" TEXT COLLATE "pg_catalog"."default",
                                        "id_card" TEXT COLLATE "pg_catalog"."default",
                                        "role" INT8 NOT NULL,
@@ -94,7 +95,7 @@ COMMENT ON COLUMN "public"."passenger_order_forms"."paytime" IS '支付时间';
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."factories";
 CREATE TABLE "public"."factories" (
-                                      "id" INT8 NOT NULL ,
+                                      "id" INT8 NOT NULL,
                                       "created_at" TIMESTAMPTZ ( 6 ),
                                       "updated_at" TIMESTAMPTZ ( 6 ),
                                       "deleted_at" TIMESTAMPTZ ( 6 ),
@@ -108,6 +109,9 @@ CREATE TABLE "public"."factories" (
                                       "level" INT8 NOT NULL,
                                       "password_salt" TEXT COLLATE "pg_catalog"."default",
                                       "address" TEXT COLLATE "pg_catalog"."default",
+                                      "longitude" VARCHAR ( 30 ) COLLATE "pg_catalog"."default",
+                                      "description" VARCHAR ( 255 ) COLLATE "pg_catalog"."default",
+                                      "latitude" VARCHAR ( 30 ) COLLATE "pg_catalog"."default",
                                       CONSTRAINT "factories_pkey" PRIMARY KEY ( "id" ),
                                       CONSTRAINT "factories_name_key" UNIQUE ( "name" )
 );
@@ -121,7 +125,9 @@ COMMENT ON COLUMN "public"."factories"."role" IS '身份 0-乘客 1-司机 2-场
 COMMENT ON COLUMN "public"."factories"."level" IS '用户等级';
 COMMENT ON COLUMN "public"."factories"."password_salt" IS '年销售量';
 COMMENT ON COLUMN "public"."factories"."address" IS '场站位置信息';
-
+COMMENT ON COLUMN "public"."factories"."longitude" IS '经度';
+COMMENT ON COLUMN "public"."factories"."description" IS '场站描述';
+COMMENT ON COLUMN "public"."factories"."latitude" IS '纬度';
 -- ----------------------------
 -- Table structure for factory_products
 -- ----------------------------
@@ -197,7 +203,7 @@ COMMENT ON COLUMN "public"."platforms"."password_salt" IS '年销售量';
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."drivers";
 CREATE TABLE "public"."drivers" (
-                                    "id" INT8 NOT NULL ,
+                                    "id" INT8 NOT NULL,
                                     "created_at" TIMESTAMPTZ ( 6 ),
                                     "updated_at" TIMESTAMPTZ ( 6 ),
                                     "deleted_at" TIMESTAMPTZ ( 6 ),
@@ -212,9 +218,13 @@ CREATE TABLE "public"."drivers" (
                                     "car_id" TEXT COLLATE "pg_catalog"."default",
                                     "platform_id" INT8,
                                     "is_auth" BOOL,
-                                    "location" TEXT COLLATE "pg_catalog"."default",
+                                    "address" TEXT COLLATE "pg_catalog"."default",
+                                    "password_salt" TEXT COLLATE "pg_catalog"."default",
+                                    "longitude" VARCHAR COLLATE "pg_catalog"."default",
+                                    "latitude" VARCHAR COLLATE "pg_catalog"."default",
                                     CONSTRAINT "drivers_pkey" PRIMARY KEY ( "id" ),
-                                    CONSTRAINT "fk_platforms_authorized_drivers" FOREIGN KEY ( "platform_id" ) REFERENCES "public"."platforms" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
+                                    CONSTRAINT "fk_platforms_authorized_drivers" FOREIGN KEY ( "platform_id" ) REFERENCES "public"."platforms" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
+                                    CONSTRAINT "idx_drivers_name" UNIQUE ( "name" )
 );
 ALTER TABLE "public"."drivers" OWNER TO "bf";
 COMMENT ON COLUMN "public"."drivers"."balance" IS '账户余额';
@@ -226,7 +236,10 @@ COMMENT ON COLUMN "public"."drivers"."role" IS '身份 0-乘客 1-司机 2-场�
 COMMENT ON COLUMN "public"."drivers"."level" IS '用户等级';
 COMMENT ON COLUMN "public"."drivers"."car_id" IS '车牌号';
 COMMENT ON COLUMN "public"."drivers"."is_auth" IS '1为已认证，0为未认证';
-COMMENT ON COLUMN "public"."drivers"."location" IS '地理位置';
+COMMENT ON COLUMN "public"."drivers"."address" IS '地理位置';
+COMMENT ON COLUMN "public"."drivers"."password_salt" IS '密码盐';
+COMMENT ON COLUMN "public"."drivers"."longitude" IS '经度';
+COMMENT ON COLUMN "public"."drivers"."latitude" IS '纬度';
 
 -- ----------------------------
 -- Table structure for order_products

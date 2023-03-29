@@ -5,6 +5,29 @@ import (
 	"time"
 )
 
+//热销榜，排行榜data struct ZSET  key:data    val: productname  score sale func:zrankbyscore,
+//清理过去数据使用 ZREMRANGEBYLEX
+//统计七天销售数据 data struct List key:date	val:sales 策略：每天0点 使用lpush操作添加
+const (
+	DailySalesKey          string = "Sales:Daily"    //val:product
+	Constantly7aysSalesKey string = "Sales:7days"    //要求连续 val:
+	WeeklySalesKey         string = "Sales:Weekly"   //不要求连续 val:
+	MonthSalesKey          string = "Sales:Monthly"  //+month
+	AnnuallySalesKey       string = "Sales:Annually" //+year
+	TOTALSalesKey          string = "Sales:Totally"
+	ExLock                 int64  = 30
+	ExpireOfSalesInfo      int64  = 86400 * 366
+	DailyRanksKey          string = "Ranks:Daily"    //val:product
+	WeeklyRanksKey         string = "Ranks:Weekly"   //不要求连续 val:
+	MonthRanksKey          string = "Ranks:Monthly"  //+month
+	AnnuallyRanksKey       string = "Ranks:Annually" //+year
+	TOTALRanksKey          string = "Ranks:Totally"
+	Ranktype1              string = "Product"
+	Ranktype2              string = "Advertisement"
+	Ranktype3              string = "Device"
+	LOCATION               string = "LOCATION"
+)
+
 //获得一天开头的确切时间
 func GetBeginningOfTheDay(offset int) string {
 	y, m, d := time.Now().In(time.Local).AddDate(0, 0, offset).Date()
