@@ -52,9 +52,10 @@ func Driverrouter() {
 		dr.POST("/register", auth.DriverRegister)
 		dr.POST("/login", auth.DriverLogin)
 
-		dr.GET("/home", ht.GetStatic)
-		dr.GET("/inventory", it.Get)
 	}
+	dr.Use(middleware.AuthJwt())
+	dr.GET("/home", ht.GetStatic)
+	dr.GET("/inventory", it.Get)
 	fa := dr.Group("/factory")
 	{
 		fa.GET("", ft.Get)

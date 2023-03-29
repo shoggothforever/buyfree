@@ -107,15 +107,21 @@ func GetDriverSalesKeys(uname string) []string {
 		offset = -6
 	}
 	y, m, d := time.Now().In(time.Local).AddDate(0, 0, offset).Date()
-	weekkey := fmt.Sprintf("%s:%s:%d-%d-%d", uname, WeeklySalesKey, y, m, d)
+	weekkey := fmt.Sprintf("%s:%s:%d-%d-%d", uname, Ranktype1+WeeklySalesKey, y, m, d)
 	y, m, d = time.Now().In(time.Local).AddDate(0, 0, offset-7).Date()
-	lastweekkey := fmt.Sprintf("%s:%s:%d-%d-%d", uname, WeeklySalesKey, y, m, d)
+	lastweekkey := fmt.Sprintf("%s:%s:%d-%d-%d", uname, Ranktype1+WeeklySalesKey, y, m, d)
 	return []string{
+		//今日销售额
 		GetDailySalesKey(Ranktype1, uname, 0),
+		//昨日销售额
 		GetDailySalesKey(Ranktype1, uname, -1),
+		//本周销售额
 		weekkey,
+		//上周销售额
 		lastweekkey,
+		//本月销售额
 		GetSalesKeyByMode(Ranktype1, uname, 2),
+		//广告日收益
 		GetSalesKeyByMode(Ranktype2, uname, 0),
 	}
 }

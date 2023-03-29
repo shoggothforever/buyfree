@@ -33,7 +33,7 @@ var once sync.Once
 //	close(utils.Refundchannel)
 //	close(utils.Orderchannel)
 //}
-func init() {
+func Init() {
 	cmd := exec.Command("swag", "init")
 	err := cmd.Run()
 	if err != nil {
