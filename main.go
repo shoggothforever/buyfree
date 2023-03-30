@@ -44,7 +44,7 @@ func Init() {
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
-	go service.Driverrouter()
+	//go service.Driverrouter()
 	service.PlatFormrouter()
 
 }

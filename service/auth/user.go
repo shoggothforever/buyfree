@@ -16,6 +16,7 @@ func SavePtUser(admin *model.Platform) (model.LoginInfo, error) {
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
+	//TODO:对密码加密再存储，现在为了方便就先不管了
 	return logininfo, dal.Getdb().Model(&model.Platform{}).Create(&admin).Error
 
 }
@@ -26,6 +27,7 @@ func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
+	//TODO:对密码加密再存储，现在为了方便就先不管了
 	return logininfo, dal.Getdb().Model(&model.Driver{}).Create(&admin).Error
 
 }
@@ -36,6 +38,7 @@ func SaveFUser(admin *model.Factory) (model.LoginInfo, error) {
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
+	//TODO:对密码加密再存储，现在为了方便就先不管了
 	return logininfo, dal.Getdb().Model(&model.Factory{}).Create(&admin).Error
 
 }

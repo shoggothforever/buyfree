@@ -80,6 +80,7 @@ type Possesion struct {
 
 type LoginInfo struct {
 	UserID   int64  `json:"id" form:"user_id"`
+	UserName string `json:"user_name" form:"user_name"`
 	ROLE     int64  `gorm:"commenr:0代表乘客，1代表司机，2代表场站，3代表平台" json:"role" form:"role"`
 	Password string `json:"password" form:"password"`
 	Salt     string `gorm:"comment:加密盐" json:"salt" form:"salt"`

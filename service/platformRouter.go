@@ -52,6 +52,7 @@ func PlatFormrouter() {
 	{
 		pt.POST("/register", auth.PlatformRegister, middleware.AuthJwt())
 		pt.POST("/login", auth.PlatformLogin, middleware.AuthJwt())
+		pt.POST("/userinfo", auth.PlatformUserInfo)
 
 	}
 	//鉴权
