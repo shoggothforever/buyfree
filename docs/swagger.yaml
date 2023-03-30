@@ -101,6 +101,9 @@ definitions:
     type: object
   model.Driver:
     properties:
+      address:
+        description: 场站地址
+        type: string
       balance:
         description: 账户余额
         type: number
@@ -132,11 +135,15 @@ definitions:
         type: string
       is_auth:
         type: boolean
+      latitude:
+        description: 纬度
+        type: string
       level:
         allOf:
         - $ref: '#/definitions/model.LEVEL'
         description: 用户等级，成长制度待定
-      location:
+      longitude:
+        description: 经度
         type: string
       mobile:
         type: string
@@ -225,6 +232,63 @@ definitions:
         - $ref: '#/definitions/model.ORDERSTATE'
         description: 订单状态
     type: object
+  model.Factory:
+    properties:
+      address:
+        description: 场站地址
+        type: string
+      balance:
+        description: 账户余额
+        type: number
+      created_at:
+        description: 注册时间
+        type: string
+      deleted_at:
+        description: "注销选项\tGORM."
+        type: string
+      id:
+        description: 唯一标志符
+        type: integer
+      id_card:
+        type: string
+      latitude:
+        description: 纬度
+        type: string
+      level:
+        allOf:
+        - $ref: '#/definitions/model.LEVEL'
+        description: 用户等级，成长制度待定
+      longitude:
+        description: 经度
+        type: string
+      mobile:
+        type: string
+      name:
+        description: 用户昵称
+        type: string
+      orderForms:
+        items:
+          $ref: '#/definitions/model.DriverOrderForm'
+        type: array
+      password:
+        type: string
+      password_salt:
+        description: 密码盐
+        type: string
+      pic:
+        description: 用户头像(需要添加修改头像功能）
+        type: string
+      products:
+        description: 供应的商品
+        items:
+          $ref: '#/definitions/model.FactoryProduct'
+        type: array
+      role:
+        description: 用户身份标志符，注册时确认
+        type: integer
+      updated_at:
+        type: string
+    type: object
   model.FactoryProduct:
     properties:
       annually_sales:
@@ -268,6 +332,18 @@ definitions:
       weekly_sales:
         type: number
     type: object
+  model.Geo:
+    properties:
+      address:
+        description: 场站地址
+        type: string
+      latitude:
+        description: 纬度
+        type: string
+      longitude:
+        description: 经度
+        type: string
+    type: object
   model.LEVEL:
     enum:
     - 0
@@ -297,6 +373,8 @@ definitions:
       role:
         type: integer
       salt:
+        type: string
+      user_name:
         type: string
     type: object
   model.ORDERSTATE:
@@ -619,60 +697,20 @@ definitions:
     type: object
   response.FactoryInfo:
     properties:
-      address:
-        description: 场站地理位置
-        type: string
-      balance:
-        description: 账户余额
-        type: number
-      created_at:
-        description: 注册时间
-        type: string
-      deleted_at:
-        description: "注销选项\tGORM."
-        type: string
       distance:
-        type: number
-      factoryProducts:
+        description: 场站距离(调用API）
+        type: string
+      factory_name:
+        description: |-
+          //场站经纬度
+          Lontitude float64 `json:"lontitude"`
+          Latitude  float64 `json:"latitude"`
+          场站名
+        type: string
+      productViews:
         items:
-          $ref: '#/definitions/model.FactoryProduct'
+          $ref: '#/definitions/response.FactoryProductOverview'
         type: array
-      id:
-        description: 唯一标志符
-        type: integer
-      id_card:
-        type: string
-      level:
-        allOf:
-        - $ref: '#/definitions/model.LEVEL'
-        description: 用户等级，成长制度待定
-      mobile:
-        type: string
-      name:
-        description: 用户昵称
-        type: string
-      orderForms:
-        items:
-          $ref: '#/definitions/model.DriverOrderForm'
-        type: array
-      password:
-        type: string
-      password_salt:
-        description: 密码盐
-        type: string
-      pic:
-        description: 用户头像(需要添加修改头像功能）
-        type: string
-      products:
-        description: 供应的商品
-        items:
-          $ref: '#/definitions/model.FactoryProduct'
-        type: array
-      role:
-        description: 用户身份标志符，注册时确认
-        type: integer
-      updated_at:
-        type: string
     type: object
   response.FactoryInfoResponse:
     properties:
@@ -683,6 +721,13 @@ definitions:
           $ref: '#/definitions/response.FactoryInfo'
         type: array
       msg:
+        type: string
+    type: object
+  response.FactoryProductOverview:
+    properties:
+      name:
+        type: string
+      pic:
         type: string
     type: object
   response.FactoryProductsInfo:
@@ -861,10 +906,17 @@ info:
   version: "1.0"
 paths:
   /dr/factory:
-    get:
+    post:
       consumes:
       - application/json
       description: 按照场站距离展示数据，距离近的排名靠前
+      parameters:
+      - description: 传入进行该操作时的司机地理位置信息，Address为可选项,其余为必填项
+        in: body
+        name: locInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Geo'
       produces:
       - application/json
       responses:
@@ -876,7 +928,6 @@ paths:
           description: Bad Request
           schema:
             type: onject
-      summary: 场站信息
       tags:
       - Driver/Replenish
   /dr/factory/infos/{id}:
@@ -1138,6 +1189,58 @@ paths:
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 车主用户注册
+      tags:
+      - User
+  /fa/login:
+    post:
+      consumes:
+      - application/json
+      description: Input user's nickname and password
+      parameters:
+      - description: 输入昵称，密码
+        in: body
+        name: loginInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+      summary: 场站用户登录
+      tags:
+      - User
+  /fa/register:
+    post:
+      consumes:
+      - application/json
+      description: Input info as model.User
+      parameters:
+      - description: 填入用户名，密码，password_salt为可选项
+        in: body
+        name: RegisterInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Factory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+      summary: 场站用户注册
       tags:
       - User
   /pt/ads:
@@ -1553,6 +1656,31 @@ paths:
       summary: 销售数据统计
       tags:
       - Platform
+  /pt/userinfo:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 传入jwt/token 获取用户信息
+      parameters:
+      - description: 鉴权信息
+        in: formData
+        name: jwt
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Platform'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取用户信息
+      tags:
+      - User
 securityDefinitions:
   BasicAuth:
     type: basic

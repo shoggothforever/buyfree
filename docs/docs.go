@@ -26,7 +26,7 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/dr/factory": {
-            "get": {
+            "post": {
                 "description": "按照场站距离展示数据，距离近的排名靠前",
                 "consumes": [
                     "application/json"
@@ -37,7 +37,17 @@ const docTemplate = `{
                 "tags": [
                     "Driver/Replenish"
                 ],
-                "summary": "场站信息",
+                "parameters": [
+                    {
+                        "description": "传入进行该操作时的司机地理位置信息，Address为可选项,其余为必填项",
+                        "name": "locInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Geo"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -434,6 +444,86 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/model.Driver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/login": {
+            "post": {
+                "description": "Input user's nickname and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "场站用户登录",
+                "parameters": [
+                    {
+                        "description": "输入昵称，密码",
+                        "name": "loginInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.LoginInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/register": {
+            "post": {
+                "description": "Input info as model.User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "场站用户注册",
+                "parameters": [
+                    {
+                        "description": "填入用户名，密码，password_salt为可选项",
+                        "name": "RegisterInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Factory"
                         }
                     }
                 ],
@@ -1073,6 +1163,44 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/pt/userinfo": {
+            "post": {
+                "description": "传入jwt/token 获取用户信息",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "获取用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权信息",
+                        "name": "jwt",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Platform"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1225,6 +1353,10 @@ const docTemplate = `{
         "model.Driver": {
             "type": "object",
             "properties": {
+                "address": {
+                    "description": "场站地址",
+                    "type": "string"
+                },
                 "balance": {
                     "description": "账户余额",
                     "type": "number"
@@ -1271,6 +1403,10 @@ const docTemplate = `{
                 "is_auth": {
                     "type": "boolean"
                 },
+                "latitude": {
+                    "description": "纬度",
+                    "type": "string"
+                },
                 "level": {
                     "description": "用户等级，成长制度待定",
                     "allOf": [
@@ -1279,7 +1415,8 @@ const docTemplate = `{
                         }
                     ]
                 },
-                "location": {
+                "longitude": {
+                    "description": "经度",
                     "type": "string"
                 },
                 "mobile": {
@@ -1407,6 +1544,88 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Factory": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "场站地址",
+                    "type": "string"
+                },
+                "balance": {
+                    "description": "账户余额",
+                    "type": "number"
+                },
+                "created_at": {
+                    "description": "注册时间",
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "description": "注销选项\tGORM.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "唯一标志符",
+                    "type": "integer"
+                },
+                "id_card": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "description": "纬度",
+                    "type": "string"
+                },
+                "level": {
+                    "description": "用户等级，成长制度待定",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.LEVEL"
+                        }
+                    ]
+                },
+                "longitude": {
+                    "description": "经度",
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "用户昵称",
+                    "type": "string"
+                },
+                "orderForms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DriverOrderForm"
+                    }
+                },
+                "password": {
+                    "type": "string"
+                },
+                "password_salt": {
+                    "description": "密码盐",
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "用户头像(需要添加修改头像功能）",
+                    "type": "string"
+                },
+                "products": {
+                    "description": "供应的商品",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FactoryProduct"
+                    }
+                },
+                "role": {
+                    "description": "用户身份标志符，注册时确认",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.FactoryProduct": {
             "type": "object",
             "properties": {
@@ -1468,6 +1687,23 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Geo": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "场站地址",
+                    "type": "string"
+                },
+                "latitude": {
+                    "description": "纬度",
+                    "type": "string"
+                },
+                "longitude": {
+                    "description": "经度",
+                    "type": "string"
+                }
+            }
+        },
         "model.LEVEL": {
             "type": "integer",
             "enum": [
@@ -1505,6 +1741,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "salt": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }
@@ -1981,83 +2220,19 @@ const docTemplate = `{
         "response.FactoryInfo": {
             "type": "object",
             "properties": {
-                "address": {
-                    "description": "场站地理位置",
-                    "type": "string"
-                },
-                "balance": {
-                    "description": "账户余额",
-                    "type": "number"
-                },
-                "created_at": {
-                    "description": "注册时间",
-                    "type": "string"
-                },
-                "deleted_at": {
-                    "description": "注销选项\tGORM.",
-                    "type": "string"
-                },
                 "distance": {
-                    "type": "number"
+                    "description": "场站距离(调用API）",
+                    "type": "string"
                 },
-                "factoryProducts": {
+                "factory_name": {
+                    "description": "//场站经纬度\nLontitude float64 ` + "`" + `json:\"lontitude\"` + "`" + `\nLatitude  float64 ` + "`" + `json:\"latitude\"` + "`" + `\n场站名",
+                    "type": "string"
+                },
+                "productViews": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.FactoryProduct"
+                        "$ref": "#/definitions/response.FactoryProductOverview"
                     }
-                },
-                "id": {
-                    "description": "唯一标志符",
-                    "type": "integer"
-                },
-                "id_card": {
-                    "type": "string"
-                },
-                "level": {
-                    "description": "用户等级，成长制度待定",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.LEVEL"
-                        }
-                    ]
-                },
-                "mobile": {
-                    "type": "string"
-                },
-                "name": {
-                    "description": "用户昵称",
-                    "type": "string"
-                },
-                "orderForms": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.DriverOrderForm"
-                    }
-                },
-                "password": {
-                    "type": "string"
-                },
-                "password_salt": {
-                    "description": "密码盐",
-                    "type": "string"
-                },
-                "pic": {
-                    "description": "用户头像(需要添加修改头像功能）",
-                    "type": "string"
-                },
-                "products": {
-                    "description": "供应的商品",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.FactoryProduct"
-                    }
-                },
-                "role": {
-                    "description": "用户身份标志符，注册时确认",
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },
@@ -2074,6 +2249,17 @@ const docTemplate = `{
                     }
                 },
                 "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.FactoryProductOverview": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "pic": {
                     "type": "string"
                 }
             }

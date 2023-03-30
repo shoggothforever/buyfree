@@ -8,6 +8,8 @@ import (
 	"flag"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	"net/http"
 	"os"
@@ -28,7 +30,7 @@ func Driverrouter() {
 	}
 	r := gin.New()
 	//r := gin.Default()
-	r.Static("/static", "../public")
+	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	DriverSrv = http.Server{
 		Addr:    ":9001",
@@ -46,7 +48,7 @@ func Driverrouter() {
 	var dft driverapp.InfoController
 	var cat driverapp.CartController
 	r.GET("/", base.Ping)
-
+	r.GET("/swagger1/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	dr := r.Group("/dr")
 	{
 		dr.POST("/register", auth.DriverRegister)

@@ -16,10 +16,11 @@
 -- Table structure for login_infos
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."login_infos";
-CREATE TABLE "public"."login_infos" ( "user_id" INT8,"role" INT8, "password" TEXT COLLATE "pg_catalog"."default", "salt" TEXT COLLATE "pg_catalog"."default", "jwt" TEXT COLLATE "pg_catalog"."default" );
+CREATE TABLE "public"."login_infos" ( "user_id" INT8,"role" INT8,  "user_name" varchar(30) COLLATE "pg_catalog"."default", "password" TEXT COLLATE "pg_catalog"."default", "salt" TEXT COLLATE "pg_catalog"."default", "jwt" TEXT COLLATE "pg_catalog"."default" );
 ALTER TABLE "public"."login_infos" OWNER TO "bf";
 COMMENT ON COLUMN "public"."login_infos"."salt" IS '加密盐';
 COMMENT ON COLUMN "public"."login_infos"."jwt" IS '鉴权值';
+
 -- ----------------------------
 -- Table structure for passengers
 -- ----------------------------

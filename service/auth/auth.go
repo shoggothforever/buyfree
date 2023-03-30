@@ -89,6 +89,35 @@ func PlatformLogin(c *gin.Context) {
 	c.Next()
 }
 
+// PlatformAccount godoc
+// @Summary 获取用户信息
+// @Description 	传入jwt/token 获取用户信息
+// @Tags			User
+// @accept			application/x-www-form-urlencoded
+// @Produce			json
+// @Param jwt formData string true "鉴权信息"
+// @Success			200 {object} model.Platform
+// @Failure			400 {object} response.Response
+// @Router			/pt/userinfo [post]
+func PlatformUserInfo(c *gin.Context) {
+	jwt := c.PostForm("jwt")
+	db := dal.Getdb()
+	var admin model.Platform
+	var info model.LoginInfo
+	err := db.Model(&model.LoginInfo{}).Where("jwt = ?", jwt).First(&info).Error
+	if err != nil {
+		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取用户数据"})
+		return
+	}
+	err = db.Model(&model.Platform{}).Where("id = ?", info.UserID).First(&admin).Error
+	if err != nil {
+		c.JSON(200, response.Response{400, "查找用户信息失败"})
+		return
+	}
+	c.JSON(200, admin)
+
+}
+
 // @Summary 车主用户注册
 // @Description 	Input info as model.User
 // @Tags			User

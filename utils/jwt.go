@@ -19,7 +19,6 @@ type Claims struct {
 }
 
 func CreatJwtKey(id int64) string {
-
 	key := "Jwt:" + strconv.FormatInt(id, 10)
 	return key
 }
