@@ -3,11 +3,11 @@ package model
 //广告管理
 //想要存redis里的
 type SalesData struct {
-	DailySales    float64 `gorm:"comment:日销量" json:"daily_sales" form:"daily_sales"`
-	WeeklySales   float64 `gorm:"comment:周销量" json:"weekly_sales" form:"weekly_sales"`
-	MonthlySales  float64 `gorm:"comment:月销量" json:"monthly_sales" form:"monthly_sales"`
-	AnnuallySales float64 `gorm:"comment:年销售量" json:"annually_sales" form:"annually_sales"`
-	TotalSales    float64 `gorm:"comment:总销售量" json:"total_sales" form:"total_sales"`
+	DailySales    string `gorm:"comment:日销量" json:"daily_sales" form:"daily_sales"`
+	WeeklySales   string `gorm:"comment:周销量" json:"weekly_sales" form:"weekly_sales"`
+	MonthlySales  string `gorm:"comment:月销量" json:"monthly_sales" form:"monthly_sales"`
+	AnnuallySales string `gorm:"comment:年销售量" json:"annually_sales" form:"annually_sales"`
+	TotalSales    string `gorm:"comment:总销售量" json:"total_sales" form:"total_sales"`
 }
 type Vitality struct {
 	DailyAdAna int64 `gorm:"comment:日活跃度" json:"daily_ad_ana" form:"daily_ad_ana"`

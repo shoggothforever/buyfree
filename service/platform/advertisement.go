@@ -8,6 +8,7 @@ import (
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -36,12 +37,18 @@ func (a *ADController) GetADList(c *gin.Context) {
 	}
 	admin := iadmin.(model.Platform)
 	var ads []model.Advertisement
-	dal.Getdb().Model(model.Advertisement{}).Limit(20).Where("platform_id = ? ", admin.ID).Offset(int((page - 1) * 20)).Find(&ads)
-
+	//dal.Getdb().Model(model.Advertisement{}).Limit(20).Where("platform_id = ? ", admin.ID).Offset(int((page - 1) * 20)).Find(&ads)
+	err := dal.Getdb().Raw("select * from advertisements inner join "+
+		"(select id from advertisements where platform_id = ? order by profit desc limit 20 offset ?  )as lim using (id)", admin.ID, (int((page - 1) * 20))).Find(&ads).Error
+	if err != gorm.ErrRecordNotFound && err != nil {
+		logrus.Info(err)
+		a.Error(c, 400, "获取广告信息失败")
+		return
+	}
 	c.JSON(200, response.ADResponse{
 		response.Response{
 			200,
-			"ok"},
+			"获取广告信息成功"},
 		ads})
 }
 
@@ -127,7 +134,9 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 	var devices []model.Device
 	//devices, err := gen.Device.GetDeviceByAdvertiseID(id)
 	//获取所有投放该广告的设备
-	err := dal.Getdb().Raw("select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = ?)", id).Find(&devices).Error
+	//err := dal.Getdb().Raw("select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = ?)", id).Find(&devices).Error
+	// 使用in可能会产生性能问题，
+	err := dal.Getdb().Raw("select * from devices as d where exists (select d.id from ad_devices where advertisement_id = ? and device_id = d.id)", id).Find(&devices).Error
 	fmt.Println(devices, err)
 	if err != nil || devices == nil || len(devices) == 0 {
 		a.Error(c, 400, "获取广告信息失败")

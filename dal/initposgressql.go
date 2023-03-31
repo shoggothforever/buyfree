@@ -1,17 +1,16 @@
 package dal
 
 import (
+	"buyfree/config"
 	"buyfree/repo/model"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"time"
 
-	//"github.com/jinzhu/gorm"
-	//_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
@@ -23,9 +22,9 @@ func Getdb() *gorm.DB {
 var dsn string
 
 func ReadPostgresSQLlinfo() {
-	//info := config.Reader.GetStringMapString("postgresql")
-	//dsn = info[config.Sqldsn]
-	dsn = "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
+	info := config.Reader.GetStringMapString("postgresql")
+	dsn = info[config.Sqldsn]
+	//dsn = "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
 }
 
 func init() {
@@ -73,4 +72,12 @@ func init() {
 		)
 
 	}
+	// Attach Cache Option
+	//opt := gcache.DefaultOption{}
+	//opt.Expires = 300
+	//opt.Level = option.LevelSearch
+	//opt.AsyncWrite = false
+	//opt.PenetrationSafe = false
+	//gcache.AttachDB(DB, &opt, &option.RedisOption{Addr: "localhost:6379"})
+
 }

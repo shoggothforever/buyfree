@@ -62,12 +62,12 @@ definitions:
   model.DeviceProduct:
     properties:
       annually_sales:
-        type: number
+        type: string
       buy_price:
         description: 销售价
         type: number
       daily_sales:
-        type: number
+        type: string
       device_id:
         description: 售货机编号
         type: integer
@@ -79,7 +79,7 @@ definitions:
         description: 存货
         type: integer
       monthly_sales:
-        type: number
+        type: string
       name:
         description: 产品名称
         type: string
@@ -92,12 +92,12 @@ definitions:
         description: 批发价
         type: number
       total_sales:
-        type: number
+        type: string
       type:
         description: 型号
         type: string
       weekly_sales:
-        type: number
+        type: string
     type: object
   model.Driver:
     properties:
@@ -292,12 +292,12 @@ definitions:
   model.FactoryProduct:
     properties:
       annually_sales:
-        type: number
+        type: string
       buy_price:
         description: 销售价
         type: number
       daily_sales:
-        type: number
+        type: string
       factory_id:
         type: integer
       factory_name:
@@ -312,7 +312,7 @@ definitions:
         description: 上架状态
         type: boolean
       monthly_sales:
-        type: number
+        type: string
       name:
         description: 产品名称
         type: string
@@ -325,12 +325,12 @@ definitions:
         description: 批发价
         type: number
       total_sales:
-        type: number
+        type: string
       type:
         description: 型号
         type: string
       weekly_sales:
-        type: number
+        type: string
     type: object
   model.Geo:
     properties:
@@ -532,11 +532,11 @@ definitions:
         description: 设备激活时间
         type: string
       annually_sales:
-        type: number
+        type: string
       code:
         type: integer
       daily_sales:
-        type: number
+        type: string
       devID:
         type: integer
       driver_name:
@@ -546,7 +546,7 @@ definitions:
       mobile:
         type: string
       monthly_sales:
-        type: number
+        type: string
       msg:
         type: string
       productInfo:
@@ -554,12 +554,12 @@ definitions:
           $ref: '#/definitions/response.DevProductPartInfo'
         type: array
       total_sales:
-        type: number
+        type: string
       updated_time:
         description: 设备更新时间
         type: string
       weekly_sales:
-        type: number
+        type: string
     type: object
   response.DevProductPartInfo:
     properties:
@@ -651,14 +651,14 @@ definitions:
   response.FactoryGoodsResponse:
     properties:
       annually_sales:
-        type: number
+        type: string
       buy_price:
         description: 销售价
         type: number
       code:
         type: integer
       daily_sales:
-        type: number
+        type: string
       factory_id:
         type: integer
       factory_name:
@@ -673,7 +673,7 @@ definitions:
         description: 上架状态
         type: boolean
       monthly_sales:
-        type: number
+        type: string
       msg:
         type: string
       name:
@@ -688,12 +688,12 @@ definitions:
         description: 批发价
         type: number
       total_sales:
-        type: number
+        type: string
       type:
         description: 型号
         type: string
       weekly_sales:
-        type: number
+        type: string
     type: object
   response.FactoryInfo:
     properties:
@@ -745,7 +745,7 @@ definitions:
       sku:
         type: string
       total_sales:
-        type: number
+        type: string
       type:
         type: string
     type: object
@@ -834,13 +834,13 @@ definitions:
   response.SaleStaticResponse:
     properties:
       annually_sales:
-        type: number
+        type: string
       code:
         type: integer
       daily_sales:
-        type: number
+        type: string
       monthly_sales:
-        type: number
+        type: string
       msg:
         type: string
       productsRank:
@@ -848,9 +848,9 @@ definitions:
           $ref: '#/definitions/model.ProductRank'
         type: array
       total_sales:
-        type: number
+        type: string
       weekly_sales:
-        type: number
+        type: string
     type: object
   response.ScreenInfoResponse:
     properties:
@@ -859,15 +859,15 @@ definitions:
           $ref: '#/definitions/model.Advertisement'
         type: array
       annually_sales:
-        type: number
+        type: string
       code:
         type: integer
       daily_sales:
-        type: number
+        type: string
       dev_nums:
         type: integer
       monthly_sales:
-        type: number
+        type: string
       msg:
         type: string
       offline_dev_nums:
@@ -878,15 +878,15 @@ definitions:
         items:
           $ref: '#/definitions/model.ProductRank'
         type: array
-      sales:
+      sales_curve:
         description: 营销额七日增长曲线
         items:
-          type: integer
+          type: string
         type: array
       total_sales:
-        type: number
+        type: string
       weekly_sales:
-        type: number
+        type: string
     type: object
 externalDocs:
   description: OpenAPI

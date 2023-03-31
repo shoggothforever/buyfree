@@ -1297,14 +1297,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "buy_price": {
                     "description": "销售价",
                     "type": "number"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "device_id": {
                     "description": "售货机编号",
@@ -1321,7 +1321,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "name": {
                     "description": "产品名称",
@@ -1339,14 +1339,14 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "description": "型号",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -1630,14 +1630,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "buy_price": {
                     "description": "销售价",
                     "type": "number"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "factory_id": {
                     "type": "integer"
@@ -1658,7 +1658,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "name": {
                     "description": "产品名称",
@@ -1676,14 +1676,14 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "description": "型号",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -1976,13 +1976,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "code": {
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "devID": {
                     "type": "integer"
@@ -1997,7 +1997,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2009,14 +2009,14 @@ const docTemplate = `{
                     }
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "updated_time": {
                     "description": "设备更新时间",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -2154,7 +2154,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "buy_price": {
                     "description": "销售价",
@@ -2164,7 +2164,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "factory_id": {
                     "type": "integer"
@@ -2185,7 +2185,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2206,14 +2206,14 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "description": "型号",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -2286,7 +2286,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
@@ -2423,16 +2423,16 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "code": {
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2444,10 +2444,10 @@ const docTemplate = `{
                     }
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -2461,19 +2461,19 @@ const docTemplate = `{
                     }
                 },
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "code": {
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "dev_nums": {
                     "type": "integer"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2490,18 +2490,18 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.ProductRank"
                     }
                 },
-                "sales": {
+                "sales_curve": {
                     "description": "营销额七日增长曲线",
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "string"
                     }
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         }
