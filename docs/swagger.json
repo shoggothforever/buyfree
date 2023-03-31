@@ -1290,14 +1290,14 @@
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "buy_price": {
                     "description": "销售价",
                     "type": "number"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "device_id": {
                     "description": "售货机编号",
@@ -1314,7 +1314,7 @@
                     "type": "integer"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "name": {
                     "description": "产品名称",
@@ -1332,14 +1332,14 @@
                     "type": "number"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "description": "型号",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -1623,14 +1623,14 @@
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "buy_price": {
                     "description": "销售价",
                     "type": "number"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "factory_id": {
                     "type": "integer"
@@ -1651,7 +1651,7 @@
                     "type": "boolean"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "name": {
                     "description": "产品名称",
@@ -1669,14 +1669,14 @@
                     "type": "number"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "description": "型号",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -1969,13 +1969,13 @@
                     "type": "string"
                 },
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "code": {
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "devID": {
                     "type": "integer"
@@ -1990,7 +1990,7 @@
                     "type": "string"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2002,14 +2002,14 @@
                     }
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "updated_time": {
                     "description": "设备更新时间",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -2147,7 +2147,7 @@
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "buy_price": {
                     "description": "销售价",
@@ -2157,7 +2157,7 @@
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "factory_id": {
                     "type": "integer"
@@ -2178,7 +2178,7 @@
                     "type": "boolean"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2199,14 +2199,14 @@
                     "type": "number"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "description": "型号",
                     "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -2279,7 +2279,7 @@
                     "type": "string"
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
@@ -2416,16 +2416,16 @@
             "type": "object",
             "properties": {
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "code": {
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2437,10 +2437,10 @@
                     }
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         },
@@ -2454,19 +2454,19 @@
                     }
                 },
                 "annually_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "code": {
                     "type": "integer"
                 },
                 "daily_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "dev_nums": {
                     "type": "integer"
                 },
                 "monthly_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "msg": {
                     "type": "string"
@@ -2483,18 +2483,18 @@
                         "$ref": "#/definitions/model.ProductRank"
                     }
                 },
-                "sales": {
+                "sales_curve": {
                     "description": "营销额七日增长曲线",
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "string"
                     }
                 },
                 "total_sales": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "weekly_sales": {
-                    "type": "number"
+                    "type": "string"
                 }
             }
         }

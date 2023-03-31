@@ -7,6 +7,7 @@ import (
 	"buyfree/service/response"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type OrderController struct {
@@ -62,7 +63,13 @@ func (o *OrderController) GetDriverOrders(c *gin.Context) {
 			infos[j].Type = products[j].Type
 			//TODO:展示在首页和上架就交给前端吧,获取订单中的商品在场站的上下架状态，根据factoryID 和 商品SKU在场站的商品表中查询对应的状态信息
 			infos[j].IsOnShelf = products[j].IsChosen
-			saleinfo, _ := gen.FactoryProduct.GetBySkuAndFName(info.Sku, info.FactoryName)
+			//saleinfo, _ := gen.FactoryProduct.GetBySkuAndFName(info.Sku, info.FactoryName)
+			var saleinfo model.FactoryProduct
+			err := dal.Getdb().Model(&model.FactoryProduct{}).Select("total_sales").Where("sku = ? and factory_name = ?", info.Sku, info.FactoryName).First(&saleinfo.TotalSales).Error
+			if err != gorm.ErrRecordNotFound && err != nil {
+				o.Error(c, 400, "获取订单信息失败 2")
+				return
+			}
 			infos[j].TotalSales = saleinfo.TotalSales
 			infos[j].Inventory = saleinfo.Inventory
 		}

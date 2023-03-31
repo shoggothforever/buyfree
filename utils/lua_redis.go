@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type ScriptSha struct {
@@ -92,7 +93,7 @@ func salesOF7days() *redis.Script {
 	end
 	local array={}
 	for i=7,1,-1 do
-		local e=tonumber(redis.call("lindex",keys[16-i],0)) or 0
+		local e=redis.call("lindex",keys[16-i],0) or "0"
 		array[i]=e
 		redis.call("lpush",keys[7],e)
 	end
@@ -111,7 +112,7 @@ ARGV[1]订单金额
 func modifySales() *redis.Script {
 
 	return redis.NewScript(`
-	local keys={}
+local keys={}
 	local val=tonumber(ARGV[1])
 	local vals={}
 	for i=1,15,1 do
@@ -125,7 +126,7 @@ func modifySales() *redis.Script {
 	end
 	local array={}
 	for i=7,1,-1 do
-		local e=tonumber(redis.call("lindex",keys[16-i],0)) or 0
+		local e=redis.call("lindex",keys[16-i],0) or "0"
 		array[i]=e
 		redis.call("lpush",keys[7],e)
 	end
@@ -159,11 +160,11 @@ func modifyranks() *redis.Script {
 func getSalesInfo() *redis.Script {
 	return redis.NewScript(`
 	local array={}
-	array[5]=tonumber(redis.call("lindex",KEYS[8],0)) or 0
-	array[4]=tonumber(redis.call("lindex",KEYS[6],0)) or 0
-	array[3]=tonumber(redis.call("lindex",KEYS[5],0)) or 0
-	array[2]=tonumber(redis.call("lindex",KEYS[4],0)) or 0
-	array[1]=tonumber(redis.call("lindex",KEYS[3],0)) or 0
+	array[5]=redis.call("lindex",KEYS[8],0) or "0"
+	array[4]=redis.call("lindex",KEYS[6],0) or "0"
+	array[3]=redis.call("lindex",KEYS[5],0) or "0"
+	array[2]=redis.call("lindex",KEYS[4],0) or "0"
+	array[1]=redis.call("lindex",KEYS[3],0) or "0"
 	return array
 
 `)
@@ -195,20 +196,20 @@ func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ..
 	res, err := ret.Result()
 	fmt.Println("列表长度", res, err)
 }
-func SalesOf7Days(c context.Context, rdb *redis.Client, adp, uname string, val ...string) [7]int64 {
+func SalesOf7Days(c context.Context, rdb *redis.Client, adp, uname string, val ...string) [7]string {
 
 	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(adp, uname), val)
-	fmt.Println(GetAllTimeKeys(adp, uname))
-	res, err := ret.Result()
-	//fmt.Println(res, err)
-	var sales [7]int64
+	//fmt.Println(GetAllTimeKeys(adp, uname))
+	res, err := ret.Float64Slice()
+	fmt.Println(res, err)
+	var sales [7]string
 	if err != nil {
 		logrus.Info("获取七天销量数据失败")
-		return sales
+		return [7]string{}
 	}
 
-	for k, v := range res.([]interface{}) {
-		sales[k] = v.(int64)
+	for k, v := range res {
+		sales[k] = strconv.FormatFloat(v, 'f', 2, 64)
 	}
 	return sales
 }
@@ -220,17 +221,17 @@ func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, v
 }
 
 //改变销量信息的lua脚本
-func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) []int64 {
+func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) []string {
 
 	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(adp, uname), val)
-	fmt.Println(GetAllTimeKeys(adp, uname))
-	res, err := ret.Result()
+	//fmt.Println(GetAllTimeKeys(adp, uname))
+	res, err := ret.Float64Slice()
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while modifying Sales", err)
 	}
-	var array []int64
-	for _, v := range res.([]interface{}) {
-		array = append(array, v.(int64))
+	var array []string
+	for _, v := range res {
+		array = append(array, strconv.FormatFloat(v, 'f', 2, 64))
 	}
 	return array
 }
@@ -266,36 +267,37 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 }
 
 //获取平台销量信息
-func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]float64, error) {
+func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]string, error) {
 	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(adp, uname))
-	res, err := ret.Result()
-	fmt.Println(res)
-	var array []float64
+	res, err := ret.Float64Slice()
+	//fmt.Println("获得的浮点数数据", res)
+	var array []string
 	if err != nil {
 		logrus.Info("ERROR HAPPENS while getting sales info", err)
-		return []float64{0, 0, 0, 0, 0}, nil
+		return []string{"0", "0", "0", "0", "0"}, nil
 	}
 
-	for _, v := range res.([]interface{}) {
-		array = append(array, (float64)(v.(int64)))
+	for _, v := range res {
+		array = append(array, strconv.FormatFloat(v, 'f', 2, 64))
 	}
-	//fmt.Println(array)
+	//fmt.Println("获得的字符串数据", array)
 	return array, nil
 }
 
 //依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
+//TODO:转化为输出字符串类型
 func GetHomeStatic(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
-	var arr []float64
+	//var arr []float64
 	ret := rdb.EvalSha(c, SHASET.GetHomeStatic, GetDriverSalesKeys(uname))
-	res, err := ret.Result()
+	res, err := ret.Float64Slice()
 	if err != nil {
 		logrus.Info("获取车主端首页数据失败")
 		return []float64{0, 0, 0, 0, 0}, err
 	}
 	//fmt.Println(res, err)
-	for _, v := range res.([]interface{}) {
-		arr = append(arr, float64(v.(int64)))
-	}
-	fmt.Println(arr, err)
-	return arr, nil
+	//for _, v := range res.([]interface{}) {
+	//	arr = append(arr, float64(v.(int64)))
+	//}
+	//fmt.Println(arr, err)
+	return res, nil
 }

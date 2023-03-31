@@ -36,6 +36,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	admin := iadmin.(model.Platform)
 	name := admin.Name
 	curve := utils.SalesOf7Days(c, rdb, utils.Ranktype1, name)
+	//fmt.Println(name)
 	err := dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		s.Error(c, 400, "无法获取设备数量")
@@ -118,8 +119,8 @@ func (s *SalesController) GetSales(c *gin.Context) {
 		return
 	}
 	name := iadmin.(model.Platform).Name
-	fmt.Println(iadmin)
-	fmt.Println(name)
+	//fmt.Println(iadmin)
+	//fmt.Println(name)
 	rdb := dal.Getrdb()
 	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
 	fmt.Println(info, err)
