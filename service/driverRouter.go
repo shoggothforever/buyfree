@@ -48,7 +48,7 @@ func Driverrouter() {
 	var dft driverapp.InfoController
 	var cat driverapp.CartController
 	r.GET("/", base.Ping)
-	r.GET("/swagger1/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	dr := r.Group("/dr")
 	{
 		dr.POST("/register", auth.DriverRegister)

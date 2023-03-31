@@ -5,6 +5,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,7 @@ type RegisterInfo struct {
 func PlatformRegister(c *gin.Context) {
 	//一定要定义成值类型，在bind里要传地址
 	var admin model.Platform
+
 	c.ShouldBind(&admin)
 	logininfo, err := SavePtUser(&admin)
 	if err == nil {
@@ -59,11 +61,13 @@ func PlatformRegister(c *gin.Context) {
 // @Router			/pt/login [post]
 func PlatformLogin(c *gin.Context) {
 	var l []model.LoginInfo
+	var info model.LoginInfo
 	var admin model.Platform
 	//输入昵称，密码 需要用户id和盐
-	c.ShouldBind(&admin)
-	var password string = admin.Password
-	dal.Getdb().Raw("select id,password_salt from platforms where name = ? and role = ?", admin.Name, model.PLATFORMADMIN).First(&admin)
+	c.ShouldBind(&info)
+	fmt.Println(info)
+	var password string = info.Password
+	dal.Getdb().Raw("select id,password_salt from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin)
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
 	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
 	if len(l) != 0 {
@@ -163,12 +167,13 @@ func DriverRegister(c *gin.Context) {
 // @Router			/dr/login [post]
 func DriverLogin(c *gin.Context) {
 	var l []model.LoginInfo
+	var info model.LoginInfo
 	var admin model.Driver
 	//输入昵称，密码 需要用户id和盐
-	c.ShouldBind(&admin)
-	var password string = admin.Password
+	c.ShouldBind(&info)
+	var password string = info.Password
 	//查找数据库获得用户的密码盐
-	dal.Getdb().Raw("select id,password_salt from drivers where name = ? and role = ?", admin.Name, model.DRIVER).First(&admin)
+	dal.Getdb().Raw("select id,password_salt from drivers where name = ? and role = ?", info.UserName, model.DRIVER).First(&admin)
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
 	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
 	if len(l) != 0 {
