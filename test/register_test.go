@@ -53,14 +53,14 @@ func TestRegister(t *testing.T) {
 		//if err != nil {
 		//	return err
 		//}
-		err := DB.Raw("select fp.name,inventory," +
-			"dv.m_inventory,pic,type,monthly_sales,supply_price  " +
-			"from factory_products as fp,(select dp.name,sum(dp.inventory)" +
-			" as m_inventory from device_products dp where device_id in" +
-			"(select id from devices where owner_id =1) and dp.name in " +
-			"(select name from factory_products where factory_name='cat')" +
-			"group by (dp.name)) as dv where is_on_shelf=true " +
-			"and factory_name='cat' and fp.name=dv.name").Find(&details).Error
+		err := DB.Raw("select fp.name,inventory,"+
+			"dv.m_inventory,pic,type,monthly_sales,supply_price  "+
+			"from factory_products as fp,(select dp.name,sum(dp.inventory)"+
+			" as m_inventory from device_products dp where device_id in"+
+			"(select id from devices where owner_id =?) and dp.name in "+
+			"(select name from factory_products where factory_name=?)"+
+			"group by (dp.name)) as dv where is_on_shelf=true "+
+			"and factory_name=? and fp.name=dv.name", 242731811816345600, "cat", "cat").Find(&details).Error
 		t.Log(details)
 		return err
 	})
