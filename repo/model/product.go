@@ -21,6 +21,8 @@ type Product struct {
 type DeviceProduct struct {
 	//售货机编号
 	DeviceID int64 `gorm:"comment:售货机编号" json:"device_id" form:"device_id"`
+	//
+	DriverID int64 `gorm:"车主id" json:"driver_id" form:"driver_id"`
 	Product
 }
 type FactoryProduct struct {

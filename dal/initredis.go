@@ -5,6 +5,8 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
+	"sync"
+	"time"
 )
 
 var Ctx = context.Background()
@@ -24,13 +26,23 @@ func CloseDB() {
 	RDB.Close()
 }
 
+var Ptimers sync.Pool
+
 func init() {
 	readRedisInfo()
 	RDB = redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       10,
+		Addr:         addr,
+		Password:     password,
+		DB:           10,
+		ReadTimeout:  time.Millisecond * time.Duration(500),
+		WriteTimeout: time.Millisecond * time.Duration(500),
+		IdleTimeout:  time.Second * time.Duration(60),
+		PoolSize:     64,
+		MinIdleConns: 16,
+		PoolFIFO:     true,
+		//MaxRetries:   3,
 	})
+
 	_, err := RDB.Ping(Ctx).Result()
 	if err != nil {
 		logrus.Info(err)

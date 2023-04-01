@@ -2,6 +2,7 @@ package driverapp
 
 import (
 	"buyfree/dal"
+	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -33,27 +34,26 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 		return
 	}
 	fmt.Println(locinfo)
-	//可能不需要获取车主信息
-	//iadmin, ok := c.Get(middleware.DRADMIN)
-	//if ok != true {
-	//	i.Error(c, 400, "获取用户信息失败")
-	//	return
-	//}
-	//admin, ok := iadmin.(model.Driver)
-	//if ok != true {
-	//	i.Error(c, 400, "获取车主信息失败")
-	//	return
-	//}
-
+	iadmin, ok := c.Get(middleware.DRADMIN)
+	if ok != true {
+		i.Error(c, 400, "获取用户信息失败")
+		return
+	}
+	admin, ok := iadmin.(model.Driver)
+	if ok != true {
+		i.Error(c, 400, "获取车主信息失败")
+		return
+	}
 	rdb := dal.Getrdb()
 	db := dal.Getdb()
 	ctx := rdb.Context()
+	//更新车主位置信息
+	rdb.Do(ctx, "geoadd", utils.LOCATION, locinfo.Longitude, locinfo.Latitude, admin.CarID)
 	ires, err := utils.LocRadiusWithDist(ctx, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "10", "km")
 	if err != nil {
 		i.Error(c, 400, "附近场站信息获取失败,请传入正确的地理信息")
 		return
 	}
-	//t.Log(res, len(res.([]interface{})))
 	res := ires.([]interface{})
 	n := len(res)
 	views := make([]response.FactoryInfo, n)
@@ -80,24 +80,65 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 }
 
 // @Summary 场站详情
-// @Description 根据场站ID获取场站具体信息
+// @Description 传入场站名字和距离获取场站具体信息
 // @Tags Driver/Replenish
 // @Accept json
 // @Produce json
-// @Param id path int true "场站ID"
-// @Success 200 {object} response.FactoryInfoResponse
+// @Param distance_info body response.FactoryDistanceInfo true "对应场站的名字和距离"
+// @Success 200 {object} response.FactoryDetailResponse
 // @Failure 400 {onject} response.Response
-// @Router /dr/factory/infos/{id} [get]
+// @Router /dr/factory/infos [post]
 func (i *FactoryController) Detail(c *gin.Context) {
-	//id := c.Param("id")
-	var orderform model.DriverOrderForm
-	var detail []response.FactoryInfo
+	iadmin, ok := c.Get(middleware.DRADMIN)
+	if ok != true {
+		i.Error(c, 400, "获取用户信息失败")
+		return
+	}
+	admin, ok := iadmin.(model.Driver)
+	if ok != true {
+		i.Error(c, 400, "获取车主信息失败")
+		return
+	}
+	var disinfo response.FactoryDistanceInfo
+	err := c.ShouldBind(&disinfo)
+	fmt.Println(disinfo)
+	if err != nil || disinfo.FactoryName == "" {
+		i.Error(c, 400, "场站名和距离获取失败")
+		return
+	}
+	var fa response.FactoryDetail
+	{
+		err = dal.Getdb().Model(&model.Factory{}).Select("address", "description").Where("name=?", disinfo.FactoryName).First(&fa).Error
+		if err != nil {
+			logrus.Info("获取场站信息失败", err)
+			i.Error(c, 400, "无法获取场站信息")
+			return
+		}
+	}
+	var details []*response.FactoryProductDetail
+	{
+		err = dal.Getdb().Raw("select fp.name,inventory,"+
+			"dv.m_inventory,pic,type,monthly_sales,supply_price  "+
+			"from factory_products as fp,(select dp.name,sum(dp.inventory)"+
+			" as m_inventory from device_products dp where device_id in"+
+			"(select id from devices where owner_id =?) and dp.name in "+
+			"(select name from factory_products where factory_name=?)"+
+			"group by (dp.name)) as dv where is_on_shelf=true "+
+			"and factory_name='cat' and fp.name=dv.name", admin.ID, fa.Name).Find(&details).Error
+		if err != nil {
+			logrus.Info("获取场站商品信息失败", err)
+			i.Error(c, 400, "无法获取商品场站信息")
+			return
+		}
+	}
 
-	c.JSON(200, response.FactoryInfoResponse{
+	c.JSON(200, response.FactoryDetailResponse{
 		response.Response{200, "成功获取该场站商品信息"},
-		detail,
+		disinfo,
+		fa,
+		details,
 	})
-	c.Set("Orderform", orderform)
+
 	c.Next()
 }
 

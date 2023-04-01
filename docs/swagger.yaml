@@ -71,6 +71,8 @@ definitions:
       device_id:
         description: 售货机编号
         type: integer
+      driver_id:
+        type: integer
       factory_id:
         type: integer
       id:
@@ -245,6 +247,8 @@ definitions:
         type: string
       deleted_at:
         description: "注销选项\tGORM."
+        type: string
+      description:
         type: string
       id:
         description: 唯一标志符
@@ -648,6 +652,37 @@ definitions:
           $ref: '#/definitions/model.DriverOrderForm'
         type: array
     type: object
+  response.FactoryDetail:
+    properties:
+      address:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  response.FactoryDetailResponse:
+    properties:
+      code:
+        type: integer
+      distance_info:
+        $ref: '#/definitions/response.FactoryDistanceInfo'
+      factory_detail:
+        $ref: '#/definitions/response.FactoryDetail'
+      msg:
+        type: string
+      product_details:
+        items:
+          $ref: '#/definitions/response.FactoryProductDetail'
+        type: array
+    type: object
+  response.FactoryDistanceInfo:
+    properties:
+      distance:
+        type: string
+      factory_name:
+        type: string
+    type: object
   response.FactoryGoodsResponse:
     properties:
       annually_sales:
@@ -707,7 +742,7 @@ definitions:
           Latitude  float64 `json:"latitude"`
           场站名
         type: string
-      productViews:
+      product_views:
         items:
           $ref: '#/definitions/response.FactoryProductOverview'
         type: array
@@ -716,11 +751,28 @@ definitions:
     properties:
       code:
         type: integer
-      factoryInfos:
+      factory_infos:
         items:
           $ref: '#/definitions/response.FactoryInfo'
         type: array
       msg:
+        type: string
+    type: object
+  response.FactoryProductDetail:
+    properties:
+      inventory:
+        type: integer
+      m_inventory:
+        type: integer
+      monthly_sales:
+        type: integer
+      name:
+        type: string
+      pic:
+        type: string
+      supply_price:
+        type: number
+      type:
         type: string
     type: object
   response.FactoryProductOverview:
@@ -891,7 +943,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bf.shoggothy.xyz
+host: bfd.shoggothy.xyz
 info:
   contact:
     email: support@swagger.io
@@ -930,24 +982,25 @@ paths:
             type: onject
       tags:
       - Driver/Replenish
-  /dr/factory/infos/{id}:
-    get:
+  /dr/factory/infos:
+    post:
       consumes:
       - application/json
-      description: 根据场站ID获取场站具体信息
+      description: 传入场站名字和距离获取场站具体信息
       parameters:
-      - description: 场站ID
-        in: path
-        name: id
+      - description: 对应场站的名字和距离
+        in: body
+        name: distance_info
         required: true
-        type: integer
+        schema:
+          $ref: '#/definitions/response.FactoryDistanceInfo'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.FactoryInfoResponse'
+            $ref: '#/definitions/response.FactoryDetailResponse'
         "400":
           description: Bad Request
           schema:
