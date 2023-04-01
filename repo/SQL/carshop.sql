@@ -351,9 +351,10 @@ COMMENT ON COLUMN "public"."driver_order_forms"."paytime" IS '支付时间';
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."device_products";
 CREATE TABLE "public"."device_products" (
-                                            "device_id" INT8,
                                             "id" INT8 NOT NULL,
                                             "factory_id" INT8,
+                                            "driver_id" int8,
+                                            "device_id" INT8,
                                             "sku" TEXT COLLATE "pg_catalog"."default",
                                             "inventory" INT8,
                                             "name" TEXT COLLATE "pg_catalog"."default",

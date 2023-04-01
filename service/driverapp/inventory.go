@@ -21,7 +21,7 @@ type InventoryController struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} response.InventoryResponse
-// @Failure 400 {onject} response.Response
+// @Failure 400 {object} response.Response
 // @Router /dr/inventory [get]
 func (i *InventoryController) GetInventory(c *gin.Context) {
 	db := dal.Getdb()
@@ -39,13 +39,13 @@ func (i *InventoryController) GetInventory(c *gin.Context) {
 	var dev_ids []int64
 	err := db.Model(&model.Device{}).Select("id").Where("owner_id = ?", admin.ID).Find(&dev_ids).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
-		logrus.Info("拂去用户设备信息失败", err)
+		logrus.Info("获取用户设备信息失败", err)
 		i.Error(c, 400, "获取车主设备信息失败")
 	}
 	var products []model.DeviceProduct
 	err = db.Model(&model.DeviceProduct{}).Where("device_id in ?", dev_ids).Find(&products).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
-		logrus.Info("拂去用户设备商品信息失败", err)
+		logrus.Info("获取用户设备商品信息失败", err)
 		i.Error(c, 400, "获取车主设备商品信息失败")
 	}
 	c.JSON(200, response.InventoryResponse{response.Response{200, "库存信息:"}, products})

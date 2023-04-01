@@ -19,7 +19,7 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      bf.shoggothy.xyz
+// @host      bfd.shoggothy.xyz
 // @BasePath  /
 
 // @securityDefinitions.basic  BasicAuth
@@ -44,7 +44,7 @@ func Init() {
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
-	//service.Driverrouter()
-	service.PlatFormrouter()
+	service.Driverrouter()
+	//service.PlatFormrouter()
 
 }

@@ -13,10 +13,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var DB *gorm.DB
+var dB *gorm.DB
 
 func Getdb() *gorm.DB {
-	return DB
+	return dB
 }
 
 var dsn string
@@ -39,7 +39,7 @@ func init() {
 		},
 	)
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+	dB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		CreateBatchSize:        1000,
 		PrepareStmt:            true,
 		SkipDefaultTransaction: true,
@@ -52,7 +52,7 @@ func init() {
 	}
 	//Create TABLES
 	{
-		DB.AutoMigrate(
+		dB.AutoMigrate(
 			&model.BankCardInfo{},
 			&model.LoginInfo{},
 			&model.Passenger{},

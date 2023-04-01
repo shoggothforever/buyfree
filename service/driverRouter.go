@@ -23,12 +23,13 @@ var DriverSrv http.Server
 
 func Driverrouter() {
 	flag.Parse()
+	var r *gin.Engine
 	if *d == true {
 		gin.SetMode(gin.ReleaseMode)
+		r = gin.New()
 	} else {
-		gin.SetMode(gin.DebugMode)
+		r = gin.Default()
 	}
-	r := gin.New()
 	//r := gin.Default()
 	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
@@ -61,7 +62,7 @@ func Driverrouter() {
 	fa := dr.Group("/factory")
 	{
 		fa.POST("", ft.FactoryOverview)
-		fa.GET("/infos/:id", ft.Detail)
+		fa.POST("/infos", ft.Detail)
 	}
 	od := dr.Group("/order")
 	{
@@ -71,7 +72,6 @@ func Driverrouter() {
 	}
 	pr := dr.Group("/infos")
 	{
-
 		pr.GET("/device", dft.Getdevice)
 		pr.GET("/orderform/:mode", dft.GetOrders)
 		pr.GET("/orderdetail/:id", dft.GetOrder)

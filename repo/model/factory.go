@@ -19,6 +19,7 @@ type Geo struct {
 type Factory struct {
 	User
 	Geo
+	Description string `json:"description" form:"description"`
 	//供应的商品
 	Products   []*FactoryProduct  `gorm:"foreignkey:FactoryID"`
 	OrderForms []*DriverOrderForm `gorm:"foreignkey:FactoryID"`

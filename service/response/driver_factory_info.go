@@ -12,11 +12,35 @@ type FactoryInfo struct {
 	//Lontitude float64 `json:"lontitude"`
 	//Latitude  float64 `json:"latitude"`
 	//场站名
-	FactoryName  string                   `json:"factory_name" json:"factoryName,omitempty"`
-	ProductViews []FactoryProductOverview `json:"productViews,omitempty"`
+	FactoryName  string                   `json:"factory_name" json:"factory_name,omitempty"`
+	ProductViews []FactoryProductOverview `json:"product_views,omitempty"`
 }
-
 type FactoryInfoResponse struct {
 	Response
-	FactoryInfos []FactoryInfo
+	FactoryInfos []FactoryInfo `json:"factory_infos"`
+}
+
+type FactoryDistanceInfo struct {
+	FactoryName string `json:"factory_name"`
+	Distance    string `json:"distance"`
+}
+type FactoryDetail struct {
+	Name        string `json:"name,omitempty"`
+	Address     string `json:"address,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+type FactoryProductDetail struct {
+	Name         string  `json:"name,omitempty"`
+	Pic          string  `json:"pic"`
+	Type         string  `json:"type,omitempty"`
+	Inventory    int64   `json:"inventory,omitempty"`
+	MInventory   int64   `json:"m_inventory,omitempty"`
+	MonthlySales int64   `json:"monthly_sales,omitempty"`
+	SupplyPrice  float64 `json:"supply_price,omitempty"`
+}
+type FactoryDetailResponse struct {
+	Response
+	DistanceInfo   FactoryDistanceInfo     `json:"distance_info"`
+	FactoryDetail  FactoryDetail           `json:"factory_detail"`
+	ProductDetails []*FactoryProductDetail `json:"product_details,omitempty"`
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
+	"math"
 	"strconv"
 )
 
@@ -176,7 +177,7 @@ func getHomeStatic() *redis.Script {
 	local array={}
 	local len =#KEYS
 	for i=1,len,1 do
-	array[i]=tonumber(redis.call("lindex",KEYS[i],0)) or 0
+	array[i]=redis.call("lindex",KEYS[i],0) or 0
 	end
 	return array
 `)
@@ -285,7 +286,6 @@ func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]st
 }
 
 //依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
-//TODO:转化为输出字符串类型
 func GetHomeStatic(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
 	//var arr []float64
 	ret := rdb.EvalSha(c, SHASET.GetHomeStatic, GetDriverSalesKeys(uname))
@@ -299,5 +299,8 @@ func GetHomeStatic(c context.Context, rdb *redis.Client, uname string) ([]float6
 	//	arr = append(arr, float64(v.(int64)))
 	//}
 	//fmt.Println(arr, err)
+	for i, _ := range res {
+		res[i] = math.Trunc(res[i]/0.01) * 0.01
+	}
 	return res, nil
 }

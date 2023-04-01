@@ -64,9 +64,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/dr/factory/infos/{id}": {
-            "get": {
-                "description": "根据场站ID获取场站具体信息",
+        "/dr/factory/infos": {
+            "post": {
+                "description": "传入场站名字和距离获取场站具体信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -79,18 +79,20 @@ const docTemplate = `{
                 "summary": "场站详情",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "场站ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "对应场站的名字和距离",
+                        "name": "distance_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryDistanceInfo"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.FactoryInfoResponse"
+                            "$ref": "#/definitions/response.FactoryDetailResponse"
                         }
                     },
                     "400": {
@@ -1310,6 +1312,9 @@ const docTemplate = `{
                     "description": "售货机编号",
                     "type": "integer"
                 },
+                "driver_id": {
+                    "type": "integer"
+                },
                 "factory_id": {
                     "type": "integer"
                 },
@@ -1561,6 +1566,9 @@ const docTemplate = `{
                 },
                 "deleted_at": {
                     "description": "注销选项\tGORM.",
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "id": {
@@ -2150,6 +2158,54 @@ const docTemplate = `{
                 }
             }
         },
+        "response.FactoryDetail": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.FactoryDetailResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "distance_info": {
+                    "$ref": "#/definitions/response.FactoryDistanceInfo"
+                },
+                "factory_detail": {
+                    "$ref": "#/definitions/response.FactoryDetail"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "product_details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.FactoryProductDetail"
+                    }
+                }
+            }
+        },
+        "response.FactoryDistanceInfo": {
+            "type": "object",
+            "properties": {
+                "distance": {
+                    "type": "string"
+                },
+                "factory_name": {
+                    "type": "string"
+                }
+            }
+        },
         "response.FactoryGoodsResponse": {
             "type": "object",
             "properties": {
@@ -2228,7 +2284,7 @@ const docTemplate = `{
                     "description": "//场站经纬度\nLontitude float64 ` + "`" + `json:\"lontitude\"` + "`" + `\nLatitude  float64 ` + "`" + `json:\"latitude\"` + "`" + `\n场站名",
                     "type": "string"
                 },
-                "productViews": {
+                "product_views": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.FactoryProductOverview"
@@ -2242,13 +2298,39 @@ const docTemplate = `{
                 "code": {
                     "type": "integer"
                 },
-                "factoryInfos": {
+                "factory_infos": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.FactoryInfo"
                     }
                 },
                 "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.FactoryProductDetail": {
+            "type": "object",
+            "properties": {
+                "inventory": {
+                    "type": "integer"
+                },
+                "m_inventory": {
+                    "type": "integer"
+                },
+                "monthly_sales": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pic": {
+                    "type": "string"
+                },
+                "supply_price": {
+                    "type": "number"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -2520,7 +2602,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bf.shoggothy.xyz",
+	Host:             "bfd.shoggothy.xyz",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Swagger Example API",
