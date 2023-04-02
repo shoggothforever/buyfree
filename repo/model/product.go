@@ -3,19 +3,19 @@ package model
 type Product struct {
 	ID        int64  `gorm:"primaryKey;" json:"id" form:"id"`
 	FactoryID int64  `gorm:"comment:指向场站的编号" json:"factory_id" form:"factory_id"`
-	Sku       string `gorm:"comment:库存控制最小可用单位" json:"sku" form:"sku"`
+	Sku       string `gorm:"notnull;comment:库存控制最小可用单位" json:"sku" form:"sku"`
 	//存货
-	Inventory int64 `gorm:"comment:存货" json:"inventory" form:"inventory"`
+	Inventory int64 `gorm:"notnull;comment:存货" json:"inventory" form:"inventory"`
 	//产品名称
-	Name string `gorm:"comment:产品名称" json:"name" form:"name"`
+	Name string `gorm:"notnull;comment:产品名称" json:"name" form:"name"`
 	//图片
 	Pic string `gorm:"comment:图片" json:"pic" form:"pic"`
 	//型号
-	Type string `gorm:"comment:型号" json:"type" form:"type"`
+	Type string `gorm:"notnull;comment:型号" json:"type" form:"type"`
 	//销售价
-	BuyPrice float64 `gorm:"comment:销售价" json:"buy_price" form:"buy_price"`
+	BuyPrice float64 `gorm:"notnull;comment:销售价" json:"buy_price" form:"buy_price"`
 	//批发价
-	SupplyPrice float64 `gorm:"comment:批发价" json:"supply_price" form:"supply_price"`
+	SupplyPrice float64 `gorm:"notnull;comment:批发价" json:"supply_price" form:"supply_price"`
 	SalesData
 }
 type DeviceProduct struct {
@@ -32,6 +32,7 @@ type FactoryProduct struct {
 	//上架状态
 	IsOnShelf bool `json:"is_on_shelf" form:"is_on_shelf"`
 }
+type OrderProducts []*OrderProduct
 
 //购物车，订单中的商品信息
 type OrderProduct struct {
@@ -40,12 +41,12 @@ type OrderProduct struct {
 	FactoryID  int64   `gorm:"comment:所属场站" json:"factory_id" form:"factory_id"`
 	OrderRefer string  `gorm:"comment:所属订单" json:"order_refer" form:"order_refer"`
 	IsChosen   bool    `gorm:"comment:场站是否上线该产品 1-上线 0-下线" json:"is_chosen" form:"is_chosen"`
-	Name       string  `gorm:"comment:商品名称" json:"name" form:"name"`
-	Sku        string  `gorm:"comment:库存控制最小可用单位" json:"sku" form:"sku"`
+	Name       string  `gorm:"notnull;comment:商品名称" json:"name" form:"name"`
+	Sku        string  `gorm:"notnull;comment:库存控制最小可用单位" json:"sku" form:"sku"`
 	Pic        string  `gorm:"comment:图片" json:"pic" form:"pic"`
-	Type       string  `gorm:"comment:商品型号" json:"type" form:"type"`
-	Count      int64   `gorm:"comment:需求量" json:"count" form:"count"`
-	Price      float64 `gorm:"comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价" json:"price" form:"price"`
+	Type       string  `gorm:"notnull;comment:商品型号" json:"type" form:"type"`
+	Count      int64   `gorm:"notnull;comment:需求量" json:"count" form:"count"`
+	Price      float64 `gorm:"notnull;comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价" json:"price" form:"price"`
 }
 
 func (o *OrderProduct) GetAmount() float64 {

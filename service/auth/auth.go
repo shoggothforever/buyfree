@@ -136,6 +136,7 @@ func DriverRegister(c *gin.Context) {
 	var admin model.Driver
 	c.ShouldBind(&admin)
 	logininfo, err := SaveDrUser(&admin)
+	fmt.Println(admin)
 	if err == nil {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -171,11 +172,14 @@ func DriverLogin(c *gin.Context) {
 	var admin model.Driver
 	//输入昵称，密码 需要用户id和盐
 	c.ShouldBind(&info)
+	fmt.Println(info)
 	var password string = info.Password
 	//查找数据库获得用户的密码盐
-	dal.Getdb().Raw("select id,password_salt from drivers where name = ? and role = ?", info.UserName, model.DRIVER).First(&admin)
+	err := dal.Getdb().Raw("select id,password_salt from drivers where name = ? and role = ?", info.UserName, model.DRIVER).First(&admin).Error
+	fmt.Println(admin, err)
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
-	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
+	err = dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l).Error
+	fmt.Println(l)
 	if len(l) != 0 {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -196,6 +200,35 @@ func DriverLogin(c *gin.Context) {
 		})
 	}
 	c.Next()
+}
+
+// PlatformAccount godoc
+// @Summary 获取车主用户信息
+// @Description 	传入jwt/token 获取用户信息
+// @Tags			User
+// @accept			application/x-www-form-urlencoded
+// @Produce			json
+// @Param jwt formData string true "鉴权信息"
+// @Success			200 {object} model.Driver
+// @Failure			400 {object} response.Response
+// @Router			/dr/userinfo [post]
+func DriverUserInfo(c *gin.Context) {
+	jwt := c.PostForm("jwt")
+	db := dal.Getdb()
+	var admin model.Driver
+	var info model.LoginInfo
+	err := db.Model(&model.LoginInfo{}).Where("jwt = ?", jwt).First(&info).Error
+	if err != nil {
+		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取用户数据"})
+		return
+	}
+	err = db.Model(&model.Driver{}).Where("id = ?", info.UserID).First(&admin).Error
+	if err != nil {
+		c.JSON(200, response.Response{400, "查找用户信息失败"})
+		return
+	}
+	c.JSON(200, admin)
+
 }
 
 // @Summary 场站用户注册

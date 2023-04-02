@@ -19,12 +19,14 @@ type FactoryInfoResponse struct {
 	Response
 	FactoryInfos []FactoryInfo `json:"factory_infos"`
 }
-
+type FactoryDistanceInfos []*FactoryDistanceInfo
 type FactoryDistanceInfo struct {
 	FactoryName string `json:"factory_name"`
+	FactoryID   int64  `json:"factory_id"`
 	Distance    string `json:"distance"`
 }
 type FactoryDetail struct {
+	ID          int64  `json:"id"`
 	Name        string `json:"name,omitempty"`
 	Address     string `json:"address,omitempty"`
 	Description string `json:"description,omitempty"`

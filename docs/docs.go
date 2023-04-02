@@ -37,6 +37,7 @@ const docTemplate = `{
                 "tags": [
                     "Driver/Replenish"
                 ],
+                "summary": "场站信息",
                 "parameters": [
                     {
                         "description": "传入进行该操作时的司机地理位置信息，Address为可选项,其余为必填项",
@@ -58,7 +59,49 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/factory/cart": {
+            "post": {
+                "description": "\"传入查看附近场站信息获取到的所有场站距离信息，要打开购物车必须先进入场站界面“",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "购物车界面",
+                "parameters": [
+                    {
+                        "description": "附近场站信息，已经获取了，打包后直接传入",
+                        "name": "DistanceInfos",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.FactoryDistanceInfo"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.CartResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -98,7 +141,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -133,7 +176,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/dr/infos/device": {
+        "/dr/infos/devices": {
             "get": {
                 "description": "获取激活设备信息",
                 "consumes": [
@@ -261,7 +304,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -307,44 +350,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/dr/order/cart/{id}": {
-            "get": {
-                "description": "展示所有添加的商品，点击结算，跳转到订单提交界面",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Driver/Replenish"
-                ],
-                "summary": "购物车界面",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "车主id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/response.CartResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "onject"
-                        }
-                    }
-                }
-            }
-        },
         "/dr/order/pay": {
             "put": {
                 "description": "结算",
@@ -379,7 +384,41 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/order/replenish": {
+            "post": {
+                "description": "点击事件:传入商品信息,修改商品在购物车中的数量，选项(1：增加1件，-1：减少1件，0：清空）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "添加/移除出购物车",
+                "parameters": [
+                    {
+                        "description": "传入场站名以及ID，商品名称、型号、价格、选购数量、图片信息",
+                        "name": "productInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/response.ReplenishInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -419,7 +458,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -460,6 +499,44 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/userinfo": {
+            "post": {
+                "description": "传入jwt/token 获取用户信息",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "获取车主用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权信息",
+                        "name": "jwt",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Driver"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -1460,17 +1537,8 @@ const docTemplate = `{
                 "cart_id": {
                     "type": "integer"
                 },
-                "distance": {
-                    "description": "距离场站距离",
-                    "type": "integer"
-                },
                 "driver_id": {
-                    "description": "外键 Driver.Uuid",
-                    "type": "string"
-                },
-                "factory_name": {
-                    "description": "添加进购物车时自动获取",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "products": {
                     "description": "存储",
@@ -1962,14 +2030,51 @@ const docTemplate = `{
                 }
             }
         },
+        "response.CartGroup": {
+            "type": "object",
+            "properties": {
+                "distance_info": {
+                    "$ref": "#/definitions/response.FactoryDistanceInfo"
+                },
+                "product_details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.CartProductDetail"
+                    }
+                }
+            }
+        },
+        "response.CartProductDetail": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pic": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "response.CartResponse": {
             "type": "object",
             "properties": {
-                "cart": {
-                    "$ref": "#/definitions/model.DriverCart"
-                },
                 "code": {
                     "type": "integer"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.CartGroup"
+                    }
                 },
                 "msg": {
                     "type": "string"
@@ -2167,6 +2272,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -2200,6 +2308,9 @@ const docTemplate = `{
             "properties": {
                 "distance": {
                     "type": "string"
+                },
+                "factory_id": {
+                    "type": "integer"
                 },
                 "factory_name": {
                     "type": "string"
@@ -2486,6 +2597,33 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ReplenishInfo": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "传入商品件数",
+                    "type": "integer"
+                },
+                "factor_id": {
+                    "type": "integer"
+                },
+                "factory_name": {
+                    "type": "string"
+                },
+                "pic": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
