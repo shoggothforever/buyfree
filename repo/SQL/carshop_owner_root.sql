@@ -1,12 +1,10 @@
 /*
  Navicat Premium Data Transfer
  Source Server         : root
-
  Source Server Type    : PostgreSQL
  Source Server Version : 150002 (150002)
  Source Host           : localhost:5432
  Source Catalog        : root
- db
  Source Schema         : public
  Target Server Type    : PostgreSQL
  Target Server Version : 150002 (150002)
@@ -93,8 +91,8 @@ CREATE TABLE "public"."passenger_order_forms" (
                                                   "cost" INT8,
                                                   "state" INT2,
                                                   "location" TEXT COLLATE "pg_catalog"."default",
-                                                  "placetime" TIMESTAMPTZ ( 6 ),
-                                                  "paytime" TIMESTAMPTZ ( 6 ),
+                                                  "place_time" TIMESTAMPTZ ( 6 ),
+                                                  "pay_time" TIMESTAMPTZ ( 6 ),
                                                   CONSTRAINT "passenger_order_forms_pkey" PRIMARY KEY ( "order_id" ),
                                                   CONSTRAINT "fk_passengers_order_forms" FOREIGN KEY ( "passenger_id" ) REFERENCES "public"."passengers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
@@ -104,8 +102,8 @@ COMMENT ON COLUMN "public"."passenger_order_forms"."driver_car_id" IS '支付时
 COMMENT ON COLUMN "public"."passenger_order_forms"."cost" IS '花费';
 COMMENT ON COLUMN "public"."passenger_order_forms"."state" IS '订单状态 2-已完成 1-待取货 0-未支付';
 COMMENT ON COLUMN "public"."passenger_order_forms"."location" IS '支付时存储位置(购物时获取车主位置）';
-COMMENT ON COLUMN "public"."passenger_order_forms"."placetime" IS '下单时间';
-COMMENT ON COLUMN "public"."passenger_order_forms"."paytime" IS '支付时间';
+COMMENT ON COLUMN "public"."passenger_order_forms"."place_time" IS '下单时间';
+COMMENT ON COLUMN "public"."passenger_order_forms"."pay_time" IS '支付时间';
 -- ----------------------------
 -- Table structure for factories
 -- ----------------------------
@@ -348,8 +346,8 @@ CREATE TABLE "public"."driver_order_forms" (
                                                "cost" INT8,
                                                "state" INT2,
                                                "location" TEXT COLLATE "pg_catalog"."default",
-                                               "placetime" TIMESTAMPTZ ( 6 ),
-                                               "paytime" TIMESTAMPTZ ( 6 ),
+                                               "place_time" TIMESTAMPTZ ( 6 ),
+                                               "pay_time" TIMESTAMPTZ ( 6 ),
                                                CONSTRAINT "driver_order_forms_pkey" PRIMARY KEY ( "order_id" ),
                                                CONSTRAINT "fk_drivers_driver_order_forms" FOREIGN KEY ( "driver_id" ) REFERENCES "public"."drivers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
                                                CONSTRAINT "fk_factories_order_forms" FOREIGN KEY ( "factory_id" ) REFERENCES "public"."factories" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION

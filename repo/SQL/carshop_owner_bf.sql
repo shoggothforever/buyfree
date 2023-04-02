@@ -335,8 +335,8 @@ CREATE TABLE "public"."driver_order_forms" (
                                                "cost" INT8,
                                                "state" INT2,
                                                "location" TEXT COLLATE "pg_catalog"."default",
-                                               "placetime" TIMESTAMPTZ ( 6 ),
-                                               "paytime" TIMESTAMPTZ ( 6 ),
+                                               "place_time" TIMESTAMPTZ ( 6 ),
+                                               "pay_time" TIMESTAMPTZ ( 6 ),
                                                CONSTRAINT "driver_order_forms_pkey" PRIMARY KEY ( "order_id" ),
                                                CONSTRAINT "fk_drivers_driver_order_forms" FOREIGN KEY ( "driver_id" ) REFERENCES "public"."drivers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
                                                CONSTRAINT "fk_factories_order_forms" FOREIGN KEY ( "factory_id" ) REFERENCES "public"."factories" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -349,8 +349,8 @@ COMMENT ON COLUMN "public"."driver_order_forms"."get_time" IS '自取时间';
 COMMENT ON COLUMN "public"."driver_order_forms"."cost" IS '花费';
 COMMENT ON COLUMN "public"."driver_order_forms"."state" IS '订单状态 2-已完成 1-待取货 0-未支付';
 COMMENT ON COLUMN "public"."driver_order_forms"."location" IS '支付时存储位置(购物时获取车主位置）';
-COMMENT ON COLUMN "public"."driver_order_forms"."placetime" IS '下单时间';
-COMMENT ON COLUMN "public"."driver_order_forms"."paytime" IS '支付时间';
+COMMENT ON COLUMN "public"."driver_order_forms"."place_time" IS '下单时间';
+COMMENT ON COLUMN "public"."driver_order_forms"."pay_time" IS '支付时间';
 
 -- ----------------------------
 -- Table structure for device_products
