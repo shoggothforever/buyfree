@@ -54,6 +54,7 @@ func Driverrouter() {
 	{
 		dr.POST("/register", auth.DriverRegister)
 		dr.POST("/login", auth.DriverLogin)
+		dr.POST("/userinfo", auth.DriverUserInfo)
 
 	}
 	dr.Use(middleware.AuthJwt())
@@ -62,19 +63,22 @@ func Driverrouter() {
 	fa := dr.Group("/factory")
 	{
 		fa.POST("", ft.FactoryOverview)
+		fa.POST("/cart", cat.OpenCart)
 		fa.POST("/infos", ft.Detail)
 	}
 	od := dr.Group("/order")
 	{
+		od.POST("/replenish", ft.Modify)
 		od.POST("/submit", ft.Order)
 		od.PUT("/pay", ft.Pay)
-		od.GET("/cart/:id", cat.GetCart)
+
 	}
 	pr := dr.Group("/infos")
 	{
-		pr.GET("/device", dft.Getdevice)
+		pr.GET("/devices", dft.Getdevice)
 		pr.GET("/orderform/:mode", dft.GetOrders)
 		pr.GET("/orderdetail/:id", dft.GetOrder)
+
 	}
 	QuitDriverChan = make(chan os.Signal)
 	signal.Notify(QuitDriverChan, os.Interrupt)

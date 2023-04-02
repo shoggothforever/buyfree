@@ -172,15 +172,8 @@ definitions:
     properties:
       cart_id:
         type: integer
-      distance:
-        description: 距离场站距离
-        type: integer
       driver_id:
-        description: 外键 Driver.Uuid
-        type: string
-      factory_name:
-        description: 添加进购物车时自动获取
-        type: string
+        type: integer
       products:
         description: 存储
         items:
@@ -521,12 +514,36 @@ definitions:
       msg:
         type: string
     type: object
+  response.CartGroup:
+    properties:
+      distance_info:
+        $ref: '#/definitions/response.FactoryDistanceInfo'
+      product_details:
+        items:
+          $ref: '#/definitions/response.CartProductDetail'
+        type: array
+    type: object
+  response.CartProductDetail:
+    properties:
+      count:
+        type: integer
+      name:
+        type: string
+      pic:
+        type: string
+      price:
+        type: number
+      type:
+        type: string
+    type: object
   response.CartResponse:
     properties:
-      cart:
-        $ref: '#/definitions/model.DriverCart'
       code:
         type: integer
+      groups:
+        items:
+          $ref: '#/definitions/response.CartGroup'
+        type: array
       msg:
         type: string
     type: object
@@ -658,6 +675,8 @@ definitions:
         type: string
       description:
         type: string
+      id:
+        type: integer
       name:
         type: string
     type: object
@@ -680,6 +699,8 @@ definitions:
     properties:
       distance:
         type: string
+      factory_id:
+        type: integer
       factory_name:
         type: string
     type: object
@@ -876,6 +897,24 @@ definitions:
       msg:
         type: string
     type: object
+  response.ReplenishInfo:
+    properties:
+      count:
+        description: 传入商品件数
+        type: integer
+      factor_id:
+        type: integer
+      factory_name:
+        type: string
+      pic:
+        type: string
+      price:
+        type: number
+      product_name:
+        type: string
+      type:
+        type: string
+    type: object
   response.Response:
     properties:
       code:
@@ -979,7 +1018,35 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: onject
+            $ref: '#/definitions/response.Response'
+      summary: 场站信息
+      tags:
+      - Driver/Replenish
+  /dr/factory/cart:
+    post:
+      consumes:
+      - application/json
+      description: '"传入查看附近场站信息获取到的所有场站距离信息，要打开购物车必须先进入场站界面“'
+      parameters:
+      - description: 附近场站信息，已经获取了，打包后直接传入
+        in: body
+        name: DistanceInfos
+        schema:
+          items:
+            $ref: '#/definitions/response.FactoryDistanceInfo'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.CartResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 购物车界面
       tags:
       - Driver/Replenish
   /dr/factory/infos:
@@ -1004,7 +1071,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: onject
+            $ref: '#/definitions/response.Response'
       summary: 场站详情
       tags:
       - Driver/Replenish
@@ -1027,7 +1094,7 @@ paths:
       summary: 车主端首页
       tags:
       - Driver
-  /dr/infos/device:
+  /dr/infos/devices:
     get:
       consumes:
       - application/json
@@ -1111,7 +1178,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: onject
+            $ref: '#/definitions/response.Response'
       summary: 车主设备库存
       tags:
       - Driver
@@ -1141,31 +1208,6 @@ paths:
       summary: 车主用户登录
       tags:
       - User
-  /dr/order/cart/{id}:
-    get:
-      consumes:
-      - application/json
-      description: 展示所有添加的商品，点击结算，跳转到订单提交界面
-      parameters:
-      - description: 车主id
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/response.CartResponse'
-        "400":
-          description: Bad Request
-          schema:
-            type: onject
-      summary: 购物车界面
-      tags:
-      - Driver/Replenish
   /dr/order/pay:
     put:
       consumes:
@@ -1188,8 +1230,30 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: onject
+            $ref: '#/definitions/response.Response'
       summary: 补货订单结算
+      tags:
+      - Driver/Replenish
+  /dr/order/replenish:
+    post:
+      consumes:
+      - application/json
+      description: 点击事件:传入商品信息,修改商品在购物车中的数量，选项(1：增加1件，-1：减少1件，0：清空）
+      parameters:
+      - description: 传入场站名以及ID，商品名称、型号、价格、选购数量、图片信息
+        in: body
+        name: productInfo
+        required: true
+        schema:
+          $ref: '#/definitions/response.ReplenishInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 添加/移除出购物车
       tags:
       - Driver/Replenish
   /dr/order/submit:
@@ -1214,7 +1278,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: onject
+            $ref: '#/definitions/response.Response'
       summary: 订单界面
       tags:
       - Driver/Replenish
@@ -1242,6 +1306,31 @@ paths:
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 车主用户注册
+      tags:
+      - User
+  /dr/userinfo:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 传入jwt/token 获取用户信息
+      parameters:
+      - description: 鉴权信息
+        in: formData
+        name: jwt
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Driver'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取车主用户信息
       tags:
       - User
   /fa/login:

@@ -27,8 +27,16 @@ func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
+
 	//TODO:对密码加密再存储，现在为了方便就先不管了
-	return logininfo, dal.Getdb().Model(&model.Driver{}).Create(&admin).Error
+
+	cart := model.DriverCart{DriverID: admin.ID, Cart: model.Cart{CartID: utils.GetSnowFlake(), TotalCount: 0, TotalAmount: 0}}
+	err = dal.Getdb().Model(&model.Driver{}).Create(&admin).Error
+	cerr := dal.Getdb().Model(&model.DriverCart{}).Create(&cart).Error
+	if cerr != nil {
+		logrus.Info("创建购物车信息失败", err)
+	}
+	return logininfo, err
 
 }
 func SaveFUser(admin *model.Factory) (model.LoginInfo, error) {

@@ -105,6 +105,8 @@ func (o *GoodsController) GetAllProducts(c *gin.Context) {
 func (o *GoodsController) GetGoodsInfo(c *gin.Context) {
 	sku := c.Param("sku")
 	var product model.FactoryProduct
+	//todo:要么确定sku的获取策略，要么就全用id代替
+	//err := dal.Getdb().Model(&model.FactoryProduct{}).Where("id = ?", sku).First(&product).Error
 	err := dal.Getdb().Model(&model.FactoryProduct{}).Where("sku = ?", sku).First(&product).Error
 	if err == gorm.ErrRecordNotFound {
 		o.Error(c, 404, "不存在该商品，请输入正确的信息")

@@ -19,17 +19,11 @@ type Cart struct {
 
 //需要创建OrderProudct表
 type PassengerCart struct {
-	//外键 Passenger.Uuid
 	PassengerID int64 `json:"passenger_id" form:"passenger_id"`
 	Cart
 }
 type DriverCart struct {
-	//外键 Driver.Uuid
-	DriverID string `json:"driver_id" form:"driver_id"`
-	//添加进购物车时自动获取
-	FactoryName string `gorm:"comment:购物场站名称" json:"factory_name" form:"factory_name"`
-	//距离场站距离
-	Distance int64 `gorm:"comment:距离场站距离" json:"distance" form:"distance"`
+	DriverID int64 `json:"driver_id" form:"driver_id"`
 	Cart
 }
 

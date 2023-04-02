@@ -17,7 +17,7 @@ type InfoController struct {
 // @Produce json
 // @Success 200 {object} response.DriverDeviceResponse
 // @Failure 400 {object} response.Response
-// @Router /dr/infos/device [get]
+// @Router /dr/infos/devices [get]
 func (i *InfoController) Getdevice(c *gin.Context) {
 
 }

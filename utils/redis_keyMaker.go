@@ -26,6 +26,7 @@ const (
 	Ranktype2              string = "Advertisement"
 	Ranktype3              string = "Device"
 	LOCATION               string = "LOCATION"
+	DRIVERLOCATION         string = "DRIVERLOCATION"
 )
 
 //获得一天开头的确切时间
