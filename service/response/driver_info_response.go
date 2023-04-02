@@ -8,7 +8,8 @@ type DriverOrderResponse struct {
 }
 type DriverOrdersResponse struct {
 	Response
-	OrderInfos []model.DriverOrderForm
+	FactoryDistance []FactoryDistanceReq
+	OrderInfos      []model.DriverOrderForm
 }
 type DriverOrderDetailResponse struct {
 	Response

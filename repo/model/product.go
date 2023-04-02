@@ -39,7 +39,7 @@ type OrderProduct struct {
 	//外键
 	CartRefer  int64   `gorm:"comment:所属购物车;" json:"cart_refer" form:"cart_refer"`
 	FactoryID  int64   `gorm:"comment:所属场站" json:"factory_id" form:"factory_id"`
-	OrderRefer string  `gorm:"comment:所属订单" json:"order_refer" form:"order_refer"`
+	OrderRefer int64   `gorm:"comment:所属订单" json:"order_refer" form:"order_refer"`
 	IsChosen   bool    `gorm:"comment:场站是否上线该产品 1-上线 0-下线" json:"is_chosen" form:"is_chosen"`
 	Name       string  `gorm:"notnull;comment:商品名称" json:"name" form:"name"`
 	Sku        string  `gorm:"notnull;comment:库存控制最小可用单位" json:"sku" form:"sku"`

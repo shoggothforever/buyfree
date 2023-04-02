@@ -19,8 +19,9 @@ type FactoryInfoResponse struct {
 	Response
 	FactoryInfos []FactoryInfo `json:"factory_infos"`
 }
-type FactoryDistanceInfos []*FactoryDistanceInfo
-type FactoryDistanceInfo struct {
+type FactoryDistanceInfos []FactoryDistanceReq
+type FactoryDistanceReqs []FactoryDistanceReq
+type FactoryDistanceReq struct {
 	FactoryName string `json:"factory_name"`
 	FactoryID   int64  `json:"factory_id"`
 	Distance    string `json:"distance"`
@@ -42,7 +43,7 @@ type FactoryProductDetail struct {
 }
 type FactoryDetailResponse struct {
 	Response
-	DistanceInfo   FactoryDistanceInfo     `json:"distance_info"`
+	DistanceInfo   FactoryDistanceReq      `json:"distance_info"`
 	FactoryDetail  FactoryDetail           `json:"factory_detail"`
 	ProductDetails []*FactoryProductDetail `json:"product_details,omitempty"`
 }

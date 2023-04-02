@@ -2,7 +2,6 @@ package platform
 
 import (
 	"buyfree/dal"
-	"buyfree/repo/gen"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"fmt"
@@ -45,7 +44,9 @@ func (o *OrderController) GetDriverOrders(c *gin.Context) {
 	fmt.Printf("获取到%d条订单信息\n", n)
 	ords := []response.FactoryProductsInfo{}
 	for i := 0; i < n; i++ {
-		products, err := gen.OrderProduct.GetAllOrderProductReferDOrder(dofs[i].OrderID)
+		var products []model.OrderProduct
+		//products, err := gen.OrderProduct.GetAllOrderProductReferDOrder(dofs[i].OrderID)
+		err := dal.Getdb().Raw("select * from order_products where order_refer =? ", dofs[i].OrderID).Find(&products).Error
 		if err != nil {
 			o.Error(c, 400, "获取订单信息失败 2")
 			return

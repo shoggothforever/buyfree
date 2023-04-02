@@ -89,7 +89,7 @@ DROP TABLE IF EXISTS "public"."passenger_order_forms";
 CREATE TABLE "public"."passenger_order_forms" (
                                                   "passenger_id" INT8,
                                                   "driver_car_id" TEXT COLLATE "pg_catalog"."default",
-                                                  "order_id" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                                  "order_id" int8,
                                                   "cost" INT8,
                                                   "state" INT2,
                                                   "location" TEXT COLLATE "pg_catalog"."default",
@@ -268,7 +268,7 @@ DROP TABLE IF EXISTS "public"."order_products";
 CREATE TABLE "public"."order_products" (
                                            "cart_refer" INT8,
                                            "factory_id" INT8,
-                                           "order_refer" TEXT COLLATE "pg_catalog"."default",
+                                           "order_refer" int8,
                                            "is_chosen" BOOL,
                                            "name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
                                            "sku" TEXT COLLATE "pg_catalog"."default" ,
@@ -344,7 +344,7 @@ CREATE TABLE "public"."driver_order_forms" (
                                                "car_id" TEXT COLLATE "pg_catalog"."default",
                                                "comment" TEXT COLLATE "pg_catalog"."default",
                                                "get_time" TIMESTAMPTZ ( 6 ),
-                                               "order_id" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                               "order_id" int8,
                                                "cost" INT8,
                                                "state" INT2,
                                                "location" TEXT COLLATE "pg_catalog"."default",

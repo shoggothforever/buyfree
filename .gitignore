@@ -20,4 +20,4 @@
 **/.idea
 **/templates
 **/config.*
-main
+main*
