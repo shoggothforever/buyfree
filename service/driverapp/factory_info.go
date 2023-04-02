@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FactoryController struct {
@@ -301,7 +302,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 	om.OrderID = utils.IDWorker.NextId()
 	var cartrefer, fid int64
 	//获取购物车编号
-	dal.Getdb().Transaction(func(tx *gorm.DB) error {
+	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		err = tx.Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
 		if err != nil {
 			fmt.Println(err)
@@ -321,6 +322,17 @@ func (i *FactoryController) Submit(c *gin.Context) {
 			fmt.Println(err)
 			i.Error(c, 400, "获取商品信息失败")
 			return err
+		} else if len(om.ProductInfos) == 0 {
+			i.Error(c, 400, "未选中商品信息")
+			return gorm.ErrRecordNotFound
+		}
+		var ferr error
+		for _, pv := range om.ProductInfos {
+			ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Update("is_chosen", false).Error
+			if ferr != nil {
+				fmt.Println(ferr)
+				return ferr
+			}
 		}
 		return nil
 	})
@@ -331,12 +343,22 @@ func (i *FactoryController) Submit(c *gin.Context) {
 			cost += float64(v.Count) * v.Price
 		}
 		om.Set(fid, admin.ID, cost, finfo.FactoryName, admin.CarID, admin.Address)
+		if cerr := dal.Getdb().Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "order_id"}},
+			DoNothing: true},
+		).Omit("ProductInfos").Create(&om).Error; cerr != nil {
+			fmt.Println(cerr)
+			dal.Getdb().Model(&model.DriverOrderForm{}).Delete(&om)
+			i.Error(c, 400, "创建订单表失败")
+			return
+		}
 		c.JSON(200, response.DriverOrdersResponse{
 			Response:        response.Response{200, "订单提交成功"},
 			FactoryDistance: []response.FactoryDistanceReq{finfo},
 			OrderInfos:      []model.DriverOrderForm{om},
 		})
-	} else {
+	} else if err != gorm.ErrRecordNotFound {
 		i.Error(c, 400, "订单提交失败")
 	}
 	c.Next()
@@ -367,14 +389,14 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 	var oms []model.DriverOrderForm
 	var cartrefer int64
 	//获取购物车编号
-	dal.Getdb().Transaction(func(tx *gorm.DB) error {
-		err = tx.Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
-		if err != nil {
-			fmt.Println(err)
-			i.Error(c, 400, "获取购物车信息失败")
-			return err
-		}
-		for _, v := range finfos {
+	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
+	if err != nil {
+		fmt.Println(err)
+		i.Error(c, 400, "获取购物车信息失败")
+		return
+	}
+	for _, v := range finfos {
+		err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 			var om model.DriverOrderForm
 			om.OrderID = utils.IDWorker.NextId()
 			var fid int64
@@ -384,11 +406,22 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 				i.Error(c, 400, "获取场站信息失败")
 				return err
 			}
-			err = tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
-			if err != nil {
-				fmt.Println(err)
-				i.Error(c, 400, "获取商品信息失败")
-				return err
+			terr := tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer",
+				om.OrderID).Find(&om.ProductInfos).Error
+			if terr != nil && terr != gorm.ErrRecordNotFound {
+				fmt.Println(terr)
+				return terr
+			} else if len(om.ProductInfos) == 0 {
+				fmt.Println("没有选择该场站的商品", cartrefer, fid)
+				return gorm.ErrRecordNotFound
+			}
+			var ferr error
+			for _, pv := range om.ProductInfos {
+				ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Update("is_chosen", false).Error
+				if ferr != nil {
+					fmt.Println(ferr)
+					return ferr
+				}
 			}
 			var cost float64 = 0
 			for _, pv := range om.ProductInfos {
@@ -396,17 +429,31 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			}
 			om.Set(fid, admin.ID, cost, v.FactoryName, admin.CarID, admin.Address)
 			oms = append(oms, om)
+			return nil
+		})
+		if err != nil && err != gorm.ErrRecordNotFound {
+			fmt.Println(err)
+			i.Error(c, 400, "订单提交失败:获取商品信息失败")
+			return
 		}
-		return nil
-	})
+	}
 	if err == nil {
+		if cerr := dal.Getdb().Clauses(clause.OnConflict{Columns: []clause.Column{
+			{Name: "order_id"}}, DoNothing: true}).Omit("ProductInfos").Create(&oms).Error; cerr != nil {
+			fmt.Println(cerr)
+			i.Error(c, 400, "创建订单表失败")
+			return
+		}
 		c.JSON(200, response.DriverOrdersResponse{
 			Response:        response.Response{200, "订单提交成功"},
 			FactoryDistance: finfos,
 			OrderInfos:      oms,
 		})
+	} else if err == gorm.ErrRecordNotFound {
+		fmt.Println(oms)
+		i.Error(c, 400, "无选中商品，无需创建表单")
 	} else {
-		i.Error(c, 400, "订单提交失败")
+		i.Error(c, 400, "订单提交失败:获取商品信息失败")
 	}
 	c.Next()
 }
