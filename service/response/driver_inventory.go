@@ -3,7 +3,7 @@ package response
 import "buyfree/repo/model"
 
 type ReplenishInfo struct {
-	FactorID    int64   `json:"factor_id"`
+	FactoryID   int64   `json:"factory_id"`
 	FactoryName string  `json:"factory_name"`
 	ProductName string  `json:"product_name"`
 	Type        string  `json:"type"`
@@ -23,7 +23,7 @@ type InventoryResponse struct {
 	Products []model.DeviceProduct
 }
 type CartGroup struct {
-	DistanceInfo   FactoryDistanceInfo  `json:"distance_info"`
+	DistanceInfo   FactoryDistanceReq   `json:"distance_info"`
 	ProductDetails []*CartProductDetail `json:"product_details"`
 }
 type CartProductDetail struct {
@@ -35,5 +35,9 @@ type CartProductDetail struct {
 }
 type CartResponse struct {
 	Response
-	Groups []*CartGroup `json:"groups"`
+	//购物车所有价格
+	TotalAmount float64 `json:"total_amount"`
+	//购物车所有商品数量
+	TotalCount int64        `json:"total_count"`
+	Groups     []*CartGroup `json:"groups"`
 }

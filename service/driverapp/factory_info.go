@@ -76,12 +76,12 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 // @Tags Driver/Replenish
 // @Accept json
 // @Produce json
-// @Param distance_info body response.FactoryDistanceInfo true "对应场站的名字和距离"
+// @Param distance_info body response.FactoryDistanceReq true "对应场站的名字和距离"
 // @Success 200 {object} response.FactoryDetailResponse
 // @Failure 400 {object} response.Response
 // @Router /dr/factory/infos [post]
 func (i *FactoryController) Detail(c *gin.Context) {
-	var disinfo response.FactoryDistanceInfo
+	var disinfo response.FactoryDistanceReq
 	err := c.ShouldBind(&disinfo)
 	fmt.Println(disinfo)
 	if err != nil || disinfo.FactoryName == "" {
@@ -143,6 +143,7 @@ func (i *FactoryController) Detail(c *gin.Context) {
 func (i *FactoryController) Modify(c *gin.Context) {
 	var info response.ReplenishInfo
 	err := c.ShouldBind(&info)
+	fmt.Println("获取到的记录是", info)
 	if err != nil {
 		logrus.Info("传入信息错误", err)
 		i.Error(c, 400, "获取传入信息失败")
@@ -154,7 +155,9 @@ func (i *FactoryController) Modify(c *gin.Context) {
 		i.Error(c, 400, "获取用户信息失败")
 		return
 	}
+	//获取购物车编号
 	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
+	fmt.Println("购物车编号", cartrefer)
 	if err != nil {
 		logrus.Info("获取购物车信息失败", err)
 		i.Error(c, 400, "获取购物车信息失败")
@@ -162,8 +165,10 @@ func (i *FactoryController) Modify(c *gin.Context) {
 	}
 	var op model.OrderProduct
 
-	err = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factor_id =? and cart_refer = ?", info.ProductName, info.FactorID, cartrefer).First(&op).Error
+	err = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).First(&op).Error
+	fmt.Println(op, err)
 	if err == gorm.ErrRecordNotFound {
+		fmt.Println("获取到的记录是", info)
 		if info.Count < 0 {
 			i.Error(c, 403, "未定义操作")
 			return
@@ -173,11 +178,12 @@ func (i *FactoryController) Modify(c *gin.Context) {
 		op.Count = info.Count
 		op.Price = info.Price
 		op.Type = info.Type
-		op.FactoryID = info.FactorID
+		op.FactoryID = info.FactoryID
 		op.IsChosen = true
 		op.CartRefer = cartrefer
-		err = dal.Getdb().Save(&op).Error
+		err = dal.Getdb().Create(&op).Error
 		if err != nil {
+			fmt.Println(err)
 			i.Error(c, 403, "添加商品信息失败")
 			return
 		}
@@ -187,17 +193,21 @@ func (i *FactoryController) Modify(c *gin.Context) {
 	} else {
 		var terr error
 		dal.Getdb().Transaction(func(tx *gorm.DB) error {
-			if op.Count+info.Count >= 0 {
-				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factor_id =? and cart_refer = ?", info.ProductName, info.FactorID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+			if op.Count == 0 {
+				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Update("count", 0).Error
+				fmt.Println(terr)
 				return terr
-			} else if op.Count == 0 {
-				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factor_id =? and cart_refer = ?", info.ProductName, info.FactorID, cartrefer).Update("count", 0).Error
+			} else if op.Count+info.Count > 0 {
+				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+				fmt.Println(terr)
 				return terr
-			} else {
-				return nil
+			} else if op.Count+info.Count <= 0 {
+				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Delete(&op).Error
 			}
+			return nil
 		})
 		if terr != nil {
+			fmt.Println(terr)
 			i.Error(c, 400, "更新购物车信息失败失败")
 			return
 		}
@@ -209,41 +219,201 @@ func (i *FactoryController) Modify(c *gin.Context) {
 	}
 }
 
-// @Summary 订单界面
-// @Description 点击结算，展示订单信息
+// @Summary 选中购物车中的商品
+// @Description 点击事件:选中商品，倒置商品选中状态
 // @Tags Driver/Replenish
 // @Accept json
 // @Produce json
-// @Param OrderForm body model.DriverOrderForm true "车主订单信息"
-// @Success 201 {object} response.OrderResponse
-// @Failure 400 {object} response.Response
-// @Router /dr/order/submit [post]
-func (i *FactoryController) Order(c *gin.Context) {
-	var OrderForm model.DriverOrderForm
-	err := c.ShouldBind(&OrderForm)
+// @Param productInfo body response.ReplenishInfo true "传入场站名,商品名称"
+// @Success 200 {object} response.Response
+// @Failure 200 {object} response.Response
+// @Router /dr/order/choose [put]
+func (i *FactoryController) Choose(c *gin.Context) {
+	var info response.ReplenishInfo
+	err := c.ShouldBind(&info)
+	fmt.Println("获取到的记录是", info)
 	if err != nil {
-		i.Error(c, 400, "获取订单信息失败")
+		logrus.Info("传入信息错误", err)
+		i.Error(c, 400, "获取传入信息失败")
 		return
 	}
-	OrderForm.State = 0
+	var cartrefer, fid int64
+	admin, ok := utils.GetDriveInfo(c)
+	if !ok {
+		i.Error(c, 400, "获取用户信息失败")
+		return
+	}
+	//获取购物车编号
+	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
+	fmt.Println("购物车编号", cartrefer)
+	if err != nil {
+		logrus.Info("获取购物车信息失败", err)
+		i.Error(c, 400, "获取购物车信息失败原因：获取购物车id失败")
+		return
+	}
+	if err = dal.Getdb().Model(&model.Factory{}).Select("id").Where("name = ?", info.FactoryName).First(&fid).Error; err != nil {
+		if err != nil {
+			fmt.Println(err)
+			i.Error(c, 400, "操作购物车商品信息失败原因：获取场站id失败")
+			return
+		}
+	}
+	var op model.OrderProduct
+	err = dal.Getdb().Model(&model.OrderProduct{}).Select("is_chosen").Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, fid, cartrefer).First(&op).Update("is_chosen", !op.IsChosen).Error
+	fmt.Println(op, err)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			i.Error(c, 403, "传入数据有误")
+			return
+		}
+		i.Error(c, 400, "操作数据库失败")
+		return
+	}
+	if !op.IsChosen {
+		c.JSON(200, response.Response{200, "成功选中商品"})
+	} else {
+		c.JSON(200, response.Response{200, "成功取消选中商品"})
+	}
+}
+
+// @Summary 仅生成单个场站的订单订单信息
+// @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
+// @Tags Driver/Pay
+// @Accept json
+// @Produce json
+// @Param DistanceInfos body response.FactoryDistanceReq true "包含附近场站信息，已经获取了,直接打包传入"
+// @Success 201 {object} response.DriverOrdersResponse
+// @Failure 400 {object} response.Response
+// @Router /dr/order/submit [post]
+func (i *FactoryController) Submit(c *gin.Context) {
+	var finfo response.FactoryDistanceReq
+	err := c.ShouldBind(&finfo)
+	if err != nil {
+		i.Error(c, 400, "获取位置信息失败")
+		return
+	}
 	admin, ok := utils.GetDriveInfo(c)
 	if ok != true {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
-	fmt.Println(admin)
-	//var Prdoucts []model.OrderProduct
+	var om model.DriverOrderForm
+	om.OrderID = utils.IDWorker.NextId()
+	var cartrefer, fid int64
+	//获取购物车编号
+	dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		err = tx.Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
+		if err != nil {
+			fmt.Println(err)
+			i.Error(c, 400, "获取购物车信息失败")
+			return err
+		}
 
-	c.JSON(200, response.DriverOrdersResponse{
-		response.Response{200, "订单提交成功"},
-		[]model.DriverOrderForm{OrderForm},
+		err = tx.Model(&model.Factory{}).Select("id").Where("name = ?", finfo.FactoryName).First(&fid).Error
+		if err != nil {
+			fmt.Println(err)
+			i.Error(c, 400, "获取场站信息失败")
+			return err
+		}
+
+		err = tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
+		if err != nil {
+			fmt.Println(err)
+			i.Error(c, 400, "获取商品信息失败")
+			return err
+		}
+		return nil
 	})
+
+	if err == nil {
+		var cost float64 = 0
+		for _, v := range om.ProductInfos {
+			cost += float64(v.Count) * v.Price
+		}
+		om.Set(fid, admin.ID, cost, finfo.FactoryName, admin.CarID, admin.Address)
+		c.JSON(200, response.DriverOrdersResponse{
+			Response:        response.Response{200, "订单提交成功"},
+			FactoryDistance: []response.FactoryDistanceReq{finfo},
+			OrderInfos:      []model.DriverOrderForm{om},
+		})
+	} else {
+		i.Error(c, 400, "订单提交失败")
+	}
+	c.Next()
+}
+
+// @Summary 生成多个场站的订单信息
+// @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
+// @Tags Driver/Pay
+// @Accept json
+// @Produce json
+// @Param DistanceInfos body response.FactoryDistanceInfos false "附近场站信息，已经获取了，打包后直接传入"
+// @Success 201 {object} response.DriverOrdersResponse
+// @Failure 400 {object} response.Response
+// @Router /dr/order/submit2 [post]
+func (i *FactoryController) SubmitMany(c *gin.Context) {
+	var finfos []response.FactoryDistanceReq
+	err := c.ShouldBind(&finfos)
+	fmt.Println(finfos)
+	if err != nil {
+		i.Error(c, 400, "获取位置信息失败")
+		return
+	}
+	admin, ok := utils.GetDriveInfo(c)
+	if ok != true {
+		i.Error(c, 400, "获取车主信息失败")
+		return
+	}
+	var oms []model.DriverOrderForm
+	var cartrefer int64
+	//获取购物车编号
+	dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		err = tx.Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
+		if err != nil {
+			fmt.Println(err)
+			i.Error(c, 400, "获取购物车信息失败")
+			return err
+		}
+		for _, v := range finfos {
+			var om model.DriverOrderForm
+			om.OrderID = utils.IDWorker.NextId()
+			var fid int64
+			err = tx.Model(&model.Factory{}).Select("id").Where("name = ?", v.FactoryName).First(&fid).Error
+			if err != nil {
+				fmt.Println(err)
+				i.Error(c, 400, "获取场站信息失败")
+				return err
+			}
+			err = tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
+			if err != nil {
+				fmt.Println(err)
+				i.Error(c, 400, "获取商品信息失败")
+				return err
+			}
+			var cost float64 = 0
+			for _, pv := range om.ProductInfos {
+				cost += float64(pv.Count) * pv.Price
+			}
+			om.Set(fid, admin.ID, cost, v.FactoryName, admin.CarID, admin.Address)
+			oms = append(oms, om)
+		}
+		return nil
+	})
+	if err == nil {
+		c.JSON(200, response.DriverOrdersResponse{
+			Response:        response.Response{200, "订单提交成功"},
+			FactoryDistance: finfos,
+			OrderInfos:      oms,
+		})
+	} else {
+		i.Error(c, 400, "订单提交失败")
+	}
 	c.Next()
 }
 
 // @Summary 补货订单结算
 // @Description 结算
-// @Tags Driver/Replenish
+// @Tags Driver/Pay
 // @Accept json
 // @Produce json
 // @Param OrderForm body model.DriverOrderForm true "传入订单信息"

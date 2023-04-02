@@ -194,7 +194,7 @@ definitions:
         type: string
       cost:
         description: 花费
-        type: integer
+        type: number
       driver_id:
         description: Driver外键
         type: integer
@@ -210,14 +210,14 @@ definitions:
         type: string
       order_id:
         description: 订单编码
-        type: string
+        type: integer
       pay_time:
         description: 支付时间（更改操作先于发送订单请求，支付时更新即可）
         type: string
       place_time:
         description: 下单时间（创建时更新即可）
         type: string
-      productInfo:
+      productInfos:
         description: 商品信息
         items:
           $ref: '#/definitions/model.OrderProduct'
@@ -398,7 +398,7 @@ definitions:
       name:
         type: string
       order_refer:
-        type: string
+        type: integer
       pic:
         type: string
       price:
@@ -517,7 +517,7 @@ definitions:
   response.CartGroup:
     properties:
       distance_info:
-        $ref: '#/definitions/response.FactoryDistanceInfo'
+        $ref: '#/definitions/response.FactoryDistanceReq'
       product_details:
         items:
           $ref: '#/definitions/response.CartProductDetail'
@@ -546,6 +546,12 @@ definitions:
         type: array
       msg:
         type: string
+      total_amount:
+        description: 购物车所有价格
+        type: number
+      total_count:
+        description: 购物车所有商品数量
+        type: integer
     type: object
   response.DevInfoResponse:
     properties:
@@ -662,6 +668,10 @@ definitions:
     properties:
       code:
         type: integer
+      factoryDistance:
+        items:
+          $ref: '#/definitions/response.FactoryDistanceReq'
+        type: array
       msg:
         type: string
       orderInfos:
@@ -685,7 +695,7 @@ definitions:
       code:
         type: integer
       distance_info:
-        $ref: '#/definitions/response.FactoryDistanceInfo'
+        $ref: '#/definitions/response.FactoryDistanceReq'
       factory_detail:
         $ref: '#/definitions/response.FactoryDetail'
       msg:
@@ -695,7 +705,7 @@ definitions:
           $ref: '#/definitions/response.FactoryProductDetail'
         type: array
     type: object
-  response.FactoryDistanceInfo:
+  response.FactoryDistanceReq:
     properties:
       distance:
         type: string
@@ -885,7 +895,7 @@ definitions:
         type: integer
       msg:
         type: string
-      orderInfos:
+      orderForm:
         items:
           $ref: '#/definitions/response.FactoryProductsInfo'
         type: array
@@ -902,7 +912,7 @@ definitions:
       count:
         description: 传入商品件数
         type: integer
-      factor_id:
+      factory_id:
         type: integer
       factory_name:
         type: string
@@ -982,7 +992,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bfd.shoggothy.xyz
+host: bf.shoggothy.xyz
 info:
   contact:
     email: support@swagger.io
@@ -1033,7 +1043,7 @@ paths:
         name: DistanceInfos
         schema:
           items:
-            $ref: '#/definitions/response.FactoryDistanceInfo'
+            $ref: '#/definitions/response.FactoryDistanceReq'
           type: array
       produces:
       - application/json
@@ -1060,7 +1070,7 @@ paths:
         name: distance_info
         required: true
         schema:
-          $ref: '#/definitions/response.FactoryDistanceInfo'
+          $ref: '#/definitions/response.FactoryDistanceReq'
       produces:
       - application/json
       responses:
@@ -1208,6 +1218,28 @@ paths:
       summary: 车主用户登录
       tags:
       - User
+  /dr/order/choose:
+    put:
+      consumes:
+      - application/json
+      description: 点击事件:选中商品，倒置商品选中状态
+      parameters:
+      - description: 传入场站名,商品名称
+        in: body
+        name: productInfo
+        required: true
+        schema:
+          $ref: '#/definitions/response.ReplenishInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 选中购物车中的商品
+      tags:
+      - Driver/Replenish
   /dr/order/pay:
     put:
       consumes:
@@ -1233,7 +1265,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: 补货订单结算
       tags:
-      - Driver/Replenish
+      - Driver/Pay
   /dr/order/replenish:
     post:
       consumes:
@@ -1260,28 +1292,55 @@ paths:
     post:
       consumes:
       - application/json
-      description: 点击结算，展示订单信息
+      description: 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
       parameters:
-      - description: 车主订单信息
+      - description: 包含附近场站信息，已经获取了,直接打包传入
         in: body
-        name: OrderForm
+        name: DistanceInfos
         required: true
         schema:
-          $ref: '#/definitions/model.DriverOrderForm'
+          $ref: '#/definitions/response.FactoryDistanceReq'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/response.OrderResponse'
+            $ref: '#/definitions/response.DriverOrdersResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 订单界面
+      summary: 仅生成单个场站的订单订单信息
       tags:
-      - Driver/Replenish
+      - Driver/Pay
+  /dr/order/submit2:
+    post:
+      consumes:
+      - application/json
+      description: 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
+      parameters:
+      - description: 附近场站信息，已经获取了，打包后直接传入
+        in: body
+        name: DistanceInfos
+        schema:
+          items:
+            $ref: '#/definitions/response.FactoryDistanceReq'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.DriverOrdersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 生成多个场站的订单信息
+      tags:
+      - Driver/Pay
   /dr/register:
     post:
       consumes:

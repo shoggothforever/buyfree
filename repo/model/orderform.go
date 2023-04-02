@@ -15,9 +15,9 @@ const (
 //abstract
 type OrderForm struct {
 	//订单编码
-	OrderID string `gorm:"primarykey" json:"order_id"`
+	OrderID int64 `gorm:"primarykey" json:"order_id"`
 	//花费
-	Cost int64 `gorm:"comment:花费" json:"cost"`
+	Cost float64 `gorm:"comment:花费" json:"cost"`
 	//订单状态
 	State ORDERSTATE `gorm:"type:smallint;comment:订单状态 2-已完成 1-待取货 0-未支付" json:"state"`
 	//支付时存储位置(购物时获取车主位置）
@@ -27,7 +27,7 @@ type OrderForm struct {
 	//支付时间（更改操作先于发送订单请求，支付时更新即可）
 	PayTime time.Time `gorm:"comment:支付时间" json:"pay_time"`
 	//商品信息
-	ProductInfo []*OrderProduct `gorm:"foreignKey:OrderRefer"`
+	ProductInfos []*OrderProduct `gorm:"foreignKey:OrderRefer"`
 }
 
 //需要关联创表
@@ -52,6 +52,20 @@ type DriverOrderForm struct {
 	//自取时间
 	GetTime time.Time `gorm:"comment:自取时间" json:"get_time"`
 	OrderForm
+}
+
+func (d *DriverOrderForm) Set(fid, did int64, cost float64, fname, carid, loc string) {
+	d.FactoryID = fid
+	d.DriverID = did
+	d.Cost = cost
+	d.FactoryName = fname
+	d.CarID = carid
+	// d.comment =comment string
+	// d.GetTime = gtime time.time
+	d.PlaceTime = time.Now()
+	d.Location = loc
+	d.State = 0
+
 }
 
 type ReplenInfo struct {

@@ -86,7 +86,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/response.FactoryDistanceInfo"
+                                "$ref": "#/definitions/response.FactoryDistanceReq"
                             }
                         }
                     }
@@ -127,7 +127,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/response.FactoryDistanceInfo"
+                            "$ref": "#/definitions/response.FactoryDistanceReq"
                         }
                     }
                 ],
@@ -350,6 +350,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/dr/order/choose": {
+            "put": {
+                "description": "点击事件:选中商品，倒置商品选中状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Replenish"
+                ],
+                "summary": "选中购物车中的商品",
+                "parameters": [
+                    {
+                        "description": "传入场站名,商品名称",
+                        "name": "productInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/response.ReplenishInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/dr/order/pay": {
             "put": {
                 "description": "结算",
@@ -360,7 +394,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Replenish"
+                    "Driver/Pay"
                 ],
                 "summary": "补货订单结算",
                 "parameters": [
@@ -426,7 +460,7 @@ const docTemplate = `{
         },
         "/dr/order/submit": {
             "post": {
-                "description": "点击结算，展示订单信息",
+                "description": "使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）",
                 "consumes": [
                     "application/json"
                 ],
@@ -434,17 +468,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Replenish"
+                    "Driver/Pay"
                 ],
-                "summary": "订单界面",
+                "summary": "仅生成单个场站的订单订单信息",
                 "parameters": [
                     {
-                        "description": "车主订单信息",
-                        "name": "OrderForm",
+                        "description": "包含附近场站信息，已经获取了,直接打包传入",
+                        "name": "DistanceInfos",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.DriverOrderForm"
+                            "$ref": "#/definitions/response.FactoryDistanceReq"
                         }
                     }
                 ],
@@ -452,7 +486,49 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/response.OrderResponse"
+                            "$ref": "#/definitions/response.DriverOrdersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/order/submit2": {
+            "post": {
+                "description": "使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Pay"
+                ],
+                "summary": "生成多个场站的订单信息",
+                "parameters": [
+                    {
+                        "description": "附近场站信息，已经获取了，打包后直接传入",
+                        "name": "DistanceInfos",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.FactoryDistanceReq"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.DriverOrdersResponse"
                         }
                     },
                     "400": {
@@ -1568,7 +1644,7 @@ const docTemplate = `{
                 },
                 "cost": {
                     "description": "花费",
-                    "type": "integer"
+                    "type": "number"
                 },
                 "driver_id": {
                     "description": "Driver外键",
@@ -1590,7 +1666,7 @@ const docTemplate = `{
                 },
                 "order_id": {
                     "description": "订单编码",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "pay_time": {
                     "description": "支付时间（更改操作先于发送订单请求，支付时更新即可）",
@@ -1600,7 +1676,7 @@ const docTemplate = `{
                     "description": "下单时间（创建时更新即可）",
                     "type": "string"
                 },
-                "productInfo": {
+                "productInfos": {
                     "description": "商品信息",
                     "type": "array",
                     "items": {
@@ -1857,7 +1933,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "order_refer": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "pic": {
                     "type": "string"
@@ -2034,7 +2110,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "distance_info": {
-                    "$ref": "#/definitions/response.FactoryDistanceInfo"
+                    "$ref": "#/definitions/response.FactoryDistanceReq"
                 },
                 "product_details": {
                     "type": "array",
@@ -2078,6 +2154,14 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
+                },
+                "total_amount": {
+                    "description": "购物车所有价格",
+                    "type": "number"
+                },
+                "total_count": {
+                    "description": "购物车所有商品数量",
+                    "type": "integer"
                 }
             }
         },
@@ -2252,6 +2336,12 @@ const docTemplate = `{
                 "code": {
                     "type": "integer"
                 },
+                "factoryDistance": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.FactoryDistanceReq"
+                    }
+                },
                 "msg": {
                     "type": "string"
                 },
@@ -2287,7 +2377,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "distance_info": {
-                    "$ref": "#/definitions/response.FactoryDistanceInfo"
+                    "$ref": "#/definitions/response.FactoryDistanceReq"
                 },
                 "factory_detail": {
                     "$ref": "#/definitions/response.FactoryDetail"
@@ -2303,7 +2393,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.FactoryDistanceInfo": {
+        "response.FactoryDistanceReq": {
             "type": "object",
             "properties": {
                 "distance": {
@@ -2582,7 +2672,7 @@ const docTemplate = `{
                 "msg": {
                     "type": "string"
                 },
-                "orderInfos": {
+                "orderForm": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.FactoryProductsInfo"
@@ -2608,7 +2698,7 @@ const docTemplate = `{
                     "description": "传入商品件数",
                     "type": "integer"
                 },
-                "factor_id": {
+                "factory_id": {
                     "type": "integer"
                 },
                 "factory_name": {
@@ -2740,7 +2830,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bfd.shoggothy.xyz",
+	Host:             "bf.shoggothy.xyz",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Swagger Example API",

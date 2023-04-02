@@ -26,7 +26,7 @@ type CartController struct {
 // @Router /dr/factory/cart [post]
 func (ct *CartController) OpenCart(c *gin.Context) {
 	//TODO:可以获取
-	var infos []response.FactoryDistanceInfo
+	var infos []response.FactoryDistanceReq
 	err := c.ShouldBind(&infos)
 	if err != nil {
 		ct.Error(c, 400, "获取附近场站信息失败")
@@ -72,7 +72,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 				return
 			}
 		} else {
-			fmt.Println("场站编号是", fid)
+			//fmt.Println("场站编号是", fid)
 			g.DistanceInfo.FactoryID = fid
 			err = tx.Raw("select name,pic,type,count,price from order_products where cart_refer = ? and factory_id = ?", cart.CartID, fid).Find(&g.ProductDetails).Error
 			if err == nil {
@@ -81,7 +81,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 					cnt++
 					sum += float64(gv.Count) * gv.Price
 				}
-				fmt.Println(gs)
+				//fmt.Println(gs)
 			} else if err != gorm.ErrRecordNotFound {
 				fmt.Println(err)
 				ct.Error(c, 400, "获取购物车商品信息失败")
@@ -95,5 +95,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 	})
 	c.JSON(200, response.CartResponse{
 		response.Response{200, "获取购物车信息成功"},
+		sum,
+		cnt,
 		gs})
 }

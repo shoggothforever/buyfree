@@ -69,7 +69,9 @@ func Driverrouter() {
 	od := dr.Group("/order")
 	{
 		od.POST("/replenish", ft.Modify)
-		od.POST("/submit", ft.Order)
+		od.PUT("/choose", ft.Choose)
+		od.POST("/submit", ft.Submit)
+		od.POST("/submit2", ft.SubmitMany)
 		od.PUT("/pay", ft.Pay)
 
 	}
