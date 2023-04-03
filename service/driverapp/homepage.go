@@ -72,7 +72,7 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		err = db.Raw("select sum(play_times),sum(profit) from ad_devices where device_id in ?", ids).Row().Scan(&static.ADPlayTimes, &static.ADDailySales)
 		if err != gorm.ErrRecordNotFound && err != nil {
 			logrus.Info(err)
-			h.Error(c, 400, "无法获取车主端广告信息")
+			//h.Error(c, 400, "无法获取车主端广告信息")
 		}
 	}
 	err = db.Where("device_id in ?", ids).Order("monthly_sales DESC").Limit(2).Find(&static.ProductRankList).Error

@@ -394,7 +394,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Pay"
+                    "Driver/Do"
                 ],
                 "summary": "补货订单结算",
                 "parameters": [
@@ -468,9 +468,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Pay"
+                    "Driver/Do"
                 ],
-                "summary": "仅生成单个场站的订单订单信息",
+                "summary": "仅生成单个场站的订单信息",
                 "parameters": [
                     {
                         "description": "包含附近场站信息，已经获取了,直接打包传入",
@@ -508,7 +508,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Pay"
+                    "Driver/Do"
                 ],
                 "summary": "生成多个场站的订单信息",
                 "parameters": [

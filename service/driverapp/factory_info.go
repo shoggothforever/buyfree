@@ -277,9 +277,9 @@ func (i *FactoryController) Choose(c *gin.Context) {
 	}
 }
 
-// @Summary 仅生成单个场站的订单订单信息
+// @Summary 仅生成单个场站的订单信息
 // @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
-// @Tags Driver/Pay
+// @Tags Driver/Do
 // @Accept json
 // @Produce json
 // @Param DistanceInfos body response.FactoryDistanceReq true "包含附近场站信息，已经获取了,直接打包传入"
@@ -317,7 +317,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 			return err
 		}
 
-		err = tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
+		err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
 		if err != nil {
 			fmt.Println(err)
 			i.Error(c, 400, "获取商品信息失败")
@@ -328,7 +328,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		}
 		var ferr error
 		for _, pv := range om.ProductInfos {
-			ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Update("is_chosen", false).Error
+			ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Update("is_chosen", false).Error
 			if ferr != nil {
 				fmt.Println(ferr)
 				return ferr
@@ -366,7 +366,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 
 // @Summary 生成多个场站的订单信息
 // @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
-// @Tags Driver/Pay
+// @Tags Driver/Do
 // @Accept json
 // @Produce json
 // @Param DistanceInfos body response.FactoryDistanceInfos false "附近场站信息，已经获取了，打包后直接传入"
@@ -450,7 +450,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			OrderInfos:      oms,
 		})
 	} else if err == gorm.ErrRecordNotFound {
-		fmt.Println(oms)
+		//fmt.Println(oms)
 		i.Error(c, 400, "无选中商品，无需创建表单")
 	} else {
 		i.Error(c, 400, "订单提交失败:获取商品信息失败")
@@ -460,14 +460,19 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 
 // @Summary 补货订单结算
 // @Description 结算
-// @Tags Driver/Pay
+// @Tags Driver/Do
 // @Accept json
 // @Produce json
-// @Param OrderForm body model.DriverOrderForm true "传入订单信息"
+// @Param OrderForm body response.SubmitOrderForms true "把提交的结果直接传进来就好了"
 // @Success 201 {object} response.PayResponse
 // @Failure 400 {object} response.Response
 // @Router /dr/order/pay [put]
 func (i *FactoryController) Pay(c *gin.Context) {
+	var subods response.SubmitOrderForms
+	if err := c.ShouldBind(&subods); err != nil {
+		i.Error(c, 400, "获取提交订单信息失败")
+		return
+	}
 	//TODO:业务逻辑
 	var OrderForm model.DriverOrderForm
 	err := c.ShouldBind(&OrderForm)

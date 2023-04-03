@@ -30,7 +30,7 @@ func ReadPostgresSQLlinfo() {
 func init() {
 	ReadPostgresSQLlinfo()
 	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer 日志输出的目标，前缀和日志包含的内容
 		logger.Config{
 			SlowThreshold: time.Second,   // 慢 SQL 阈值
 			LogLevel:      logger.Silent, // 日志级别
