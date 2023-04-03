@@ -1311,7 +1311,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 仅生成单个场站的订单订单信息
+      summary: 仅生成单个场站的订单信息
       tags:
       - Driver/Pay
   /dr/order/submit2:

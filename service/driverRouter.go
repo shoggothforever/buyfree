@@ -48,6 +48,7 @@ func Driverrouter() {
 	var ft driverapp.FactoryController
 	var dft driverapp.InfoController
 	var cat driverapp.CartController
+	var det driverapp.DeviceController
 	r.GET("/", base.Ping)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	dr := r.Group("/dr")
@@ -75,11 +76,17 @@ func Driverrouter() {
 		od.PUT("/pay", ft.Pay)
 
 	}
+	devr := dr.Group("/devices")
+	{
+		devr.GET("/scan", det.Scan)
+		devr.POST("/bind", det.BindDevice)
+	}
 	pr := dr.Group("/infos")
 	{
 		pr.GET("/devices", dft.Getdevice)
 		pr.GET("/orderform/:mode", dft.GetOrders)
 		pr.GET("/orderdetail/:id", dft.GetOrder)
+		//pr.GET("/balance")
 
 	}
 	QuitDriverChan = make(chan os.Signal)

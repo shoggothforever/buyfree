@@ -19,6 +19,7 @@ type Driver struct {
 	//购物订单
 	DriverOrderForms *[]DriverOrderForm `gorm:"foreignKey:DriverID;补货订单" `
 }
+
 type Replenish struct {
 	FactorID int64
 	//TODO 携带补货需求信息

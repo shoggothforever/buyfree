@@ -2,14 +2,18 @@ package response
 
 import "buyfree/repo/model"
 
-type DriverOrderResponse struct {
+type DriverOrderFormResponse struct {
 	Response
-	OrderInfos []model.DriverOrderForm
+	OrderInfos []model.DriverOrderForm `json:"order_infos"`
 }
 type DriverOrdersResponse struct {
 	Response
-	FactoryDistance []FactoryDistanceReq
-	OrderInfos      []model.DriverOrderForm
+	FactoryDistance []FactoryDistanceReq    `json:"factory_distance,omitempty"`
+	OrderInfos      []model.DriverOrderForm `json:"order_infos,omitempty"`
+}
+type SubmitOrderForms struct {
+	FactoryDistance []FactoryDistanceReq    `json:"factory_distance,omitempty"`
+	OrderInfos      []model.DriverOrderForm `json:"order_infos,omitempty"`
 }
 type DriverOrderDetailResponse struct {
 	Response
@@ -20,5 +24,5 @@ type DriverOrderDetailResponse struct {
 }
 type DriverDeviceResponse struct {
 	Response
-	Devices []model.Device
+	Devices []model.Device `json:"devices"`
 }

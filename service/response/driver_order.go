@@ -13,3 +13,9 @@ type SubmitReq struct {
 	Common  string    `json:"common,omitempty"`
 	GetTime time.Time `json:"get_time"`
 }
+type PayReqs []PayReq
+type PayReq struct {
+	Comment  string `json:"comment,omitempty"`
+	Mobile   string `json:"mobile,omitempty"`
+	OrderIDs int64  `json:"order_ids,omitempty"`
+}

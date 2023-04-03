@@ -2,6 +2,7 @@ package main
 
 import (
 	"buyfree/service"
+	"buyfree/transport"
 	"fmt"
 	"os/exec"
 	"sync"
@@ -19,7 +20,7 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      bfd.shoggothy.xyz
+// @host      bf.shoggothy.xyz
 // @BasePath  /
 
 // @securityDefinitions.basic  BasicAuth
@@ -44,6 +45,7 @@ func Init() {
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
+	transport.PlatFormService.Run()
 	go service.Driverrouter()
 	service.PlatFormrouter()
 
