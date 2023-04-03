@@ -8,12 +8,14 @@ type DriverOrderFormResponse struct {
 }
 type DriverOrdersResponse struct {
 	Response
-	FactoryDistance []FactoryDistanceReq    `json:"factory_distance,omitempty"`
-	OrderInfos      []model.DriverOrderForm `json:"order_infos,omitempty"`
+	Cash              float64                 `json:"cash"`
+	FactoriesDistance []FactoryDistanceReq    `json:"factories_distance,omitempty"`
+	OrderInfos        []model.DriverOrderForm `json:"order_infos,omitempty"`
 }
 type SubmitOrderForms struct {
-	FactoryDistance []FactoryDistanceReq    `json:"factory_distance,omitempty"`
-	OrderInfos      []model.DriverOrderForm `json:"order_infos,omitempty"`
+	Cash              float64                 `json:"cash"`
+	FactoriesDistance []FactoryDistanceReq    `json:"factories_distance,omitempty"`
+	OrderInfos        []model.DriverOrderForm `json:"order_infos,omitempty"`
 }
 type DriverOrderDetailResponse struct {
 	Response

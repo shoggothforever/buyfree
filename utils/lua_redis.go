@@ -37,7 +37,7 @@ func init() {
 	SHASET.UnlockSHA = loadsha(luaUnlock, c, rdb)
 	SHASET.GetSalesInfoSHA = loadsha(getSalesInfo, c, rdb)
 	SHASET.ModifySalesSHA = loadsha(modifySales, c, rdb)
-	SHASET.ModifyRanksSHA = loadsha(modifyranks, c, rdb)
+	SHASET.ModifyRanksSHA = loadsha(modifyRanks, c, rdb)
 	SHASET.SalesOf7daysSSHA = loadsha(salesOF7days, c, rdb)
 	SHASET.GetHomeStatic = loadsha(getHomeStatic, c, rdb)
 }
@@ -105,7 +105,7 @@ func salesOF7days() *redis.Script {
 }
 
 /*
-改变销量信息的lua脚本,暂时不支持浮点数
+改变销量信息的lua脚本
 KEYS[1]今日开始时间,KEYS[2]昨日开始时间,KEYS[3]:日榜，KEYS[4]周榜，KEYS[5]月榜，KEYS[6]年榜，KEYS[7]7天连榜，KEYS[8]总榜
 日榜keys[9]-0day,KEYS[10]-1day,keys[11]-2day,KEYS[12]-3day,KEYS[13]-4day,KEYS[14]-5day,KEYS[15]-6day
 ARGV[1]订单金额
@@ -139,7 +139,7 @@ local keys={}
 }
 
 //改变商品排行信息
-func modifyranks() *redis.Script {
+func modifyRanks() *redis.Script {
 	return redis.NewScript(`
 	local keys={}
 	for i=1,10,1 do
@@ -222,23 +222,24 @@ func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, v
 }
 
 //改变销量信息的lua脚本
-func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) []string {
+func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) ([]string, error) {
 
 	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(adp, uname), val)
 	//fmt.Println(GetAllTimeKeys(adp, uname))
 	res, err := ret.Float64Slice()
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while modifying Sales", err)
+		return []string{}, err
 	}
 	var array []string
 	for _, v := range res {
 		array = append(array, strconv.FormatFloat(v, 'f', 2, 64))
 	}
-	return array
+	return array, nil
 }
 
-//adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku：商品唯一标志符 sales:销售额，用于更改zset的分数
-func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku string, sales int64) {
+//adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku/id：唯一标志符 sales:销售额，用于更改zset的分数
+func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku string, sales float64) {
 	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
 	if err != nil {

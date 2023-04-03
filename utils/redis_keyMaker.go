@@ -25,6 +25,9 @@ const (
 	Ranktype1              string = "Product"
 	Ranktype2              string = "Advertisement"
 	Ranktype3              string = "Device"
+	Role1                  string = "Driver:"
+	Role2                  string = "Factory:"
+	Role3                  string = "Platform:"
 	LOCATION               string = "LOCATION"
 	DRIVERLOCATION         string = "DRIVERLOCATION"
 )
