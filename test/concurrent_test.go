@@ -1,7 +1,6 @@
 package test
 
 import (
-	"buyfree/repo/model"
 	"buyfree/transport"
 	"fmt"
 	"runtime"
@@ -22,7 +21,7 @@ func TestOrderWorkerPool(t *testing.T) {
 		for {
 			//fmt.Scanln(&i)
 			i++
-			orderreq := &transport.CountRequest{CountInfo: &model.SingleOrderForm{Cost: i}, ReplyChan: make(transport.ReplyQueue, 1)}
+			orderreq := &transport.CountRequest{Iterator: i, ReplyChan: make(transport.ReplyQueue, 1)}
 			//fmt.Println("任务:", i)
 			p.ReqChan <- orderreq //数据传进去会被自动执行Do()方法，具体对数据的处理自己在Do()方法中定义
 			orderreq = nil

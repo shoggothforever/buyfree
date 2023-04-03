@@ -4,12 +4,14 @@ import (
 	"buyfree/dal"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"buyfree/transport"
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"sync"
 )
 
 type FactoryController struct {
@@ -354,9 +356,9 @@ func (i *FactoryController) Submit(c *gin.Context) {
 			return
 		}
 		c.JSON(200, response.DriverOrdersResponse{
-			Response:        response.Response{200, "订单提交成功"},
-			FactoryDistance: []response.FactoryDistanceReq{finfo},
-			OrderInfos:      []model.DriverOrderForm{om},
+			Response:          response.Response{200, "订单提交成功"},
+			FactoriesDistance: []response.FactoryDistanceReq{finfo},
+			OrderInfos:        []model.DriverOrderForm{om},
 		})
 	} else if err != gorm.ErrRecordNotFound {
 		i.Error(c, 400, "订单提交失败")
@@ -395,6 +397,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 		i.Error(c, 400, "获取购物车信息失败")
 		return
 	}
+	var sum float64 = 0
 	for _, v := range finfos {
 		err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 			var om model.DriverOrderForm
@@ -427,6 +430,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			for _, pv := range om.ProductInfos {
 				cost += float64(pv.Count) * pv.Price
 			}
+			sum += cost
 			om.Set(fid, admin.ID, cost, v.FactoryName, admin.CarID, admin.Address)
 			oms = append(oms, om)
 			return nil
@@ -445,9 +449,10 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			return
 		}
 		c.JSON(200, response.DriverOrdersResponse{
-			Response:        response.Response{200, "订单提交成功"},
-			FactoryDistance: finfos,
-			OrderInfos:      oms,
+			Response:          response.Response{200, "订单提交成功"},
+			Cash:              sum,
+			FactoriesDistance: finfos,
+			OrderInfos:        oms,
 		})
 	} else if err == gorm.ErrRecordNotFound {
 		//fmt.Println(oms)
@@ -466,27 +471,39 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 // @Param OrderForm body response.SubmitOrderForms true "把提交的结果直接传进来就好了"
 // @Success 201 {object} response.PayResponse
 // @Failure 400 {object} response.Response
-// @Router /dr/order/pay [put]
+// @Router /dr/order/pay [post]
 func (i *FactoryController) Pay(c *gin.Context) {
-	var subods response.SubmitOrderForms
-	if err := c.ShouldBind(&subods); err != nil {
-		i.Error(c, 400, "获取提交订单信息失败")
-		return
-	}
-	//TODO:业务逻辑
-	var OrderForm model.DriverOrderForm
-	err := c.ShouldBind(&OrderForm)
-	if err != nil {
-		i.Error(c, 400, "获取订单信息失败")
-		return
-	}
-	OrderForm.State = 0
 	admin, ok := utils.GetDriveInfo(c)
 	if ok != true {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
-	fmt.Println(admin)
+	var subods response.SubmitOrderForms
+	if err := c.ShouldBind(&subods); err != nil {
+		fmt.Println(err)
+		i.Error(c, 400, "获取提交订单信息失败")
+		return
+	}
+	n := len(subods.FactoriesDistance)
+	//for i := 0; i < n; i++ {
+	//	fmt.Println(fmt.Sprintf("第%d条订单场站信息", i), subods.FactoriesDistance[i])
+	//	fmt.Println(fmt.Sprintf("第%d条订单信息", i), subods.OrderInfos[i])
+	//}
+
+	//TODO:业务逻辑
+	payreq := transport.NewPayRequest(admin.PlatformID, subods.Cash)
+	transport.PlatFormService.ReqChan <- payreq
+	if ok = <-payreq.ReplyChan; !ok {
+		i.Error(c, 500, "服务器未能处理支付信息")
+		return
+	}
+	var wg sync.WaitGroup
+	wg.Add(n)
+	//TODO 订单处理逻辑
+
+	wg.Wait()
+	//var wg sync.WaitGroup
+	//n:=len(subods.FactoriesDistance)
 	c.JSON(200, response.PayResponse{
 		response.Response{201, "支付成功"},
 	})

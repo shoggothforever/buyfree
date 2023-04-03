@@ -20,11 +20,11 @@ func TestLua(t *testing.T) {
 	//utils.Lualock(ctx, rdb, []string{"mylock"}, val, "30")
 	//utils.Luaunlock(ctx, rdb, key, val)
 	//utils.ChangeTodaySales(ctx, rdb, key, "123")
-	//t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, "dsm", "2333.123"))
+	t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, "dsm", "2333.123"))
 	//t.Log(utils.GetSalesInfo(ctx, rdb, utils.Ranktype1, "dsm"))
 	//t.Log(utils.GetAllTypeRankKeys(utils.Ranktype1, "dsm"))
 	{
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "0", 123)
+		utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "0", 123)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "1", 12)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "2", 123)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "3", 1234)
