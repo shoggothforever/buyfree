@@ -25,6 +25,75 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/dr/devices/bind": {
+            "post": {
+                "description": "向服务端(平台)验签，等待设备激活",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Auth"
+                ],
+                "summary": "输入认证信息绑定设备",
+                "parameters": [
+                    {
+                        "description": "传入获得的设备ID,以及一些车主的相关信息",
+                        "name": "AuthInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/response.DriverAuthInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BindDeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/devices/scan": {
+            "get": {
+                "description": "扫码向服务端(平台)验签，验签成功，返回待激活设备号码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Auth"
+                ],
+                "summary": "扫码激活设备",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ScanResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "onject"
+                        }
+                    }
+                }
+            }
+        },
         "/dr/factory": {
             "post": {
                 "description": "按照场站距离展示数据，距离近的排名靠前",
@@ -269,7 +338,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.DriverOrdersResponse"
+                            "$ref": "#/definitions/response.DriverOrderFormResponse"
                         }
                     },
                     "400": {
@@ -385,8 +454,8 @@ const docTemplate = `{
             }
         },
         "/dr/order/pay": {
-            "put": {
-                "description": "结算",
+            "post": {
+                "description": "“结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，商品销量排行，支付失败，检查订单商品是否满足库存条件”",
                 "consumes": [
                     "application/json"
                 ],
@@ -394,17 +463,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Do"
+                    "Driver/Pay"
                 ],
                 "summary": "补货订单结算",
                 "parameters": [
                     {
-                        "description": "传入订单信息",
+                        "description": "把提交的订单结果直接传进来就好了",
                         "name": "OrderForm",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.DriverOrderForm"
+                            "$ref": "#/definitions/response.SubmitOrderForms"
                         }
                     }
                 ],
@@ -468,7 +537,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Do"
+                    "Driver/Pay"
                 ],
                 "summary": "仅生成单个场站的订单信息",
                 "parameters": [
@@ -500,7 +569,7 @@ const docTemplate = `{
         },
         "/dr/order/submit2": {
             "post": {
-                "description": "使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）",
+                "description": "使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间）",
                 "consumes": [
                     "application/json"
                 ],
@@ -508,7 +577,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Driver/Do"
+                    "Driver/Pay"
                 ],
                 "summary": "生成多个场站的订单信息",
                 "parameters": [
@@ -529,6 +598,44 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/response.DriverOrdersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/order/{id}/load": {
+            "get": {
+                "description": "“结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，支付失败，检查订单商品是否满足库存条件”",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Pay"
+                ],
+                "summary": "补货订单取货",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "取货订单订单编号",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoadResponse"
                         }
                     },
                     "400": {
@@ -2106,6 +2213,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.BindDeviceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "info": {
+                    "$ref": "#/definitions/response.DriverAuthInfo"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "response.CartGroup": {
             "type": "object",
             "properties": {
@@ -2290,6 +2411,23 @@ const docTemplate = `{
                 }
             }
         },
+        "response.DriverAuthInfo": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "integer"
+                },
+                "driver_id": {
+                    "type": "integer"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "response.DriverDeviceResponse": {
             "type": "object",
             "properties": {
@@ -2330,13 +2468,33 @@ const docTemplate = `{
                 }
             }
         },
-        "response.DriverOrdersResponse": {
+        "response.DriverOrderFormResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
-                "factoryDistance": {
+                "msg": {
+                    "type": "string"
+                },
+                "order_infos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DriverOrderForm"
+                    }
+                }
+            }
+        },
+        "response.DriverOrdersResponse": {
+            "type": "object",
+            "properties": {
+                "cash": {
+                    "type": "number"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "factories_distance": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.FactoryDistanceReq"
@@ -2345,7 +2503,7 @@ const docTemplate = `{
                 "msg": {
                     "type": "string"
                 },
-                "orderInfos": {
+                "order_infos": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.DriverOrderForm"
@@ -2645,6 +2803,9 @@ const docTemplate = `{
                 }
             }
         },
+        "response.LoadResponse": {
+            "type": "object"
+        },
         "response.LoginResponse": {
             "type": "object",
             "properties": {
@@ -2761,6 +2922,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ScanResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "response.ScreenInfoResponse": {
             "type": "object",
             "properties": {
@@ -2814,6 +2989,26 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "response.SubmitOrderForms": {
+            "type": "object",
+            "properties": {
+                "cash": {
+                    "type": "number"
+                },
+                "factories_distance": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.FactoryDistanceReq"
+                    }
+                },
+                "order_infos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DriverOrderForm"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -2830,7 +3025,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bf.shoggothy.xyz",
+	Host:             "bfd.shoggothy.xyz",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Swagger Example API",

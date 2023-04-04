@@ -74,6 +74,7 @@ func Driverrouter() {
 		od.POST("/submit", ft.Submit)
 		od.POST("/submit2", ft.SubmitMany)
 		od.POST("/pay", ft.Pay)
+		od.GET("/:id/load", ft.Load)
 
 	}
 	devr := dr.Group("/devices")

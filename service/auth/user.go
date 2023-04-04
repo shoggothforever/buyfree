@@ -5,6 +5,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/utils"
 	"context"
+	"fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,6 +26,7 @@ func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
 	admin.ID = utils.GetSnowFlake()
 	logininfo, err := SaveDrLoginInfo(admin)
 	if err != nil {
+		fmt.Println(err)
 		return model.LoginInfo{}, err
 	}
 
@@ -32,6 +34,9 @@ func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
 
 	cart := model.DriverCart{DriverID: admin.ID, Cart: model.Cart{CartID: utils.GetSnowFlake(), TotalCount: 0, TotalAmount: 0}}
 	err = dal.Getdb().Model(&model.Driver{}).Create(&admin).Error
+	if err != nil {
+		logrus.Info("创建用户信息失败", err)
+	}
 	cerr := dal.Getdb().Model(&model.DriverCart{}).Create(&cart).Error
 	if cerr != nil {
 		logrus.Info("创建购物车信息失败", err)

@@ -281,7 +281,7 @@ func (i *FactoryController) Choose(c *gin.Context) {
 
 // @Summary 仅生成单个场站的订单信息
 // @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
-// @Tags Driver/Do
+// @Tags Driver/Pay
 // @Accept json
 // @Produce json
 // @Param DistanceInfos body response.FactoryDistanceReq true "包含附近场站信息，已经获取了,直接打包传入"
@@ -367,8 +367,8 @@ func (i *FactoryController) Submit(c *gin.Context) {
 }
 
 // @Summary 生成多个场站的订单信息
-// @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
-// @Tags Driver/Do
+// @Description 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间）
+// @Tags Driver/Pay
 // @Accept json
 // @Produce json
 // @Param DistanceInfos body response.FactoryDistanceInfos false "附近场站信息，已经获取了，打包后直接传入"
@@ -464,11 +464,11 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 }
 
 // @Summary 补货订单结算
-// @Description 结算
-// @Tags Driver/Do
+// @Description “结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，商品销量排行，支付失败，检查订单商品是否满足库存条件”
+// @Tags Driver/Pay
 // @Accept json
 // @Produce json
-// @Param OrderForm body response.SubmitOrderForms true "把提交的结果直接传进来就好了"
+// @Param OrderForm body response.SubmitOrderForms true "把提交的订单结果直接传进来就好了"
 // @Success 201 {object} response.PayResponse
 // @Failure 400 {object} response.Response
 // @Router /dr/order/pay [post]
@@ -507,19 +507,18 @@ func (i *FactoryController) Pay(c *gin.Context) {
 			<-ordreq[j].DoneChan
 			//fmt.Println(j)
 		}(j, &wg)
-
 	}
 	wg.Wait()
 	wg.Add(1)
 	for j := 0; j < n; j++ {
 		ok := ordreq[j].Res
 		if !ok {
-			fmt.Println("第", j, "号订单处理失败")
+			fmt.Println("编号", forms.OrderInfos[j].OrderID, "号订单处理失败")
 			forms.Cash -= forms.OrderInfos[j].Cost
 			forms.OrderInfos[j].State = -1
 		} else {
 			forms.OrderInfos[j].State = 1
-			fmt.Println("第", j, "号订单处理成功")
+			fmt.Println("编号", forms.OrderInfos[j].OrderID, "号订单处理成功")
 		}
 	}
 
@@ -532,8 +531,8 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				cash += v.Cost
 			}
 		}
-		payreq := mrpc.NewPayRequest(admin.PlatformID, 1)
-		//payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
+		//payreq := mrpc.NewPayRequest(admin.PlatformID, 1)
+		payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
 		mrpc.PlatFormService.ReqChan <- payreq
 		*ok = payreq.Res
 	}(&ok, &wg)
@@ -544,6 +543,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	}
 	wg.Wait()
 	var st int64
+	//TODO 更新排名信息
 	for _, v := range forms.OrderInfos {
 		if v.State == 1 {
 			err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id=?", v.OrderID).First(&st).Update("state", 1).Error
@@ -554,7 +554,19 @@ func (i *FactoryController) Pay(c *gin.Context) {
 		}
 	}
 	c.JSON(200, response.PayResponse{
-		response.Response{201, "支付成功"},
+		response.Response{201, "支付成功,更新订单状态成功，更行商品排行信息成功"},
 	})
+}
+
+// @Summary 补货订单取货
+// @Description “结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，支付失败，检查订单商品是否满足库存条件”
+// @Tags Driver/Pay
+// @Accept json
+// @Produce json
+// @Param id path int true "取货订单订单编号"
+// @Success 201 {object} response.LoadResponse
+// @Failure 400 {object} response.Response
+// @Router /dr/order/{id}/load [get]
+func (i *FactoryController) Load(c *gin.Context) {
 
 }

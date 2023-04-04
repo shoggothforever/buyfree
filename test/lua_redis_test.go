@@ -17,38 +17,43 @@ func TestLua(t *testing.T) {
 		DB:       10,
 	})
 	ctx := context.TODO()
+	var uname string = "dsm"
 	//utils.Lualock(ctx, rdb, []string{"mylock"}, val, "30")
 	//utils.Luaunlock(ctx, rdb, key, val)
 	//utils.ChangeTodaySales(ctx, rdb, key, "123")
-	t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, "dsm", "2333.123"))
-	//t.Log(utils.GetSalesInfo(ctx, rdb, utils.Ranktype1, "dsm"))
+	//更新销售额榜单信息
+	//t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, uname, "2333.123"))
+
+	//t.Log("测试根据类型和用户名生成所有的排行榜redis键名")
 	//t.Log(utils.GetAllTypeRankKeys(utils.Ranktype1, "dsm"))
+	//更改商品排行信息
 	{
-		utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "0", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "1", 12)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "2", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "3", 1234)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, "dsm", "4", 12345)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, "dsm", "0", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, "dsm", "1", 12)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, "dsm", "2", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, "dsm", "3", 1234)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, "dsm", "4", 12345)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, "dsm", "0", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, "dsm", "1", 12)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, "dsm", "2", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, "dsm", "3", 1234)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, "dsm", "4", 12345)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "0", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "1", 12)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "2", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "3", 1234)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "4", 12345)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "0", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "1", 12)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "2", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "3", 1234)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "4", 12345)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "0", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "1", 12)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "2", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "3", 1234)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "4", 12345)
 	}
 
-	//测试根据ranktype获得的KEYS
-	//t.Log(utils.GetRankList(ctx, rdb, utils.Ranktype1, "dsm", 0))
-	//测试根据Ranktype 和 用户名获得 七日销售数据
-	//t.Log(utils.SalesOf7Days(ctx, rdb, utils.Ranktype1, "dsm"))
-	//t.Log(utils.GetSalesInfo(ctx, rdb, "dsm"))
-	//t.Log(utils.GetDriverSalesKeys("dsm"))
-	t.Log(utils.GetHomeStatic(ctx, rdb, "dsm"))
-	//t.Log(utils.GetDriverSalesKeys("dsm"))
+	//测试根据ranktype获得的KEYS,返回值为{[]{username:score}}
+	t.Log(utils.GetRankList(ctx, rdb, utils.Ranktype1, uname, 0))
+	//测试根据Ranktype和用户名获得七日销售数据
+	t.Log(utils.SalesOf7Days(ctx, rdb, utils.Ranktype1, uname))
+	t.Log(utils.GetSalesInfo(ctx, rdb, utils.Ranktype1, uname))
+	//t.Log(utils.GetDriverSalesKeys(uname))
+	//t.Log(utils.GetHomeStatic(ctx, rdb, uname))
+	//获取司机首页需要显示的信息
+	//t.Log(utils.GetDriverSalesKeys(uname))
 
 	//t.Log("测试通过")
 }
