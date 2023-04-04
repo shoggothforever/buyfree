@@ -1,4 +1,4 @@
-package transport
+package mrpc
 
 import (
 	"buyfree/dal"
@@ -7,6 +7,7 @@ import (
 	"buyfree/utils"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"strconv"
 	"time"
 )
@@ -102,10 +103,27 @@ type PayRequest struct {
 	PlatFormID int64      `json:"platform_id,omitempty"`
 	Cash       float64    `json:"cash,omitempty"`
 	ReplyChan  ReplyQueue `json:"reply_chan,omitempty"`
+	Res        bool       `json:"res"`
 }
 
 func NewPayRequest(ptid int64, cash float64) *PayRequest {
 	return &PayRequest{PlatFormID: ptid, Cash: cash, ReplyChan: make(ReplyQueue, 1)}
+}
+
+type OrderRequest struct {
+	//TODO:添加相关项
+	FactoryID   int64  `json:"factory_id,omitempty"`
+	OrderID     int64  `json:"order_id,omitempty"`
+	FactoryName string `json:"factory_name,omitempty"`
+
+	ProductInfos *[]*model.OrderProduct `json:"product_infos,omitempty"`
+	ReplyChan    ReplyQueue             `json:"reply_chan,omitempty"`
+	Res          bool                   `json:"res,omitempty"`
+	DoneChan     chan struct{}          `json:"res_chan"`
+}
+
+func NewOrderRequest(fid, oid int64, fname string, products *[]*model.OrderProduct) *OrderRequest {
+	return &OrderRequest{FactoryID: fid, OrderID: oid, FactoryName: fname, ProductInfos: products, ReplyChan: make(ReplyQueue, 1), DoneChan: make(chan struct{}, 1)}
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -117,6 +135,7 @@ func (r *Reply) Handle() {
 
 func (o *CountRequest) Handle() {
 	o.ReplyChan <- true
+	//fmt.Println("管道大小", len(o.ReplyChan))
 }
 func (s *ScanRequest) Handle() {
 	err := dal.Getdb().Model(&model.Driver{}).Where("id=?", s.DriverID).Error
@@ -144,21 +163,68 @@ func (d *DeviceAuthRequest) Handle() {
 	}
 }
 func (p *PayRequest) Handle() {
+	//fmt.Println("pay handle begin")
 	rdb := dal.Getrdb()
 	ctx := rdb.Context()
 	var name string
 	err := dal.Getdb().Model(&model.Platform{}).Select("name").Where("id= ?", p.PlatFormID).First(&name).Error
 	if err != nil {
+		fmt.Println(err)
 		p.ReplyChan <- false
+		p.Res = false
 		return
 	}
 	scash := strconv.FormatFloat(p.Cash, 'f', 2, 64)
 	_, err = utils.ModifySales(ctx, rdb, utils.Ranktype1, name, scash)
 	if err != nil {
+		fmt.Println(err)
+		p.Res = false
 		p.ReplyChan <- false
+
 	} else {
+		p.Res = true
 		p.ReplyChan <- true
+
 	}
+}
+func (o *OrderRequest) Handle() {
+	//TODO 业务逻辑
+	//处理一个场站的订单
+
+	//查询场站商品库存信息，有一个商品库存不满足就直接判定为结算失败
+	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		for k, _ := range *o.ProductInfos {
+			v := *(*o.ProductInfos)[k]
+			fmt.Println(v)
+			var inv int64
+			terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
+			fmt.Println(fmt.Sprintf("%d场站%s商品库存数量%d", v.FactoryID, v.Name, inv))
+			if terr != nil {
+				logrus.Info(terr)
+				return terr
+			}
+
+		}
+		fmt.Println("订单编号：", o.OrderID)
+		//var st int64
+		//terr := tx.Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", o.OrderID).First(&st).Update("state", 1).Error
+		//if terr != nil {
+		//	logrus.Info(terr)
+		//	return terr
+		//}
+		return nil
+	})
+	if err != nil {
+		logrus.Info(err)
+		fmt.Println(err)
+		o.Res = false
+		o.ReplyChan <- false
+		o.DoneChan <- struct{}{}
+		return
+	}
+	o.Res = true
+	o.ReplyChan <- true
+	o.DoneChan <- struct{}{}
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -169,7 +235,7 @@ func (r *Reply) Do(exitchan ReplyQueue) {
 	r.Handle()
 	select {
 	case val := <-r.Chan:
-		//fmt.Println("HandleOrderForm res:", val)
+		fmt.Println("HandleReq res:", val)
 		exitchan <- val
 		return
 	case <-ticker.C:
@@ -178,20 +244,22 @@ func (r *Reply) Do(exitchan ReplyQueue) {
 		return
 	}
 }
-
 func (o *CountRequest) Do(exitChan ReplyQueue) {
-	ticker := time.NewTicker(TimeOut)
+	ticker := time.NewTicker(TimeOut / 100)
 	defer ticker.Stop()
 	o.Handle()
 	select {
 	case val := <-o.ReplyChan:
-		//fmt.Println("HandleOrderForm res:", val)
+		//fmt.Println("HandleCounter res:", val)
+		o.ReplyChan <- val
+		close(o.ReplyChan)
 		exitChan <- val
 		return
-		//case <-ticker.C:
-		//	fmt.Println("time out")
-		//	exitchan <- false
-		//	return
+	case <-ticker.C:
+		fmt.Println("time out")
+		close(o.ReplyChan)
+		exitChan <- false
+		return
 	}
 }
 func (s *ScanRequest) Do(exitChan ReplyQueue) {
@@ -239,15 +307,36 @@ func (p *PayRequest) Do(exitChan ReplyQueue) {
 	p.Handle()
 	select {
 	case val := <-p.ReplyChan:
-		fmt.Println("HandleDeviceAuth res:", val)
-		p.ReplyChan <- val
+		//fmt.Println("HandlePay res:", val)
+		//p.ReplyChan <- val
 		close(p.ReplyChan)
+		//fmt.Println("管道大小", len(p.ReplyChan))
 		exitChan <- val
 		return
 	case <-ticker.C:
 		//fmt.Println("time out")
-		p.ReplyChan <- false
+		//p.ReplyChan <- false
 		close(p.ReplyChan)
+		fmt.Println("超时管道大小", len(p.ReplyChan))
+		exitChan <- false
+		return
+	}
+}
+func (o *OrderRequest) Do(exitChan ReplyQueue) {
+	ticker := time.NewTicker(TimeOut)
+	defer ticker.Stop()
+	o.Handle()
+	select {
+	case val := <-o.ReplyChan:
+		fmt.Println("HandleOrderFormRequest res:", val)
+		//o.ReplyChan <- val
+		//fmt.Println(o.OrderID, "管道大小", len(o.ReplyChan))
+		close(o.ReplyChan)
+		exitChan <- val
+		return
+	case <-ticker.C:
+		//fmt.Println("time out")
+		close(o.ReplyChan)
 		exitChan <- false
 		return
 	}

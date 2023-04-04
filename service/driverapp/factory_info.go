@@ -2,9 +2,9 @@ package driverapp
 
 import (
 	"buyfree/dal"
+	"buyfree/mrpc"
 	"buyfree/repo/model"
 	"buyfree/service/response"
-	"buyfree/transport"
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -478,32 +478,81 @@ func (i *FactoryController) Pay(c *gin.Context) {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
-	var subods response.SubmitOrderForms
-	if err := c.ShouldBind(&subods); err != nil {
+	var forms response.SubmitOrderForms
+	if err := c.ShouldBind(&forms); err != nil {
 		fmt.Println(err)
 		i.Error(c, 400, "获取提交订单信息失败")
 		return
 	}
-	n := len(subods.FactoriesDistance)
+	n := len(forms.FactoriesDistance)
 	//for i := 0; i < n; i++ {
-	//	fmt.Println(fmt.Sprintf("第%d条订单场站信息", i), subods.FactoriesDistance[i])
-	//	fmt.Println(fmt.Sprintf("第%d条订单信息", i), subods.OrderInfos[i])
+	//	fmt.Println(fmt.Sprintf("第%d条订单场站信息", i), forms.FactoriesDistance[i])
+	//	fmt.Println(fmt.Sprintf("第%d条订单信息", i), forms.OrderInfos[i])
 	//}
 
 	//TODO:业务逻辑
-	payreq := transport.NewPayRequest(admin.PlatformID, subods.Cash)
-	transport.PlatFormService.ReqChan <- payreq
-	if ok = <-payreq.ReplyChan; !ok {
+
+	//TODO 订单处理逻辑
+	ordreq := make([]mrpc.OrderRequest, n)
+	fmt.Println("共有", n, "条订单")
+	var wg sync.WaitGroup
+	wg.Add(n)
+	for j := 0; j < n; j++ {
+		go func(j int, group *sync.WaitGroup) {
+			defer group.Done()
+			disinfo := forms.FactoriesDistance[j]
+			oinfo := forms.OrderInfos[j]
+			ordreq[j] = *mrpc.NewOrderRequest(disinfo.FactoryID, oinfo.OrderID, disinfo.FactoryName, &oinfo.ProductInfos)
+			mrpc.PlatFormService.ReqChan <- &ordreq[j]
+			<-ordreq[j].DoneChan
+			//fmt.Println(j)
+		}(j, &wg)
+
+	}
+	wg.Wait()
+	wg.Add(1)
+	for j := 0; j < n; j++ {
+		ok := ordreq[j].Res
+		if !ok {
+			fmt.Println("第", j, "号订单处理失败")
+			forms.Cash -= forms.OrderInfos[j].Cost
+			forms.OrderInfos[j].State = -1
+		} else {
+			forms.OrderInfos[j].State = 1
+			fmt.Println("第", j, "号订单处理成功")
+		}
+	}
+
+	fmt.Println("需要支付", forms.Cash)
+	go func(ok *bool, group *sync.WaitGroup) {
+		defer group.Done()
+		var cash float64
+		for _, v := range forms.OrderInfos {
+			if v.State == 1 {
+				cash += v.Cost
+			}
+		}
+		payreq := mrpc.NewPayRequest(admin.PlatformID, 1)
+		//payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
+		mrpc.PlatFormService.ReqChan <- payreq
+		*ok = payreq.Res
+	}(&ok, &wg)
+	if !ok {
+		fmt.Println(ok)
 		i.Error(c, 500, "服务器未能处理支付信息")
 		return
 	}
-	var wg sync.WaitGroup
-	wg.Add(n)
-	//TODO 订单处理逻辑
-
 	wg.Wait()
-	//var wg sync.WaitGroup
-	//n:=len(subods.FactoriesDistance)
+	var st int64
+	for _, v := range forms.OrderInfos {
+		if v.State == 1 {
+			err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id=?", v.OrderID).First(&st).Update("state", 1).Error
+			if err != nil {
+				fmt.Println(err)
+				i.Error(c, 500, "更新订单状态失败")
+			}
+		}
+	}
 	c.JSON(200, response.PayResponse{
 		response.Response{201, "支付成功"},
 	})

@@ -164,9 +164,9 @@ CREATE TABLE "public"."factory_products" (
                                              "annually_sales" NUMERIC,
                                              "total_sales" NUMERIC,
                                              "is_on_shelf" BOOL,
-                                             CONSTRAINT "factory_products_pkey" PRIMARY KEY ( "id" ),
-                                             CONSTRAINT "fk_factories_products" FOREIGN KEY ( "factory_id" ) REFERENCES "public"."factories" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
+                                             CONSTRAINT "factory_products_pkey" PRIMARY KEY ("id", "factory_id", "name"),
+                                             CONSTRAINT "fk_factories_products" FOREIGN KEY ("factory_id") REFERENCES "public"."factories" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+                                         );
 ALTER TABLE "public"."factory_products" OWNER TO "root
 ";
 COMMENT ON COLUMN "public"."factory_products"."factory_id" IS '指向场站的编号';

@@ -1,8 +1,8 @@
 package driverapp
 
 import (
+	"buyfree/mrpc"
 	"buyfree/service/response"
-	"buyfree/transport"
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -27,9 +27,9 @@ func (d *DeviceController) Scan(c *gin.Context) {
 	}
 	fmt.Println(admin.ID)
 	var id int64
-	var req *transport.ScanRequest = transport.NewScanRequest(admin.ID, &id)
+	var req *mrpc.ScanRequest = mrpc.NewScanRequest(admin.ID, &id)
 
-	transport.PlatFormService.ReqChan <- req
+	mrpc.PlatFormService.ReqChan <- req
 	res := <-req.ReplyChan
 	if res != true {
 		d.Error(c, 400, "验签失败")
@@ -54,8 +54,8 @@ func (d *DeviceController) BindDevice(c *gin.Context) {
 		d.Error(c, 400, "获取提交信息失败")
 		return
 	}
-	var req *transport.DeviceAuthRequest = transport.NewDeviceAuthRequest(info.DriverID, info.DeviceID, info.Name, info.Mobile)
-	transport.PlatFormService.ReqChan <- req
+	var req *mrpc.DeviceAuthRequest = mrpc.NewDeviceAuthRequest(info.DriverID, info.DeviceID, info.Name, info.Mobile)
+	mrpc.PlatFormService.ReqChan <- req
 	res := <-req.ReplyChan
 	if res != true {
 		d.Error(c, 400, "绑定用户信息失败")

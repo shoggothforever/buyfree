@@ -1,7 +1,8 @@
-package transport
+package mrpc
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 )
 
@@ -27,7 +28,7 @@ var GlobalCnt int64 = 0
 
 type Req interface {
 	//Refund()
-	Do(exitchan ReplyQueue)
+	Do(exitChan ReplyQueue)
 	Handle()
 }
 type ReqQueue chan Req
@@ -37,7 +38,7 @@ type Worker struct {
 }
 
 func NewWorker() *Worker {
-	return &Worker{ReqChan: make(ReqQueue), ReplyChan: make(ReplyQueue)}
+	return &Worker{ReqChan: make(ReqQueue, 1), ReplyChan: make(ReplyQueue, 1)}
 }
 
 type WorkerQueue chan *Worker
@@ -68,7 +69,8 @@ func (w *Worker) Run() {
 						w.ReplyChan <- false
 						return
 					}
-					//atomic.AddInt64(&GlobalCnt, 1)
+					//fmt.Println(ok)
+					atomic.AddInt64(&GlobalCnt, 1)
 					//fmt.Println("第", GloabalCnt, "号任务开始执行")
 					req.Do(w.ReplyChan)
 				}
