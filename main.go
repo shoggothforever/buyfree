@@ -1,8 +1,8 @@
 package main
 
 import (
+	"buyfree/mrpc"
 	"buyfree/service"
-	"buyfree/transport"
 	"fmt"
 	"os/exec"
 	"sync"
@@ -45,7 +45,7 @@ func Init() {
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
-	transport.PlatFormService.Run()
+	mrpc.PlatFormService.Run()
 	go service.Driverrouter()
 	service.PlatFormrouter()
 
