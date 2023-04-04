@@ -514,6 +514,15 @@ definitions:
       msg:
         type: string
     type: object
+  response.BindDeviceResponse:
+    properties:
+      code:
+        type: integer
+      info:
+        $ref: '#/definitions/response.DriverAuthInfo'
+      msg:
+        type: string
+    type: object
   response.CartGroup:
     properties:
       distance_info:
@@ -638,6 +647,17 @@ definitions:
       msg:
         type: string
     type: object
+  response.DriverAuthInfo:
+    properties:
+      device_id:
+        type: integer
+      driver_id:
+        type: integer
+      mobile:
+        type: string
+      name:
+        type: string
+    type: object
   response.DriverDeviceResponse:
     properties:
       code:
@@ -664,17 +684,30 @@ definitions:
       reserve_mobile:
         type: string
     type: object
-  response.DriverOrdersResponse:
+  response.DriverOrderFormResponse:
     properties:
       code:
         type: integer
-      factoryDistance:
+      msg:
+        type: string
+      order_infos:
+        items:
+          $ref: '#/definitions/model.DriverOrderForm'
+        type: array
+    type: object
+  response.DriverOrdersResponse:
+    properties:
+      cash:
+        type: number
+      code:
+        type: integer
+      factories_distance:
         items:
           $ref: '#/definitions/response.FactoryDistanceReq'
         type: array
       msg:
         type: string
-      orderInfos:
+      order_infos:
         items:
           $ref: '#/definitions/model.DriverOrderForm'
         type: array
@@ -877,6 +910,8 @@ definitions:
           $ref: '#/definitions/model.DeviceProduct'
         type: array
     type: object
+  response.LoadResponse:
+    type: object
   response.LoginResponse:
     properties:
       code:
@@ -953,6 +988,15 @@ definitions:
       weekly_sales:
         type: string
     type: object
+  response.ScanResponse:
+    properties:
+      code:
+        type: integer
+      device_id:
+        type: integer
+      msg:
+        type: string
+    type: object
   response.ScreenInfoResponse:
     properties:
       adlist:
@@ -989,10 +1033,23 @@ definitions:
       weekly_sales:
         type: string
     type: object
+  response.SubmitOrderForms:
+    properties:
+      cash:
+        type: number
+      factories_distance:
+        items:
+          $ref: '#/definitions/response.FactoryDistanceReq'
+        type: array
+      order_infos:
+        items:
+          $ref: '#/definitions/model.DriverOrderForm'
+        type: array
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bf.shoggothy.xyz
+host: bfd.shoggothy.xyz
 info:
   contact:
     email: support@swagger.io
@@ -1006,6 +1063,51 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /dr/devices/bind:
+    post:
+      consumes:
+      - application/json
+      description: 向服务端(平台)验签，等待设备激活
+      parameters:
+      - description: 传入获得的设备ID,以及一些车主的相关信息
+        in: body
+        name: AuthInfo
+        required: true
+        schema:
+          $ref: '#/definitions/response.DriverAuthInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BindDeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 输入认证信息绑定设备
+      tags:
+      - Driver/Auth
+  /dr/devices/scan:
+    get:
+      consumes:
+      - application/json
+      description: 扫码向服务端(平台)验签，验签成功，返回待激活设备号码
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ScanResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: onject
+      summary: 扫码激活设备
+      tags:
+      - Driver/Auth
   /dr/factory:
     post:
       consumes:
@@ -1165,7 +1267,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.DriverOrdersResponse'
+            $ref: '#/definitions/response.DriverOrderFormResponse'
         "400":
           description: Bad Request
           schema:
@@ -1218,6 +1320,31 @@ paths:
       summary: 车主用户登录
       tags:
       - User
+  /dr/order/{id}/load:
+    get:
+      consumes:
+      - application/json
+      description: “结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，支付失败，检查订单商品是否满足库存条件”
+      parameters:
+      - description: 取货订单订单编号
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.LoadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 补货订单取货
+      tags:
+      - Driver/Pay
   /dr/order/choose:
     put:
       consumes:
@@ -1241,17 +1368,17 @@ paths:
       tags:
       - Driver/Replenish
   /dr/order/pay:
-    put:
+    post:
       consumes:
       - application/json
-      description: 结算
+      description: “结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，商品销量排行，支付失败，检查订单商品是否满足库存条件”
       parameters:
-      - description: 传入订单信息
+      - description: 把提交的订单结果直接传进来就好了
         in: body
         name: OrderForm
         required: true
         schema:
-          $ref: '#/definitions/model.DriverOrderForm'
+          $ref: '#/definitions/response.SubmitOrderForms'
       produces:
       - application/json
       responses:
@@ -1318,7 +1445,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间，需要等待服务端验签，用户支付完毕）
+      description: 使用选中的商品生成订单，从购物车界面跳转到提交订单界面（暂时为未支付状态，设置了30分钟的过期时间）
       parameters:
       - description: 附近场站信息，已经获取了，打包后直接传入
         in: body

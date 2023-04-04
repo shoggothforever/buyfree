@@ -28,3 +28,5 @@ type DriverDeviceResponse struct {
 	Response
 	Devices []model.Device `json:"devices"`
 }
+type LoadResponse struct {
+}

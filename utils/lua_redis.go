@@ -239,8 +239,8 @@ func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ..
 }
 
 //adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku/id：唯一标志符 sales:销售额，用于更改zset的分数
-func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, sku string, sales float64) {
-	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), sku, sales) //KEYS,SKU(FIELD),SALES(SCORE)
+func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, identification string, sales float64) {
+	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), identification, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
 	if err != nil {
 		logrus.Info("ERROR HAPPENS ", err)
@@ -265,6 +265,7 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 	for _, v := range res {
 		ranklist = append(ranklist, model.ProductRank(v))
 	}
+	fmt.Println(ranklist)
 	return ranklist, nil
 }
 

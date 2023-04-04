@@ -203,15 +203,21 @@ func (o *OrderRequest) Handle() {
 				logrus.Info(terr)
 				return terr
 			}
-
 		}
 		fmt.Println("订单编号：", o.OrderID)
-		//var st int64
-		//terr := tx.Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", o.OrderID).First(&st).Update("state", 1).Error
-		//if terr != nil {
-		//	logrus.Info(terr)
-		//	return terr
-		//}
+		//TODO更新榜单信息
+		for k, _ := range *o.ProductInfos {
+			v := *(*o.ProductInfos)[k]
+			fmt.Println(v)
+			//var inv int64
+			//terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true ", v.FactoryID, v.Name).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
+			fmt.Println(fmt.Sprintf("%d订单：%s商品营销额:%f", v.OrderRefer, v.Name, float64(v.Count)*v.Price))
+
+			//if terr != nil {
+			//	logrus.Info(terr)
+			//	return terr
+			//}
+		}
 		return nil
 	})
 	if err != nil {
