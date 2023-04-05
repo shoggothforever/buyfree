@@ -420,7 +420,7 @@ const docTemplate = `{
             }
         },
         "/dr/order/choose": {
-            "put": {
+            "patch": {
                 "description": "点击事件:选中商品，倒置商品选中状态",
                 "consumes": [
                     "application/json"
@@ -713,7 +713,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Driver"
+                            "$ref": "#/definitions/response.DrInfoResponse"
                         }
                     },
                     "400": {
@@ -1075,6 +1075,149 @@ const docTemplate = `{
                 }
             }
         },
+        "/pt/factory-admin/register": {
+            "post": {
+                "description": "填入场站信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform/factory"
+                ],
+                "summary": "平台登记场站信息",
+                "parameters": [
+                    {
+                        "description": "必填项:name,address,longitude,latitude",
+                        "name": "factoryInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Factory"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryRegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/factory-admin/{factory_name}/prdoucts": {
+            "post": {
+                "description": "添加的商品是场站中没有的，使用前请先查看场站商品列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform/factory"
+                ],
+                "summary": "场站添加商品信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "场站名字",
+                        "name": "factory_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price",
+                        "name": "factoryInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.FactoryProduct"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryProductsModifyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/factory-admin/{factory_name}/prdoucts/{product_name}/{inv}": {
+            "patch": {
+                "description": "传入增加的库存量",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform/factory"
+                ],
+                "summary": "场站更新商品库存信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "场站名字",
+                        "name": "factory_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "商品名字",
+                        "name": "product_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "增加的库存值",
+                        "name": "inv",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryProductsModifyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/pt/login": {
             "post": {
                 "description": "Input user's nickname and password",
@@ -1155,7 +1298,7 @@ const docTemplate = `{
             }
         },
         "/pt/products/down/{id}": {
-            "put": {
+            "patch": {
                 "description": "输入商品id,获取场站中对应商品的详细信息",
                 "consumes": [
                     "application/json",
@@ -1182,52 +1325,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.FactoryGoodsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/pt/products/factory/{mode}/{factory_name}/": {
-            "get": {
-                "description": "传入场站名，获取该场站所有商品信息",
-                "consumes": [
-                    "application/json",
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "获取所有商品",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "根据场站名字获取场站所有商品信息，默认获取所有商品信息",
-                        "name": "factory_name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}",
-                        "name": "mode",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.FactoryProductsResponse"
                         }
                     },
                     "400": {
@@ -1279,7 +1376,7 @@ const docTemplate = `{
             }
         },
         "/pt/products/on/{id}": {
-            "put": {
+            "patch": {
                 "description": "输入商品id,获取场站中对应商品的详细信息",
                 "consumes": [
                     "application/json",
@@ -1306,6 +1403,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.FactoryGoodsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/products/{mode}/factory/{factory_name}/": {
+            "get": {
+                "description": "传入场站名，获取该场站所有商品信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "获取所有商品",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "根据场站名字获取场站所有商品信息，默认获取所有商品信息",
+                        "name": "factory_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}",
+                        "name": "mode",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryProductsResponse"
                         }
                     },
                     "400": {
@@ -1452,7 +1595,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Platform"
+                            "$ref": "#/definitions/response.PtInfoResponse"
                         }
                     },
                     "400": {
@@ -2411,6 +2554,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.DrInfoResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.Driver"
+                }
+            }
+        },
         "response.DriverAuthInfo": {
             "type": "object",
             "properties": {
@@ -2734,6 +2891,23 @@ const docTemplate = `{
                 }
             }
         },
+        "response.FactoryProductsModifyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FactoryProduct"
+                    }
+                }
+            }
+        },
         "response.FactoryProductsResponse": {
             "type": "object",
             "properties": {
@@ -2748,6 +2922,43 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/response.FactoryProductsInfo"
                     }
+                }
+            }
+        },
+        "response.FactoryRegisterResponse": {
+            "type": "object",
+            "required": [
+                "latitude",
+                "longitude"
+            ],
+            "properties": {
+                "address": {
+                    "description": "地址",
+                    "type": "string"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "description": {
+                    "description": "描述（选填）",
+                    "type": "string"
+                },
+                "factory_name": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "description": "纬度",
+                    "type": "string"
+                },
+                "longitude": {
+                    "description": "经度",
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -2863,6 +3074,20 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "response.PtInfoResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.Platform"
                 }
             }
         },

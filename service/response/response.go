@@ -21,3 +21,11 @@ type TemporaryLoginResponse struct {
 	//鉴权信息，用于保持用户登录状态
 	Jwt string `json:"jwt"`
 }
+type PtInfoResponse struct {
+	Response
+	User model.Platform `json:"user"`
+}
+type DrInfoResponse struct {
+	Response
+	User model.Driver `json:"user"`
+}

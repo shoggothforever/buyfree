@@ -65,9 +65,16 @@ func PlatFormrouter() {
 	pt.GET("/static/:mode", salect.GetSales)
 	psc := pt.Group("/screen")
 	{
-		//TODO:
 		psc.GET("", salect.GetScreenData)
 	}
+	var fa platform.FactoryadminController
+	fdr := pt.Group("/factory-admin")
+	{
+		fdr.POST("/register", fa.Register)
+		fdr.POST("/:factory_name/products", fa.Add)
+		fdr.PATCH("/:factory_name/products/:product_name", fa.AddInv)
+	}
+
 	//设备管理
 	var devct platform.DevadminController
 	rdv := pt.Group("/dev-admin")
@@ -88,12 +95,12 @@ func PlatFormrouter() {
 	{
 
 		//默认展示全部
-		ord.GET("/factory/:mode/:factory_name/", gdc.GetAllProducts)
+		ord.GET("/:mode/factory/:factory_name/", gdc.GetAllProducts)
 		ord.GET("/infos/:sku", gdc.GetGoodsInfo)
 
 		//TODO:上下架操作整合
-		ord.PUT("/on/:id", gdc.OnShelfGoods)
-		ord.PUT("/down/:id", gdc.DownShelfGoods)
+		ord.PATCH("/on/:id", gdc.OnShelfGoods)
+		ord.PATCH("/down/:id", gdc.DownShelfGoods)
 	}
 	//销售统计
 	//TODO:默认显示

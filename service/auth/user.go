@@ -63,6 +63,7 @@ func SavePtLoginInfo(admin *model.Platform) (model.LoginInfo, error) {
 	loginInfo.ROLE = model.PLATFORMADMIN
 	loginInfo.Password = utils.Messagedigest5(admin.Password, admin.PasswordSalt)
 	loginInfo.Jwt, err = utils.GeneraterJwt(admin.ID, admin.Name, admin.PasswordSalt)
+	loginInfo.UserName = admin.Name
 	if err != nil {
 		logrus.Info("JWT created fail")
 		return model.LoginInfo{}, err
@@ -80,6 +81,7 @@ func SaveDrLoginInfo(admin *model.Driver) (model.LoginInfo, error) {
 	loginInfo.ROLE = model.DRIVER
 	loginInfo.Password = utils.Messagedigest5(admin.Password, admin.PasswordSalt)
 	loginInfo.Jwt, err = utils.GeneraterJwt(admin.ID, admin.Name, admin.PasswordSalt)
+	loginInfo.UserName = admin.Name
 	if err != nil {
 		logrus.Info("JWT created fail")
 		return model.LoginInfo{}, err
@@ -96,6 +98,7 @@ func SaveFLoginInfo(admin *model.Factory) (model.LoginInfo, error) {
 	loginInfo.ROLE = model.FACTORYADMIN
 	loginInfo.Password = utils.Messagedigest5(admin.Password, admin.PasswordSalt)
 	loginInfo.Jwt, err = utils.GeneraterJwt(admin.ID, admin.Name, admin.PasswordSalt)
+	loginInfo.UserName = admin.Name
 	if err != nil {
 		logrus.Info("JWT created fail")
 		return model.LoginInfo{}, err

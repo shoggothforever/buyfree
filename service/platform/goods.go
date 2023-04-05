@@ -22,9 +22,9 @@ type GoodsController struct {
 // @Param mode path int true "按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}"
 // @Success 200 {object} response.FactoryProductsResponse
 // @Failure 400 {object} response.Response
-// @Router /pt/products/factory/{mode}/{factory_name}/ [get]
+// @Router /pt/products/{mode}/factory/{factory_name}/ [get]
 func (o *GoodsController) GetAllProducts(c *gin.Context) {
-	fname := c.Query("factory_name")
+	fname := c.Param("factory_name")
 	mode := c.Param("mode")
 	var sf bool
 	if mode == "1" {
@@ -130,7 +130,7 @@ func (o *GoodsController) GetGoodsInfo(c *gin.Context) {
 // @Param id path int true "商品ID"
 // @Success 200 {object} response.FactoryGoodsResponse
 // @Failure 400 {object} response.Response
-// @Router /pt/products/on/{id} [put]
+// @Router /pt/products/on/{id} [patch]
 func (o *GoodsController) OnShelfGoods(c *gin.Context) {
 
 	id := c.Param("id")
@@ -157,7 +157,7 @@ func (o *GoodsController) OnShelfGoods(c *gin.Context) {
 // @Param id path int true "商品ID"
 // @Success 200 {object} response.FactoryGoodsResponse
 // @Failure 400 {object} response.Response
-// @Router /pt/products/down/{id} [put]
+// @Router /pt/products/down/{id} [patch]
 func (o *GoodsController) DownShelfGoods(c *gin.Context) {
 
 	id := c.Param("id")
