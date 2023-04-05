@@ -53,28 +53,47 @@ func practice() {
 	}()
 }
 
-type Reply struct {
-	Chan ReplyQueue `json:"reply_chan,omitempty"`
+type Communicator struct {
+	//客户端验证结果
+	Res bool
+	//通知worker工作处理结果
+	ReplyChan ReplyQueue
+	//客户端通信管道，告知任务完成
+	DoneChan chan struct{}
 }
+
+func NewCommunicator() Communicator {
+	return Communicator{
+		Res:       *new(bool),
+		ReplyChan: make(ReplyQueue, 1),
+		DoneChan:  make(chan struct{}, 1),
+	}
+}
+
+func (c *Communicator) Send(sig bool) {
+	c.ReplyChan <- sig
+	c.Res = sig
+	c.DoneChan <- struct{}{}
+}
+
 type CountRequest struct {
 	Iterator int64 `json:"iterator"`
-	//回复信号
-	ReplyChan ReplyQueue
+	Communicator
 }
 
 func NewCountRequest(it int64) *CountRequest {
-	req := &CountRequest{Iterator: it, ReplyChan: make(ReplyQueue, 1)}
+	req := &CountRequest{Iterator: it, Communicator: NewCommunicator()}
 	return req
 }
 
 type ScanRequest struct {
-	DriverID  int64  `json:"driver_id"`
-	DeviceID  *int64 `json:"device_id"`
-	ReplyChan ReplyQueue
+	DriverID int64  `json:"driver_id"`
+	DeviceID *int64 `json:"device_id"`
+	Communicator
 }
 
 func NewScanRequest(driver_id int64, pid *int64) *ScanRequest {
-	return &ScanRequest{DriverID: driver_id, DeviceID: pid, ReplyChan: make(ReplyQueue, 1)}
+	return &ScanRequest{DriverID: driver_id, DeviceID: pid, Communicator: NewCommunicator()}
 }
 
 type DeviceAuthRequest struct {
@@ -85,7 +104,7 @@ type DeviceAuthRequest struct {
 	DriverName   string                   `json:"driver_name,omitempty"`
 	Mobile       string                   `json:"mobile,omitempty"`
 	AuthResponse *response.DriverAuthInfo `json:"auth_response"`
-	ReplyChan    ReplyQueue               `json:"reply_chan"`
+	Communicator
 }
 
 func NewDeviceAuthRequest(driver_id, device_id int64, driver_name, mobile string) *DeviceAuthRequest {
@@ -95,19 +114,18 @@ func NewDeviceAuthRequest(driver_id, device_id int64, driver_name, mobile string
 		DriverName:   driver_name,
 		Mobile:       mobile,
 		AuthResponse: &response.DriverAuthInfo{},
-		ReplyChan:    make(ReplyQueue, 1),
+		Communicator: NewCommunicator(),
 	}
 }
 
 type PayRequest struct {
-	PlatFormID int64      `json:"platform_id,omitempty"`
-	Cash       float64    `json:"cash,omitempty"`
-	ReplyChan  ReplyQueue `json:"reply_chan,omitempty"`
-	Res        bool       `json:"res"`
+	PlatFormID int64   `json:"platform_id,omitempty"`
+	Cash       float64 `json:"cash,omitempty"`
+	Communicator
 }
 
 func NewPayRequest(ptid int64, cash float64) *PayRequest {
-	return &PayRequest{PlatFormID: ptid, Cash: cash, ReplyChan: make(ReplyQueue, 1)}
+	return &PayRequest{PlatFormID: ptid, Cash: cash, Communicator: NewCommunicator()}
 }
 
 type OrderRequest struct {
@@ -117,21 +135,19 @@ type OrderRequest struct {
 	FactoryName string `json:"factory_name,omitempty"`
 
 	ProductInfos *[]*model.OrderProduct `json:"product_infos,omitempty"`
-	ReplyChan    ReplyQueue             `json:"reply_chan,omitempty"`
-	Res          bool                   `json:"res,omitempty"`
-	DoneChan     chan struct{}          `json:"res_chan"`
+	Communicator
 }
 
 func NewOrderRequest(fid, oid int64, fname string, products *[]*model.OrderProduct) *OrderRequest {
-	return &OrderRequest{FactoryID: fid, OrderID: oid, FactoryName: fname, ProductInfos: products, ReplyChan: make(ReplyQueue, 1), DoneChan: make(chan struct{}, 1)}
+	return &OrderRequest{FactoryID: fid, OrderID: oid, FactoryName: fname, ProductInfos: products, Communicator: NewCommunicator()}
 }
 
 //------------------------------------------------------------------------------------------------------------------------
 //封装每个req下的DO方法的操作
 //对redis数据库进行操作,考虑退款操作
-func (r *Reply) Handle() {
-
-}
+//func (r *Communicator) Handle() {
+//
+//}
 
 func (o *CountRequest) Handle() {
 	o.ReplyChan <- true
@@ -142,24 +158,35 @@ func (s *ScanRequest) Handle() {
 	fmt.Println(s.DriverID)
 	if err != nil {
 		logrus.Info("用户认证失败")
-		s.ReplyChan <- false
+		s.Send(false)
 	} else {
-		*s.DeviceID = utils.IDWorker.NextId()
-		s.ReplyChan <- true
+		dal.Getdb().Model(&model.Device{}).Select("id").Where("is_activated = false").First(s.DeviceID)
+		//*s.DeviceID = utils.IDWorker.NextId()
+		s.Send(true)
 	}
 }
 func (d *DeviceAuthRequest) Handle() {
-	err := dal.Getdb().Model(&model.Device{}).Where("id=?", d.DeviceID).Update("is_activated", true).Error
+	err := dal.Getdb().Model(&model.Device{}).Where("id=?", d.DeviceID).UpdateColumn("is_activated", true).Error
 	fmt.Println(d.DriverID)
 	if err != nil {
 		logrus.Info("设备激活失败", err)
 		d.ReplyChan <- false
+		d.Res = false
+		d.DoneChan <- struct{}{}
+
 	} else {
-		//d.AuthResponse.Name = d.DriverName
-		//d.AuthResponse.DriverID = d.DriverID
-		//d.AuthResponse.DeviceID = d.DeviceID
-		//d.AuthResponse.Mobile = d.Mobile
-		d.ReplyChan <- true
+		err = dal.Getdb().Model(&model.Driver{}).Where("id = ?", d.DriverID).UpdateColumn("is_auth", true).Error
+		if err != nil {
+			logrus.Info("设备激活失败", err)
+			d.ReplyChan <- false
+			d.Res = false
+			d.DoneChan <- struct{}{}
+
+		} else {
+			d.ReplyChan <- true
+			d.Res = true
+			d.DoneChan <- struct{}{}
+		}
 	}
 }
 func (p *PayRequest) Handle() {
@@ -172,6 +199,7 @@ func (p *PayRequest) Handle() {
 		fmt.Println(err)
 		p.ReplyChan <- false
 		p.Res = false
+		p.DoneChan <- struct{}{}
 		return
 	}
 	scash := strconv.FormatFloat(p.Cash, 'f', 2, 64)
@@ -180,10 +208,11 @@ func (p *PayRequest) Handle() {
 		fmt.Println(err)
 		p.Res = false
 		p.ReplyChan <- false
-
+		p.DoneChan <- struct{}{}
 	} else {
 		p.Res = true
 		p.ReplyChan <- true
+		p.DoneChan <- struct{}{}
 
 	}
 }
@@ -236,117 +265,117 @@ func (o *OrderRequest) Handle() {
 
 //------------------------------------------------------------------------------------------------------------------------
 // 实现每个Req的接口定义
-func (r *Reply) Do(exitchan ReplyQueue) {
+func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 	ticker := time.NewTicker(TimeOut)
 	defer ticker.Stop()
-	r.Handle()
+	handle()
 	select {
-	case val := <-r.Chan:
+	case val := <-c.ReplyChan:
 		fmt.Println("HandleReq res:", val)
+		close(c.ReplyChan)
 		exitchan <- val
 		return
 	case <-ticker.C:
 		fmt.Println("time out")
+		close(c.ReplyChan)
 		exitchan <- false
 		return
 	}
 }
-func (o *CountRequest) Do(exitChan ReplyQueue) {
-	ticker := time.NewTicker(TimeOut / 100)
-	defer ticker.Stop()
-	o.Handle()
-	select {
-	case val := <-o.ReplyChan:
-		//fmt.Println("HandleCounter res:", val)
-		o.ReplyChan <- val
-		close(o.ReplyChan)
-		exitChan <- val
-		return
-	case <-ticker.C:
-		fmt.Println("time out")
-		close(o.ReplyChan)
-		exitChan <- false
-		return
-	}
-}
-func (s *ScanRequest) Do(exitChan ReplyQueue) {
-	ticker := time.NewTicker(TimeOut)
-	defer ticker.Stop()
-	s.Handle()
-	select {
-	case val := <-s.ReplyChan:
-		fmt.Println("HandleScan res:", val)
-		s.ReplyChan <- val
-		close(s.ReplyChan)
-		//ticker.Stop()
-		exitChan <- val
-		return
-	case <-ticker.C:
-		//fmt.Println("time out")
-		s.ReplyChan <- false
-		close(s.ReplyChan)
-		exitChan <- false
-		return
-	}
-}
-func (d *DeviceAuthRequest) Do(exitChan ReplyQueue) {
-	ticker := time.NewTicker(TimeOut)
-	defer ticker.Stop()
-	d.Handle()
-	select {
-	case val := <-d.ReplyChan:
-		fmt.Println("HandleDeviceAuth res:", val)
-		d.ReplyChan <- val
-		close(d.ReplyChan)
-		exitChan <- val
-		return
-	case <-ticker.C:
-		//fmt.Println("time out")
-		d.ReplyChan <- false
-		close(d.ReplyChan)
-		exitChan <- false
-		return
-	}
-}
-func (p *PayRequest) Do(exitChan ReplyQueue) {
-	ticker := time.NewTicker(TimeOut)
-	defer ticker.Stop()
-	p.Handle()
-	select {
-	case val := <-p.ReplyChan:
-		//fmt.Println("HandlePay res:", val)
-		//p.ReplyChan <- val
-		close(p.ReplyChan)
-		//fmt.Println("管道大小", len(p.ReplyChan))
-		exitChan <- val
-		return
-	case <-ticker.C:
-		//fmt.Println("time out")
-		//p.ReplyChan <- false
-		close(p.ReplyChan)
-		fmt.Println("超时管道大小", len(p.ReplyChan))
-		exitChan <- false
-		return
-	}
-}
-func (o *OrderRequest) Do(exitChan ReplyQueue) {
-	ticker := time.NewTicker(TimeOut)
-	defer ticker.Stop()
-	o.Handle()
-	select {
-	case val := <-o.ReplyChan:
-		fmt.Println("HandleOrderFormRequest res:", val)
-		//o.ReplyChan <- val
-		//fmt.Println(o.OrderID, "管道大小", len(o.ReplyChan))
-		close(o.ReplyChan)
-		exitChan <- val
-		return
-	case <-ticker.C:
-		//fmt.Println("time out")
-		close(o.ReplyChan)
-		exitChan <- false
-		return
-	}
-}
+
+//func (o *CountRequest) Do(exitChan ReplyQueue) {
+//	ticker := time.NewTicker(TimeOut / 100)
+//	defer ticker.Stop()
+//	o.Handle()
+//	select {
+//	case val := <-o.ReplyChan:
+//		//fmt.Println("HandleCounter res:", val)
+//		//o.ReplyChan <- val
+//		close(o.ReplyChan)
+//		exitChan <- val
+//		return
+//	case <-ticker.C:
+//		fmt.Println("time out")
+//		close(o.ReplyChan)
+//		exitChan <- false
+//		return
+//	}
+//}
+//func (s *ScanRequest) Do(exitChan ReplyQueue) {
+//	ticker := time.NewTicker(TimeOut)
+//	defer ticker.Stop()
+//	s.Handle()
+//	select {
+//	case val := <-s.ReplyChan:
+//		fmt.Println("HandleScan res:", val)
+//		close(s.ReplyChan)
+//		exitChan <- val
+//		return
+//	case <-ticker.C:
+//		close(s.ReplyChan)
+//		exitChan <- false
+//		return
+//	}
+//}
+
+//func (d *DeviceAuthRequest) Do(exitChan ReplyQueue) {
+//	ticker := time.NewTicker(TimeOut)
+//	defer ticker.Stop()
+//	d.Handle()
+//	select {
+//	case val := <-d.ReplyChan:
+//		fmt.Println("HandleDeviceAuth res:", val)
+//		d.ReplyChan <- val
+//		close(d.ReplyChan)
+//		exitChan <- val
+//		return
+//	case <-ticker.C:
+//		//fmt.Println("time out")
+//		d.ReplyChan <- false
+//		close(d.ReplyChan)
+//		exitChan <- false
+//		return
+//	}
+//}
+//func (p *PayRequest) Do(exitChan ReplyQueue) {
+//	ticker := time.NewTicker(TimeOut)
+//	defer ticker.Stop()
+//	p.Handle()
+//	select {
+//	case val := <-p.ReplyChan:
+//		//fmt.Println("HandlePay res:", val)
+//		//p.ReplyChan <- val
+//		close(p.ReplyChan)
+//		//fmt.Println("管道大小", len(p.ReplyChan))
+//		exitChan <- val
+//		return
+//	case <-ticker.C:
+//		//fmt.Println("time out")
+//		//p.ReplyChan <- false
+//		close(p.ReplyChan)
+//		fmt.Println("超时管道大小", len(p.ReplyChan))
+//		exitChan <- false
+//		return
+//	}
+//}
+//func (o *OrderRequest) Do(exitChan ReplyQueue) {
+//	ticker := time.NewTicker(TimeOut)
+//	defer ticker.Stop()
+//	o.Handle()
+//	select {
+//	case val := <-o.ReplyChan:
+//		fmt.Println("HandleOrderFormRequest res:", val)
+//		//o.ReplyChan <- val
+//		//fmt.Println(o.OrderID, "管道大小", len(o.ReplyChan))
+//		close(o.ReplyChan)
+//		exitChan <- val
+//		return
+//	case <-ticker.C:
+//		//fmt.Println("time out")
+//		close(o.ReplyChan)
+//		exitChan <- false
+//		return
+//	}
+//}
 
 //----------------------------------------------------------------------------------------------------------------------

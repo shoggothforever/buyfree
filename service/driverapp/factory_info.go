@@ -486,6 +486,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 		return
 	}
 	n := len(forms.FactoriesDistance)
+	var cnt = n
 	//for i := 0; i < n; i++ {
 	//	fmt.Println(fmt.Sprintf("第%d条订单场站信息", i), forms.FactoriesDistance[i])
 	//	fmt.Println(fmt.Sprintf("第%d条订单信息", i), forms.OrderInfos[i])
@@ -493,10 +494,11 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	//TODO 订单处理逻辑
 	ordreq := make([]mrpc.OrderRequest, n)
 	fmt.Println("共有", n, "条订单")
+
 	var wg sync.WaitGroup
 	var state int64 = 0
+	//确保找到的订单状态为0
 	for j := 0; j < n; j++ {
-
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", forms.OrderInfos[j].OrderID).First(&state).Error
 		if err != nil {
 			fmt.Println(err)
@@ -513,18 +515,15 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				<-ordreq[j].DoneChan
 				//fmt.Println(j)
 			}(j, &wg)
-		} else {
-			s := fmt.Sprintf("编号%d订单已经支付，请不要重复支付", forms.OrderInfos[j].OrderID)
-			i.Error(c, 307, s)
 		}
 	}
 	wg.Wait()
-	wg.Add(1)
 	//统计需要支付的金额，以及为最后订单状态更新做准备
 	for j := 0; j < n; j++ {
 		ok := ordreq[j].Res
 		if !ok {
-			fmt.Println("编号", forms.OrderInfos[j].OrderID, "号订单处理失败")
+			cnt--
+			i.Error(c, 404, fmt.Sprintf("编号%d号订单处理失败", forms.OrderInfos[j].OrderID))
 			forms.Cash -= forms.OrderInfos[j].Cost
 			forms.OrderInfos[j].State = -1
 		} else {
@@ -532,9 +531,9 @@ func (i *FactoryController) Pay(c *gin.Context) {
 			fmt.Println("编号", forms.OrderInfos[j].OrderID, "号订单处理成功")
 		}
 	}
-
-	fmt.Println("需要支付", forms.Cash)
+	//fmt.Println("需要支付", forms.Cash)
 	go func(ok *bool, group *sync.WaitGroup) {
+		wg.Add(1)
 		defer group.Done()
 		var cash float64
 		for _, v := range forms.OrderInfos {
@@ -542,21 +541,22 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				cash += v.Cost
 			}
 		}
-		//payreq := mrpc.NewPayRequest(admin.PlatformID, 1)
 		payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
 		mrpc.PlatFormService.ReqChan <- payreq
+		<-payreq.DoneChan
 		*ok = payreq.Res
 	}(&ok, &wg)
+	wg.Wait()
 	if !ok {
 		fmt.Println(ok)
-		i.Error(c, 500, "服务器未能处理支付信息")
+		i.Error(c, 500, "服务器未能处理支付请求")
 		return
 	}
-	wg.Wait()
+
 	var st int64
-	//TODO 更新排名信息
 	for _, v := range forms.OrderInfos {
 		if v.State == 1 {
+
 			err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id=?", v.OrderID).First(&st).Update("state", 1).Error
 			if err != nil {
 				fmt.Println(err)
@@ -564,9 +564,14 @@ func (i *FactoryController) Pay(c *gin.Context) {
 			}
 		}
 	}
-	c.JSON(200, response.PayResponse{
-		response.Response{201, "支付成功,更新订单状态成功，更新商品排行信息成功"},
-	})
+	if cnt != 0 {
+		c.JSON(200, response.PayResponse{
+			response.Response{201, "支付成功,更新订单状态成功，更新商品排行信息成功"},
+		})
+	} else {
+		c.JSON(500, response.PayResponse{
+			response.Response{404, "没有订单能够支付"}})
+	}
 }
 
 // @Summary 补货订单取货(添加单个订单信息)
