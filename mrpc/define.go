@@ -26,9 +26,10 @@ var sem = make(chan bool, MAXBUFFER)
 var TimeOut = time.Duration(5000 * time.Millisecond)
 var GlobalCnt int64 = 0
 
+type Handler func()
 type Req interface {
 	//Refund()
-	Do(exitChan ReplyQueue)
+	Do(exitChan ReplyQueue, handle Handler)
 	Handle()
 }
 type ReqQueue chan Req
@@ -72,7 +73,7 @@ func (w *Worker) Run() {
 					//fmt.Println(ok)
 					atomic.AddInt64(&GlobalCnt, 1)
 					//fmt.Println("第", GloabalCnt, "号任务开始执行")
-					req.Do(w.ReplyChan)
+					req.Do(w.ReplyChan, req.Handle)
 				}
 			}
 

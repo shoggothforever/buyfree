@@ -59,7 +59,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -67,7 +67,7 @@ const docTemplate = `{
         },
         "/dr/devices/scan": {
             "get": {
-                "description": "扫码向服务端(平台)验签，验签成功，返回待激活设备号码",
+                "description": "扫码向服务端(平台)验签，验签成功，返回一个待激活设备号码",
                 "consumes": [
                     "application/json"
                 ],
@@ -88,7 +88,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "onject"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }

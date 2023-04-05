@@ -120,10 +120,10 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	dev.IsOnline = false
 	dev.Profit = 0
 	var err error
-	err = c.ShouldBindJSON(&dev)
-	//fmt.Println(utils.GetSnowFlake())
+	//err = c.ShouldBindJSON(&dev)
 	dev.ID = utils.GetSnowFlake()
 	if err != nil {
+		fmt.Println(err)
 		d.Error(c, 400, "添加设备失败,，请输入正确的设备信息")
 		return
 	}
@@ -135,7 +135,7 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	}
 	admin := iadmin.(model.Platform)
 	dev.PlatformID = admin.ID
-	err = dal.Getdb().Model(&model.Device{}).Create(&dev).Error
+	err = dal.Getdb().Model(&model.Device{}).Omit("owner_id", "activated_time").Create(&dev).Error
 	if err == nil {
 		c.JSON(201, response.AddDevResponse{
 			response.Response{200,
@@ -144,6 +144,7 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 			&dev,
 		})
 	} else {
+		fmt.Println(err)
 		d.Error(c, 400, "添加设备失败,，请输入正确的设备信息")
 	}
 }
