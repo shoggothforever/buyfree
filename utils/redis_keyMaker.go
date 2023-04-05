@@ -30,6 +30,7 @@ const (
 	Role3                  string = "Platform:"
 	LOCATION               string = "LOCATION"
 	DRIVERLOCATION         string = "DRIVERLOCATION"
+	ALL                    string = "All"
 )
 
 //获得一天开头的确切时间
@@ -121,9 +122,9 @@ func GetAllTypeRankKeys(adp, uname string) []string {
 	s := []string{}
 	for i := 0; i <= 4; i++ {
 		s = append(s, GetRankKeyByMode(adp, uname, i))
-		s = append(s, GetRankKeyByMode("All"+adp, uname, i))
+		s = append(s, GetRankKeyByMode(adp, ALL, i))
 	}
-	fmt.Println(s)
+	//fmt.Println(s)
 	return s
 }
 

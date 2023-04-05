@@ -197,6 +197,8 @@ func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ..
 	res, err := ret.Result()
 	fmt.Println("列表长度", res, err)
 }
+
+//adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID）
 func SalesOf7Days(c context.Context, rdb *redis.Client, adp, uname string, val ...string) [7]string {
 
 	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(adp, uname), val)

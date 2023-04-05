@@ -611,7 +611,7 @@ const docTemplate = `{
         },
         "/dr/order/{id}/load": {
             "get": {
-                "description": "“结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，支付失败，检查订单商品是否满足库存条件”",
+                "description": "“传入state为1即待取货状态的订单编号，将订单中的所有商品绑定到司机拥有的设备中”",
                 "consumes": [
                     "application/json"
                 ],
@@ -621,7 +621,7 @@ const docTemplate = `{
                 "tags": [
                     "Driver/Pay"
                 ],
-                "summary": "补货订单取货",
+                "summary": "补货订单取货(添加单个订单信息)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1103,7 +1103,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.LoginResponse"
+                            "$ref": "#/definitions/response.TemporaryLoginResponse"
                         }
                     },
                     "400": {
@@ -2804,7 +2804,21 @@ const docTemplate = `{
             }
         },
         "response.LoadResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "dev_products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DeviceProduct"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
         },
         "response.LoginResponse": {
             "type": "object",
@@ -3009,6 +3023,24 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "response.TemporaryLoginResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "jwt": {
+                    "description": "鉴权信息，用于保持用户登录状态",
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.Platform"
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -3025,7 +3057,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bfd.shoggothy.xyz",
+	Host:             "bf.shoggothy.xyz",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Swagger Example API",

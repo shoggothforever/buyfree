@@ -196,11 +196,14 @@ func (o *OrderRequest) Handle() {
 		for k, _ := range *o.ProductInfos {
 			v := *(*o.ProductInfos)[k]
 			fmt.Println(v)
-			var inv int64
+			var inv int64 = -1
 			terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
-			fmt.Println(fmt.Sprintf("%d场站%s商品库存数量%d", v.FactoryID, v.Name, inv))
 			if terr != nil {
-				logrus.Info(terr)
+				var s string
+				if terr == gorm.ErrRecordNotFound {
+					s = fmt.Sprintf("%d场站%s商品库存不足,订单取消", v.FactoryID, v.Name)
+				}
+				logrus.Info(s, terr)
 				return terr
 			}
 		}
@@ -208,15 +211,13 @@ func (o *OrderRequest) Handle() {
 		//TODO更新榜单信息
 		for k, _ := range *o.ProductInfos {
 			v := *(*o.ProductInfos)[k]
-			fmt.Println(v)
 			//var inv int64
 			//terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true ", v.FactoryID, v.Name).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
+			cost := float64(v.Count) * v.Price
 			fmt.Println(fmt.Sprintf("%d订单：%s商品营销额:%f", v.OrderRefer, v.Name, float64(v.Count)*v.Price))
-
-			//if terr != nil {
-			//	logrus.Info(terr)
-			//	return terr
-			//}
+			rdb := dal.Getrdb()
+			ctx := rdb.Context()
+			utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, o.FactoryName, v.Name, cost)
 		}
 		return nil
 	})
