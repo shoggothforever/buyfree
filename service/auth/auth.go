@@ -144,7 +144,7 @@ func PlatformLogin(c *gin.Context) {
 // @accept			application/x-www-form-urlencoded
 // @Produce			json
 // @Param jwt formData string true "鉴权信息"
-// @Success			200 {object} model.Platform
+// @Success			200 {object} response.PtInfoResponse
 // @Failure			400 {object} response.Response
 // @Router			/pt/userinfo [post]
 func PlatformUserInfo(c *gin.Context) {
@@ -162,7 +162,7 @@ func PlatformUserInfo(c *gin.Context) {
 		c.JSON(200, response.Response{400, "查找用户信息失败"})
 		return
 	}
-	c.JSON(200, admin)
+	c.JSON(200, response.PtInfoResponse{response.Response{200, "获取用户信息成功"}, admin})
 
 }
 
@@ -253,7 +253,7 @@ func DriverLogin(c *gin.Context) {
 // @accept			application/x-www-form-urlencoded
 // @Produce			json
 // @Param jwt formData string true "鉴权信息"
-// @Success			200 {object} model.Driver
+// @Success			200 {object} response.DrInfoResponse
 // @Failure			400 {object} response.Response
 // @Router			/dr/userinfo [post]
 func DriverUserInfo(c *gin.Context) {
@@ -271,7 +271,7 @@ func DriverUserInfo(c *gin.Context) {
 		c.JSON(200, response.Response{400, "查找用户信息失败"})
 		return
 	}
-	c.JSON(200, admin)
+	c.JSON(200, response.DrInfoResponse{response.Response{200, "获取用户信息成功"}, admin})
 
 }
 

@@ -647,6 +647,15 @@ definitions:
       msg:
         type: string
     type: object
+  response.DrInfoResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      user:
+        $ref: '#/definitions/model.Driver'
+    type: object
   response.DriverAuthInfo:
     properties:
       device_id:
@@ -865,6 +874,17 @@ definitions:
       type:
         type: string
     type: object
+  response.FactoryProductsModifyResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/model.FactoryProduct'
+        type: array
+    type: object
   response.FactoryProductsResponse:
     properties:
       code:
@@ -875,6 +895,32 @@ definitions:
         items:
           $ref: '#/definitions/response.FactoryProductsInfo'
         type: array
+    type: object
+  response.FactoryRegisterResponse:
+    properties:
+      address:
+        description: 地址
+        type: string
+      code:
+        type: integer
+      description:
+        description: 描述（选填）
+        type: string
+      factory_name:
+        type: string
+      latitude:
+        description: 纬度
+        type: string
+      longitude:
+        description: 经度
+        type: string
+      msg:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - latitude
+    - longitude
     type: object
   response.HomePageResponse:
     properties:
@@ -950,6 +996,15 @@ definitions:
         type: integer
       msg:
         type: string
+    type: object
+  response.PtInfoResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      user:
+        $ref: '#/definitions/model.Platform'
     type: object
   response.ReplenishInfo:
     properties:
@@ -1367,7 +1422,7 @@ paths:
       tags:
       - Driver/Pay
   /dr/order/choose:
-    put:
+    patch:
       consumes:
       - application/json
       description: 点击事件:选中商品，倒置商品选中状态
@@ -1532,7 +1587,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Driver'
+            $ref: '#/definitions/response.DrInfoResponse'
         "400":
           description: Bad Request
           schema:
@@ -1771,6 +1826,101 @@ paths:
       summary: 获取设备信息
       tags:
       - Platform/Device
+  /pt/factory-admin/{factory_name}/prdoucts:
+    post:
+      consumes:
+      - application/json
+      description: 添加的商品是场站中没有的，使用前请先查看场站商品列表
+      parameters:
+      - description: 场站名字
+        in: path
+        name: factory_name
+        required: true
+        type: string
+      - description: sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price
+        in: body
+        name: factoryInfo
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/model.FactoryProduct'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryProductsModifyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 场站添加商品信息
+      tags:
+      - Platform/factory
+  /pt/factory-admin/{factory_name}/prdoucts/{product_name}/{inv}:
+    patch:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入增加的库存量
+      parameters:
+      - description: 场站名字
+        in: path
+        name: factory_name
+        required: true
+        type: string
+      - description: 商品名字
+        in: path
+        name: product_name
+        required: true
+        type: string
+      - description: 增加的库存值
+        in: path
+        name: inv
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryProductsModifyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 场站更新商品库存信息
+      tags:
+      - Platform/factory
+  /pt/factory-admin/register:
+    post:
+      consumes:
+      - application/json
+      description: 填入场站信息
+      parameters:
+      - description: 必填项:name,address,longitude,latitude
+        in: body
+        name: factoryInfo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Factory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryRegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 平台登记场站信息
+      tags:
+      - Platform/factory
   /pt/login:
     post:
       consumes:
@@ -1823,33 +1973,7 @@ paths:
       summary: 获取车主订单信息(车主在该场站下的订单)
       tags:
       - Orderform
-  /pt/products/down/{id}:
-    put:
-      consumes:
-      - application/json
-      - multipart/form-data
-      description: 输入商品id,获取场站中对应商品的详细信息
-      parameters:
-      - description: 商品ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.FactoryGoodsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: 下架场站商品
-      tags:
-      - Products
-  /pt/products/factory/{mode}/{factory_name}/:
+  /pt/products/{mode}/factory/{factory_name}/:
     get:
       consumes:
       - application/json
@@ -1880,6 +2004,32 @@ paths:
       summary: 获取所有商品
       tags:
       - Products
+  /pt/products/down/{id}:
+    patch:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 输入商品id,获取场站中对应商品的详细信息
+      parameters:
+      - description: 商品ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryGoodsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 下架场站商品
+      tags:
+      - Products
   /pt/products/infos/{sku}:
     get:
       consumes:
@@ -1907,7 +2057,7 @@ paths:
       tags:
       - Products
   /pt/products/on/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       - multipart/form-data
@@ -2022,7 +2172,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Platform'
+            $ref: '#/definitions/response.PtInfoResponse'
         "400":
           description: Bad Request
           schema:

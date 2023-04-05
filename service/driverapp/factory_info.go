@@ -231,7 +231,7 @@ func (i *FactoryController) Modify(c *gin.Context) {
 // @Param productInfo body response.ReplenishInfo true "传入场站名,商品名称"
 // @Success 200 {object} response.Response
 // @Failure 200 {object} response.Response
-// @Router /dr/order/choose [put]
+// @Router /dr/order/choose [patch]
 func (i *FactoryController) Choose(c *gin.Context) {
 	var info response.ReplenishInfo
 	err := c.ShouldBind(&info)

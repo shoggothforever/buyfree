@@ -9,7 +9,7 @@ import (
 )
 
 //three month
-const EXPIRE time.Duration = 21600 * time.Hour
+const EXPIRE time.Duration = 720 * time.Hour
 const issuer string = "Platform"
 
 type Claims struct {
@@ -24,6 +24,9 @@ func CreatJwtKey(id int64) string {
 }
 
 func Messagedigest5(s, salt string) string {
+	if (s + salt) == "" {
+		s = "123456"
+	}
 	data := md5.Sum([]byte(s + salt))
 	return fmt.Sprintf("%x", data)
 }

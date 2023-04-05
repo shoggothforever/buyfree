@@ -41,6 +41,7 @@ func (d *DeviceProduct) Set(id, devid, drid, fid, inv int64, bprice, sprice floa
 	d.SalesData = SalesData{"0", "0", "0", "0", "0"}
 }
 
+type FactoryProducts []FactoryProduct
 type FactoryProduct struct {
 	//场站名字
 	FactoryName string `json:"factory_name" form:"factory_name"`
@@ -48,6 +49,21 @@ type FactoryProduct struct {
 	//上架状态
 	IsOnShelf bool `json:"is_on_shelf" form:"is_on_shelf"`
 }
+
+func (f *FactoryProduct) Set(id, fid int64, fname string, v *FactoryProduct) {
+	f.FactoryName = fname
+	f.Name = v.Name
+	f.Pic = v.Pic
+	f.Type = v.Type
+	f.Sku = v.Sku
+	f.FactoryID = fid
+	f.Inventory = v.Inventory
+	f.ID = id
+	f.BuyPrice = v.BuyPrice
+	f.SupplyPrice = v.SupplyPrice
+	f.IsOnShelf = true
+}
+
 type OrderProducts []*OrderProduct
 
 //购物车，订单中的商品信息
