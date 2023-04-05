@@ -25,6 +25,22 @@ type DeviceProduct struct {
 	DriverID int64 `gorm:"车主id" json:"driver_id" form:"driver_id"`
 	Product
 }
+
+func (d *DeviceProduct) Set(id, devid, drid, fid, inv int64, bprice, sprice float64, name, ty, sku, pic string) {
+	d.ID = id
+	d.DeviceID = devid
+	d.DriverID = drid
+	d.FactoryID = fid
+	d.Inventory = inv
+	d.BuyPrice = bprice
+	d.SupplyPrice = sprice
+	d.Name = name
+	d.Type = ty
+	d.Sku = sku
+	d.Pic = pic
+	d.SalesData = SalesData{"0", "0", "0", "0", "0"}
+}
+
 type FactoryProduct struct {
 	//场站名字
 	FactoryName string `json:"factory_name" form:"factory_name"`

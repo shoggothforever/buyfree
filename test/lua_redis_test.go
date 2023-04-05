@@ -22,27 +22,27 @@ func TestLua(t *testing.T) {
 	//utils.Luaunlock(ctx, rdb, key, val)
 	//utils.ChangeTodaySales(ctx, rdb, key, "123")
 	//更新销售额榜单信息
-	//t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, uname, "2333.123"))
+	t.Log(utils.ModifySales(ctx, rdb, utils.Ranktype1, uname, "2333.123"))
 
 	//t.Log("测试根据类型和用户名生成所有的排行榜redis键名")
 	//t.Log(utils.GetAllTypeRankKeys(utils.Ranktype1, "dsm"))
 	//更改商品排行信息
 	{
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "0", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "1", 12)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "2", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "3", 1234)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "4", 12345)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "0", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "1", 12)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "2", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "3", 1234)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "4", 12345)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "0", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "1", 12)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "2", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "3", 1234)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "4", 12345)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "yith", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "9e", 12)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "2a", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "3s", 1234)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "4b", 12345)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "yith", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "9a", 12)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "2e", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "3s", 1234)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "4b", 12345)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "yith", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "9e", 12)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "2a", 123)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "3s", 1234)
+		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "4b", 12345)
 	}
 
 	//测试根据ranktype获得的KEYS,返回值为{[]{username:score}}

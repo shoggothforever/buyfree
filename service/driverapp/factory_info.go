@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"sync"
+	"time"
 )
 
 type FactoryController struct {
@@ -489,27 +490,37 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	//	fmt.Println(fmt.Sprintf("第%d条订单场站信息", i), forms.FactoriesDistance[i])
 	//	fmt.Println(fmt.Sprintf("第%d条订单信息", i), forms.OrderInfos[i])
 	//}
-
-	//TODO:业务逻辑
-
 	//TODO 订单处理逻辑
 	ordreq := make([]mrpc.OrderRequest, n)
 	fmt.Println("共有", n, "条订单")
 	var wg sync.WaitGroup
-	wg.Add(n)
+	var state int64 = 0
 	for j := 0; j < n; j++ {
-		go func(j int, group *sync.WaitGroup) {
-			defer group.Done()
-			disinfo := forms.FactoriesDistance[j]
-			oinfo := forms.OrderInfos[j]
-			ordreq[j] = *mrpc.NewOrderRequest(disinfo.FactoryID, oinfo.OrderID, disinfo.FactoryName, &oinfo.ProductInfos)
-			mrpc.PlatFormService.ReqChan <- &ordreq[j]
-			<-ordreq[j].DoneChan
-			//fmt.Println(j)
-		}(j, &wg)
+
+		err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", forms.OrderInfos[j].OrderID).First(&state).Error
+		if err != nil {
+			fmt.Println(err)
+			i.Error(c, 500, "查询订单状态失败")
+			return
+		} else if state == 0 {
+			wg.Add(1)
+			go func(j int, group *sync.WaitGroup) {
+				defer group.Done()
+				disinfo := forms.FactoriesDistance[j]
+				oinfo := forms.OrderInfos[j]
+				ordreq[j] = *mrpc.NewOrderRequest(disinfo.FactoryID, oinfo.OrderID, disinfo.FactoryName, &oinfo.ProductInfos)
+				mrpc.PlatFormService.ReqChan <- &ordreq[j]
+				<-ordreq[j].DoneChan
+				//fmt.Println(j)
+			}(j, &wg)
+		} else {
+			s := fmt.Sprintf("编号%d订单已经支付，请不要重复支付", forms.OrderInfos[j].OrderID)
+			i.Error(c, 307, s)
+		}
 	}
 	wg.Wait()
 	wg.Add(1)
+	//统计需要支付的金额，以及为最后订单状态更新做准备
 	for j := 0; j < n; j++ {
 		ok := ordreq[j].Res
 		if !ok {
@@ -554,12 +565,12 @@ func (i *FactoryController) Pay(c *gin.Context) {
 		}
 	}
 	c.JSON(200, response.PayResponse{
-		response.Response{201, "支付成功,更新订单状态成功，更行商品排行信息成功"},
+		response.Response{201, "支付成功,更新订单状态成功，更新商品排行信息成功"},
 	})
 }
 
-// @Summary 补货订单取货
-// @Description “结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，支付失败，检查订单商品是否满足库存条件”
+// @Summary 补货订单取货(添加单个订单信息)
+// @Description “传入state为1即待取货状态的订单编号，将订单中的所有商品绑定到司机拥有的设备中”
 // @Tags Driver/Pay
 // @Accept json
 // @Produce json
@@ -568,5 +579,80 @@ func (i *FactoryController) Pay(c *gin.Context) {
 // @Failure 400 {object} response.Response
 // @Router /dr/order/{id}/load [get]
 func (i *FactoryController) Load(c *gin.Context) {
-
+	id := c.Param("id")
+	var devid, drid int64
+	admin, ok := utils.GetDriveInfo(c)
+	if ok != true {
+		i.Error(c, 400, "获取车主信息失败")
+		return
+	}
+	drid = admin.ID
+	//var orderforms model.DriverOrderForm
+	//err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("order_id = ?", id).First(&orderforms).Error
+	//if err != nil {
+	//	i.Error(c, 400, "获取订单信息失败")
+	//	return
+	//}
+	fmt.Println(id)
+	err := dal.Getdb().Model(&model.Device{}).Select("id").Where("owner_id = ?", admin.ID).First(&devid).Error
+	if err != nil {
+		i.Error(c, 400, "获取设别信息失败")
+		return
+	}
+	var devpros []model.DeviceProduct
+	var productInfos []model.OrderProduct
+	err = dal.Getdb().Model(&model.OrderProduct{}).Where("order_refer = ?", id).Find(&productInfos).Error
+	if err != nil {
+		i.Error(c, 400, "获取订购商品信息失败")
+		return
+	} else {
+		n := len(productInfos)
+		devpros = make([]model.DeviceProduct, n)
+		var buyprice float64
+		err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+			for k, v := range productInfos {
+				terr := tx.Model(&model.FactoryProduct{}).Select("buy_price").Where("factory_id = ? and name = ?", v.FactoryID, v.Name).First(&buyprice).Error
+				if terr != nil {
+					logrus.Info(fmt.Sprintf("获取%d场站%d商品零售价失败", v.FactoryID, v.Name))
+					return terr
+				}
+				terr = tx.Model(&model.OrderProduct{}).Where("order_refer = ? and name = ?", id, v.Name).Delete(&v).Error
+				if terr != nil {
+					logrus.Info("从购物车中清除商品失败", terr)
+					return terr
+				}
+				time.Sleep(time.Nanosecond) //太快了导致雪花算法生成不了不同的值
+				devpros[k].Set(utils.GetSnowFlake(), devid, drid, v.FactoryID, v.Count, buyprice, v.Price, v.Name, v.Type, v.Sku, v.Pic)
+				//fmt.Println(devpros[k])
+			}
+			for _, v := range devpros {
+				var name string
+				if terr := tx.Model(&model.DeviceProduct{}).Select("name").Where("name = ?", v.Name).First(&name).Error; terr == gorm.ErrRecordNotFound {
+					terr = tx.Model(&model.DeviceProduct{}).Create(&v).Error
+					if terr != nil {
+						logrus.Info("添加设备信息失败", terr)
+						return terr
+					}
+				} else {
+					terr = tx.Model(&model.DeviceProduct{}).Where("name = ?", v.Name).Omit("id").UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).Error
+					if terr != nil {
+						logrus.Info("更新库存信息失败", terr)
+						return terr
+					}
+				}
+			}
+			terr := tx.Model(&model.DriverOrderForm{}).Where("order_id = ?", id).UpdateColumn("state", 2).Error
+			logrus.Info(terr)
+			if terr != nil {
+				logrus.Info("更新订单信息失败", terr)
+				return terr
+			}
+			return nil
+		})
+	}
+	if err != nil {
+		i.Error(c, 400, "补货失败")
+	} else {
+		c.JSON(200, response.LoadResponse{response.Response{200, "商品成功添加到设备中"}, devpros})
+	}
 }

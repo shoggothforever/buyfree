@@ -911,6 +911,15 @@ definitions:
         type: array
     type: object
   response.LoadResponse:
+    properties:
+      code:
+        type: integer
+      dev_products:
+        items:
+          $ref: '#/definitions/model.DeviceProduct'
+        type: array
+      msg:
+        type: string
     type: object
   response.LoginResponse:
     properties:
@@ -1046,10 +1055,22 @@ definitions:
           $ref: '#/definitions/model.DriverOrderForm'
         type: array
     type: object
+  response.TemporaryLoginResponse:
+    properties:
+      code:
+        type: integer
+      jwt:
+        description: 鉴权信息，用于保持用户登录状态
+        type: string
+      msg:
+        type: string
+      user:
+        $ref: '#/definitions/model.Platform'
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bfd.shoggothy.xyz
+host: bf.shoggothy.xyz
 info:
   contact:
     email: support@swagger.io
@@ -1324,7 +1345,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: “结算功能，检验货仓库存信息，修改货仓库存，修改订单状态信息-待取货。支付等待服务端验签，支付成功，更新平台销量排行，支付失败，检查订单商品是否满足库存条件”
+      description: “传入state为1即待取货状态的订单编号，将订单中的所有商品绑定到司机拥有的设备中”
       parameters:
       - description: 取货订单订单编号
         in: path
@@ -1342,7 +1363,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 补货订单取货
+      summary: 补货订单取货(添加单个订单信息)
       tags:
       - Driver/Pay
   /dr/order/choose:
@@ -1768,7 +1789,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.LoginResponse'
+            $ref: '#/definitions/response.TemporaryLoginResponse'
         "400":
           description: Bad Request
           schema:
