@@ -1,15 +1,15 @@
 package dal
 
 import (
+	"buyfree/config"
 	"buyfree/repo/model"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 var dB *gorm.DB
@@ -21,9 +21,11 @@ func Getdb() *gorm.DB {
 var dsn string
 
 func ReadPostgresSQLlinfo() {
-	//info := config.Reader.GetStringMapString("postgresql")
-	//dsn = info[config.Sqldsn]
-	dsn = "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
+	info := config.Reader.GetStringMapString("postgresql")
+	dsn = info[config.Sqldsn]
+	if dsn == "" {
+		dsn = "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
+	}
 }
 
 func init() {

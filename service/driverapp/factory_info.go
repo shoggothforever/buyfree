@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -108,30 +109,47 @@ func (i *FactoryController) Detail(c *gin.Context) {
 	}
 	fmt.Println(fa)
 	var details []*response.FactoryProductDetail
-	{
-		err = dal.Getdb().Raw("select fp.name,inventory,"+
-			"dv.m_inventory,pic,type,monthly_sales,supply_price  "+
-			"from factory_products as fp,(select dp.name,sum(dp.inventory)"+
-			" as m_inventory from device_products dp where device_id in"+
-			"(select id from devices where owner_id =?) and dp.name in "+
-			"(select name from factory_products where factory_name=?)"+
-			"group by (dp.name)) as dv where is_on_shelf=true "+
-			"and factory_name=? and fp.name=dv.name", admin.ID, disinfo.FactoryName, disinfo.FactoryName).Find(&details).Error
-		//fmt.Println(details)
-		if err != nil {
+	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		//err = dal.Getdb().Raw("select fp.name,inventory,"+
+		//	"COALESCE(dv.m_inventory,0),pic,type,monthly_sales,supply_price  "+
+		//	"from factory_products as fp,(select dp.name,COALESCE(sum(dp.inventory),0)"+
+		//	" as m_inventory from device_products dp where device_id in"+
+		//	"(select id from devices where owner_id =?) and dp.name in "+
+		//	"(select name from factory_products where factory_name=?)"+
+		//	"group by (dp.name)) as dv where is_on_shelf=true "+
+		//	"and factory_name=? and fp.name=dv.name", admin.ID, disinfo.FactoryName, disinfo.FactoryName).Find(&details).Error
+		ferr := dal.Getdb().Raw("select name,inventory,"+
+			"pic,type,COALESCE(monthly_sales,'0'),supply_price  "+
+			"from factory_products  where is_on_shelf=true "+
+			"and factory_name=? order by monthly_sales", disinfo.FactoryName).Find(&details).Error
+		if ferr != nil {
 			logrus.Info("获取场站商品信息失败", err)
-			i.Error(c, 400, "无法获取商品场站信息")
-			return
+			return ferr
 		}
-	}
-
-	c.JSON(200, response.FactoryDetailResponse{
-		response.Response{200, "成功获取该场站商品信息"},
-		disinfo,
-		fa,
-		details,
+		for k, v := range details {
+			details[k].MInventory = 0
+			var inv string
+			terr := tx.Model(&model.DeviceProduct{}).Select("inventory").Where("name = ? and factory_id = ? and device_id in (select id from devices where owner_id = ?)", v.Name, fa.ID, admin.ID).First(&inv).Error
+			if terr != nil && terr != gorm.ErrRecordNotFound {
+				logrus.Info("获取设备商品库存信息失败", terr)
+				return terr
+			}
+			details[k].MInventory, _ = strconv.ParseInt(inv, 10, 64)
+		}
+		return nil
 	})
-
+	if err != nil {
+		logrus.Info("获取场站商品信息失败", err)
+		i.Error(c, 400, "无法获取场站商品信息")
+		return
+	} else {
+		c.JSON(200, response.FactoryDetailResponse{
+			response.Response{200, "成功获取该场站商品信息"},
+			disinfo,
+			fa,
+			details,
+		})
+	}
 	c.Next()
 }
 

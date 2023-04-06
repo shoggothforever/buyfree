@@ -225,8 +225,12 @@ func (o *OrderRequest) Handle() {
 		for k, _ := range *o.ProductInfos {
 			v := *(*o.ProductInfos)[k]
 			fmt.Println(v)
-			var inv int64 = -1
-			terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
+			//var inv int64 = -9192631770
+			//var ms int64 = 0
+			var fp model.FactoryProduct
+			terr := tx.Model(&model.FactoryProduct{}).Where(
+				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).UpdateColumn(
+				"inventory", gorm.Expr("inventory - ?", v.Count)).First(&fp).Error
 			if terr != nil {
 				var s string
 				if terr == gorm.ErrRecordNotFound {
@@ -235,17 +239,25 @@ func (o *OrderRequest) Handle() {
 				logrus.Info(s, terr)
 				return terr
 			}
+			ms, _ := strconv.ParseInt(fp.MonthlySales, 10, 64)
+			ums := strconv.FormatInt(ms+v.Count, 10)
+			merr := tx.Model(&model.FactoryProduct{}).Select("monthly_sales").Where(
+				"factory_id = ? and name = ? and is_on_shelf =true", v.FactoryID, v.Name).Update("monthly_sales", ums).Error
+			if merr != nil {
+				return merr
+			}
 		}
 		fmt.Println("订单编号：", o.OrderID)
 		//TODO更新榜单信息
+		rdb := dal.Getrdb()
+		ctx := rdb.Context()
 		for k, _ := range *o.ProductInfos {
 			v := *(*o.ProductInfos)[k]
 			//var inv int64
 			//terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true ", v.FactoryID, v.Name).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
 			cost := float64(v.Count) * v.Price
 			fmt.Println(fmt.Sprintf("%d订单：%s商品营销额:%f", v.OrderRefer, v.Name, float64(v.Count)*v.Price))
-			rdb := dal.Getrdb()
-			ctx := rdb.Context()
+
 			utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, o.FactoryName, v.Name, cost)
 		}
 		return nil
@@ -263,7 +275,7 @@ func (o *OrderRequest) Handle() {
 	o.DoneChan <- struct{}{}
 }
 
-//------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
 // 实现每个Req的接口定义
 func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 	ticker := time.NewTicker(TimeOut)
