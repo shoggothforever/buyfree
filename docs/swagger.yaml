@@ -1830,7 +1830,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 添加的商品是场站中没有的，使用前请先查看场站商品列表
+      description: 添加一个或多个的商品
       parameters:
       - description: 场站名字
         in: path

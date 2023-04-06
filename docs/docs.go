@@ -1117,7 +1117,7 @@ const docTemplate = `{
         },
         "/pt/factory-admin/{factory_name}/prdoucts": {
             "post": {
-                "description": "添加的商品是场站中没有的，使用前请先查看场站商品列表",
+                "description": "添加一个或多个的商品",
                 "consumes": [
                     "application/json"
                 ],

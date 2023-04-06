@@ -95,7 +95,7 @@ func (f *FactoryadminController) Register(c *gin.Context) {
 }
 
 // @Summary 场站添加商品信息
-// @Description 添加的商品是场站中没有的，使用前请先查看场站商品列表
+// @Description 添加一个或多个的商品
 // @Tags Platform/factory
 // @Accept json
 // @Produce json
@@ -111,7 +111,7 @@ func (f *FactoryadminController) Add(c *gin.Context) {
 		f.Error(c, 400, "传入数据格式错误")
 		return
 	}
-	fmt.Println(products)
+	//fmt.Println(products)
 	fname := c.Param("factory_name")
 	var fid int64
 	err = dal.Getdb().Model(&model.Factory{}).Select("id").Where("name = ? ", fname).First(&fid).Error
@@ -124,17 +124,41 @@ func (f *FactoryadminController) Add(c *gin.Context) {
 	fpros := make([]model.FactoryProduct, n)
 	for k, v := range products {
 		fpros[k].Set(utils.GetSnowFlake(), fid, fname, &v)
-		fmt.Println(fpros[k])
+		//fmt.Println(fpros[k])
 	}
-	err = dal.Getdb().Model(&model.FactoryProduct{}).Save(&fpros).Error
-	if err != nil {
-		logrus.Info(err)
-		f.Error(c, 400, "添加商品信息失败")
-		return
-	} else {
+	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		var id int64
+		for _, v := range fpros {
+			terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, v.Name).First(&id).Error
+			if terr != nil && terr != gorm.ErrRecordNotFound {
+				logrus.Info(terr)
+				f.Error(c, 400, "添加商品信息失败")
+				return terr
+			} else if terr == gorm.ErrRecordNotFound {
+				cerr := tx.Model(&model.FactoryProducts{}).Create(&v).Error
+				if cerr != nil {
+					logrus.Info(cerr)
+					f.Error(c, 400, "添加商品信息失败")
+					return cerr
+				}
+			} else {
+				uerr := tx.Model(&model.FactoryProducts{}).Where("id = ?", id).UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).Error
+				if uerr != nil {
+					logrus.Info(uerr)
+					f.Error(c, 400, "添加商品信息失败")
+					return uerr
+				}
+			}
+		}
+		return nil
+	})
+	if err == nil {
 		c.JSON(200, response.FactoryProductsModifyResponse{
 			response.Response{200, "添加商品信息成功"}, fpros,
 		})
+	} else {
+		logrus.Info(err)
+		f.Error(c, 400, "添加商品信息失败")
 	}
 
 }
