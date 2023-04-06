@@ -1,15 +1,19 @@
 package config
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"os"
 )
 
 const (
 	Sqldsn        string = "dsn"
 	Redisaddr     string = "addr"
 	Redispassword string = "password"
+	UploadPath    string = ""
+	ACCESS_KEY    string = "******EA09VCy5EfN_*******************"
+	SECRET_KEY    string = "******-yvwcYwImN6F*******************"
+	BUCKET        string = "bucket"
 	OK            int    = 200
 	BAD           int    = 500
 	FORBIDDEN     int    = 403
@@ -36,12 +40,17 @@ type Config struct {
 }
 
 var (
-	Reader *viper.Viper
+	Reader   *viper.Viper
+	QINIU_AK string
+	QINIU_SK string
+	QINIU_BK string
 )
 
 func init() {
 	Reader = viper.New()
-	path, _ := os.Getwd()
+	//path, _ := os.Getwd()
+	path := "d:/desktop/pr/buyfree"
+	fmt.Println("config文件读取路径", path)
 	Reader.AddConfigPath(path + "./config")
 	Reader.SetConfigName("config")
 	Reader.SetConfigType("yaml")
@@ -54,5 +63,9 @@ func init() {
 			logrus.Error("found error in config file\n", ok)
 		}
 	}
-
+	info := Reader.GetStringMapString("qiniu")
+	fmt.Println(info["ak"], info["sk"])
+	QINIU_AK = info["ak"]
+	QINIU_SK = info["sk"]
+	QINIU_BK = info["bk"]
 }

@@ -79,6 +79,20 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 	if err != gorm.ErrRecordNotFound && err != nil {
 		logrus.Info(err)
 		h.Error(c, 400, "无法获取车主端商品排行信息")
+	} else if err == gorm.ErrRecordNotFound {
+		static.ProductRankList = make([]model.DeviceProduct, 1)
+		static.ProductRankList[0] = model.DeviceProduct{-1, -1, model.Product{
+			ID:          0,
+			FactoryID:   0,
+			Sku:         "",
+			Inventory:   0,
+			Name:        "",
+			Pic:         "",
+			Type:        "",
+			BuyPrice:    0,
+			SupplyPrice: 0,
+			SalesData:   model.SalesData{},
+		}}
 	}
 	//fmt.Println(static)
 	c.JSON(200, response.HomePageResponse{response.Response{200, "首页信息:"}, static})

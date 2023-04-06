@@ -3,8 +3,7 @@ package main
 import (
 	"buyfree/mrpc"
 	"buyfree/service"
-	"fmt"
-	"os/exec"
+	"os"
 	"sync"
 )
 
@@ -34,13 +33,15 @@ var once sync.Once
 //	close(utils.Refundchannel)
 //	close(utils.Orderchannel)
 //}
-func Init() {
-	cmd := exec.Command("swag", "init")
-	err := cmd.Run()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("swagger.json生成成功")
+func init() {
+	//cmd := exec.Command("swag", "init")
+	//err := cmd.Run()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println("swagger.json生成成功")
+	path, _ := os.Getwd()
+	os.Setenv("cfgPATH", path)
 }
 func main() {
 	//defer Exit()

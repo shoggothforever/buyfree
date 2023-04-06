@@ -9,7 +9,7 @@ type HomeStatic struct {
 	MonthlySales    float64 `json:"monthly_sales,omitempty"`
 	ADDailySales    float64 `json:"ad_daily_sales,omitempty"`
 	ADPlayTimes     int64   `json:"ad_play_times,omitempty"`
-	ProductRankList []*model.DeviceProduct
+	ProductRankList []model.DeviceProduct
 }
 type HomePageResponse struct {
 	Response

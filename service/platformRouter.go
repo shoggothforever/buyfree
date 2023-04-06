@@ -72,7 +72,7 @@ func PlatFormrouter() {
 	{
 		fdr.POST("/register", fa.Register)
 		fdr.POST("/:factory_name/products", fa.Add)
-		fdr.PATCH("/:factory_name/products/:product_name", fa.AddInv)
+		fdr.PATCH("/:factory_name/products/:product_name/:inv", fa.AddInv)
 	}
 
 	//设备管理
