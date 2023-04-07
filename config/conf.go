@@ -40,16 +40,20 @@ type Config struct {
 }
 
 var (
-	Reader   *viper.Viper
-	QINIU_AK string
-	QINIU_SK string
-	QINIU_BK string
+	Reader    *viper.Viper
+	QINIU_AK  string
+	QINIU_SK  string
+	QINIU_BK  string
+	APPID     string
+	APPSECRET string
+	GRANTTYPE = "authorization_code"
 )
 
 func init() {
 	Reader = viper.New()
 	//path, _ := os.Getwd()
 	path := "d:/desktop/pr/buyfree"
+	//path := "/www/wwwroot/bf.shoggothy.xyz/buyfree"
 	fmt.Println("config文件读取路径", path)
 	Reader.AddConfigPath(path + "./config")
 	Reader.SetConfigName("config")
@@ -64,8 +68,25 @@ func init() {
 		}
 	}
 	info := Reader.GetStringMapString("qiniu")
-	fmt.Println(info["ak"], info["sk"])
 	QINIU_AK = info["ak"]
+	if QINIU_AK == "" {
+		QINIU_AK = "krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_-"
+	}
 	QINIU_SK = info["sk"]
+	if QINIU_SK == "" {
+		QINIU_SK = "XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4"
+	}
 	QINIU_BK = info["bk"]
+	if QINIU_BK == "" {
+		QINIU_BK = "bfcloud"
+	}
+	winfo := Reader.GetStringMapString("weixinapp")
+	APPID = winfo["appid"]
+	if APPID == "" {
+		APPID = "wxd776834423fadf04"
+	}
+	APPSECRET = winfo["appsecret"]
+	if APPSECRET == "" {
+		APPSECRET = "00a3239022c4146ec4c3209792539c0b"
+	}
 }
