@@ -221,6 +221,7 @@ func (i *FactoryController) Modify(c *gin.Context) {
 				return terr
 			} else if op.Count+info.Count > 0 {
 				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("is_chosen", true).Error
 				fmt.Println(terr)
 				return terr
 			} else if op.Count+info.Count <= 0 {
@@ -339,6 +340,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		}
 
 		err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
+		//err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Find(&om.ProductInfos).Error
 		if err != nil {
 			fmt.Println(err)
 			i.Error(c, 400, "获取商品信息失败")
@@ -350,6 +352,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		var ferr error
 		for _, pv := range om.ProductInfos {
 			ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Update("is_chosen", false).Error
+			//ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Delete(&pv).Error
 			if ferr != nil {
 				fmt.Println(ferr)
 				return ferr
@@ -357,12 +360,13 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		}
 		return nil
 	})
-
+	var sum float64 = 0
 	if err == nil {
 		var cost float64 = 0
 		for _, v := range om.ProductInfos {
 			cost += float64(v.Count) * v.Price
 		}
+		sum += cost
 		om.Set(fid, admin.ID, cost, finfo.FactoryName, admin.CarID, admin.Address)
 		if cerr := dal.Getdb().Clauses(clause.OnConflict{
 			Columns: []clause.Column{
@@ -376,6 +380,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		}
 		c.JSON(200, response.DriverOrdersResponse{
 			Response:          response.Response{200, "订单提交成功"},
+			Cash:              sum,
 			FactoriesDistance: []response.FactoryDistanceReq{finfo},
 			OrderInfos:        []model.DriverOrderForm{om},
 		})
@@ -424,22 +429,24 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			var fid int64
 			err = tx.Model(&model.Factory{}).Select("id").Where("name = ?", v.FactoryName).First(&fid).Error
 			if err != nil {
-				fmt.Println(err)
+				logrus.Info(err)
 				i.Error(c, 400, "获取场站信息失败")
 				return err
 			}
 			terr := tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer",
 				om.OrderID).Find(&om.ProductInfos).Error
+			//terr := tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Find(&om.ProductInfos).Error
 			if terr != nil && terr != gorm.ErrRecordNotFound {
-				fmt.Println(terr)
+				logrus.Info(terr)
 				return terr
 			} else if len(om.ProductInfos) == 0 {
-				fmt.Println("没有选择该场站的商品", cartrefer, fid)
+				logrus.Info("没有选择该场站的商品", cartrefer, fid)
 				return gorm.ErrRecordNotFound
 			}
 			var ferr error
 			for _, pv := range om.ProductInfos {
 				ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Update("is_chosen", false).Error
+				//ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Delete(&pv).Error
 				if ferr != nil {
 					fmt.Println(ferr)
 					return ferr
@@ -463,7 +470,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 	if err == nil {
 		if cerr := dal.Getdb().Clauses(clause.OnConflict{Columns: []clause.Column{
 			{Name: "order_id"}}, DoNothing: true}).Omit("ProductInfos").Create(&oms).Error; cerr != nil {
-			fmt.Println(cerr)
+			logrus.Info(cerr)
 			i.Error(c, 400, "创建订单表失败")
 			return
 		}
@@ -474,7 +481,6 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			OrderInfos:        oms,
 		})
 	} else if err == gorm.ErrRecordNotFound {
-		//fmt.Println(oms)
 		i.Error(c, 400, "无选中商品，无需创建表单")
 	} else {
 		i.Error(c, 400, "订单提交失败:获取商品信息失败")

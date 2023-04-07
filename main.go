@@ -1,8 +1,11 @@
 package main
 
 import (
+	"buyfree/dal"
 	"buyfree/mrpc"
 	"buyfree/service"
+	"buyfree/utils"
+	"context"
 	"os"
 	"sync"
 )
@@ -43,6 +46,28 @@ func init() {
 	path, _ := os.Getwd()
 	os.Setenv("cfgPATH", path)
 }
+func SalesCounter() {
+	var uname string = utils.PTNAME
+	rdb := dal.Getrdb()
+	ctx := context.TODO()
+	utils.ModifySales(ctx, rdb, utils.Ranktype1, uname, "2333.123")
+	utils.ModifySales(ctx, rdb, utils.Ranktype2, uname, "11")
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "yith", 123)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "9e", 12)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "2a", 123)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "3s", 1234)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "4b", 12345)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "yith", 123)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "9e", 12)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "2a", 123)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "3s", 1234)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "4b", 12345)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "yith", 123)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "9e", 12)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "2a", 123)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "3s", 1234)
+	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "4b", 12345)
+}
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
@@ -50,6 +75,7 @@ func main() {
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()
 	go service.Driverrouter()
+	SalesCounter()
 	service.PlatFormrouter()
 
 }

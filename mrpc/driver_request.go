@@ -229,8 +229,9 @@ func (o *OrderRequest) Handle() {
 			//var ms int64 = 0
 			var fp model.FactoryProduct
 			terr := tx.Model(&model.FactoryProduct{}).Where(
-				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).UpdateColumn(
-				"inventory", gorm.Expr("inventory - ?", v.Count)).First(&fp).Error
+				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).First(&fp).UpdateColumn(
+				"inventory", gorm.Expr("inventory - ?", v.Count)).Error
+			fmt.Println(fp)
 			if terr != nil {
 				var s string
 				if terr == gorm.ErrRecordNotFound {
@@ -259,6 +260,7 @@ func (o *OrderRequest) Handle() {
 			fmt.Println(fmt.Sprintf("%d订单：%s商品营销额:%f", v.OrderRefer, v.Name, float64(v.Count)*v.Price))
 
 			utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, o.FactoryName, v.Name, cost)
+			utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, utils.PTNAME, v.Name, cost)
 		}
 		return nil
 	})

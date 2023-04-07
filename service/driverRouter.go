@@ -61,6 +61,7 @@ func Driverrouter() {
 	dr.Use(middleware.AuthJwt())
 	dr.GET("/home", ht.GetStatic)
 	dr.GET("/inventory", it.GetInventory)
+	dr.GET("/inventory/:device_id", it.GetDeviceByScan)
 	fa := dr.Group("/factory")
 	{
 		fa.POST("", ft.FactoryOverview)

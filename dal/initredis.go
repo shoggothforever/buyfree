@@ -10,11 +10,11 @@ import (
 )
 
 var Ctx = context.Background()
-var RDB *redis.Client
+var rdb *redis.Client
 var addr, password string
 
 func Getrdb() *redis.Client {
-	return RDB
+	return rdb
 }
 func readRedisInfo() {
 	info := config.Reader.GetStringMapString("redis")
@@ -23,14 +23,14 @@ func readRedisInfo() {
 }
 func CloseDB() {
 	//DB.Close()
-	RDB.Close()
+	rdb.Close()
 }
 
 var Ptimers sync.Pool
 
 func init() {
 	readRedisInfo()
-	RDB = redis.NewClient(&redis.Options{
+	rdb = redis.NewClient(&redis.Options{
 		Addr:         addr,
 		Password:     password,
 		DB:           10,
@@ -43,7 +43,7 @@ func init() {
 		//MaxRetries:   3,
 	})
 
-	_, err := RDB.Ping(Ctx).Result()
+	_, err := rdb.Ping(Ctx).Result()
 	if err != nil {
 		logrus.Info(err)
 

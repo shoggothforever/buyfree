@@ -34,8 +34,8 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 		return
 	}
 	admin := iadmin.(model.Platform)
-	name := admin.Name
-	curve := utils.SalesOf7Days(c, rdb, utils.Ranktype1, name)
+	//name := admin.Name
+	curve := utils.SalesOf7Days(c, rdb, utils.Ranktype1, utils.PTNAME)
 	//fmt.Println(name)
 	err := dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
@@ -54,7 +54,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	}
 	si.OfflineDevNums = si.DevNums - si.OnlineDevNums
 
-	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
+	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, utils.PTNAME)
 	if err != nil {
 		s.Error(c, 400, "获取用户信息失败")
 		return
@@ -66,7 +66,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	salesinfo.MonthlySales = info[2]
 	salesinfo.AnnuallySales = info[3]
 	salesinfo.TotalSales = info[4]
-	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, name, 1)
+	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, utils.PTNAME, 1)
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")
 	}
@@ -96,7 +96,7 @@ func getsalesmessage(mode int64) string {
 
 }
 
-//TODO: 统计数据补全计划
+// TODO: 统计数据补全计划
 // @Summary	销售数据统计
 // @Description	展示管理场站的销售数据，获取详细的销售排行信息
 // @Tags Platform
@@ -108,21 +108,14 @@ func getsalesmessage(mode int64) string {
 // @Failure 400 {object} response.Response
 // @Router /pt/static/{mode} [get]
 func (s *SalesController) GetSales(c *gin.Context) {
-	iadmin, ok := c.Get(middleware.PTADMIN)
-	if ok != true {
-		s.Error(c, 400, "获取用户信息失败")
-		return
-	}
+
 	mode, err := strconv.ParseInt(c.Param("mode"), 10, 64)
 	if err != nil {
 		s.Error(c, 400, "请输入正确的模式信息")
 		return
 	}
-	name := iadmin.(model.Platform).Name
-	//fmt.Println(iadmin)
-	//fmt.Println(name)
 	rdb := dal.Getrdb()
-	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
+	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, utils.PTNAME)
 	fmt.Println(info, err)
 	if err != nil {
 		s.Error(c, 400, "无法获取销量信息")
@@ -134,7 +127,7 @@ func (s *SalesController) GetSales(c *gin.Context) {
 	salesinfo.MonthlySales = info[2]
 	salesinfo.AnnuallySales = info[3]
 	salesinfo.TotalSales = info[4]
-	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, name, int(mode))
+	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, utils.PTNAME, int(mode))
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")
 	} else {
