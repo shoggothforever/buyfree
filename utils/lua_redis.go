@@ -40,9 +40,10 @@ func init() {
 	SHASET.ModifyRanksSHA = loadsha(modifyRanks, c, rdb)
 	SHASET.SalesOf7daysSSHA = loadsha(salesOF7days, c, rdb)
 	SHASET.GetHomeStatic = loadsha(getHomeStatic, c, rdb)
+
 }
 
-//加锁lua脚本,设置过期时间 ExLock
+// 加锁lua脚本,设置过期时间 ExLock
 func luaLock() *redis.Script {
 	return redis.NewScript(`
 	local user,dur = ARGV[1],tonumber(ARGV[2])
@@ -55,7 +56,7 @@ func luaLock() *redis.Script {
 `)
 }
 
-//解锁lua脚本
+// 解锁lua脚本
 func luaUnlock() *redis.Script {
 	return redis.NewScript(`
 	local key = tostring(KEYS[1])
@@ -66,7 +67,7 @@ func luaUnlock() *redis.Script {
 `)
 }
 
-//向特定的榜单中添加数据
+// 向特定的榜单中添加数据
 func listPopPush() *redis.Script {
 	return redis.NewScript(`
 		local key =KEYS[1]
@@ -85,7 +86,7 @@ func listPopPush() *redis.Script {
 `)
 }
 
-//获取连续七天销量信息
+// 获取连续七天销量信息
 func salesOF7days() *redis.Script {
 	return redis.NewScript(`
 	local keys={}
@@ -138,7 +139,7 @@ local keys={}
 `)
 }
 
-//改变商品排行信息
+// 改变商品排行信息
 func modifyRanks() *redis.Script {
 	return redis.NewScript(`
 	local keys={}
@@ -157,7 +158,7 @@ func modifyRanks() *redis.Script {
 `)
 }
 
-//商品销量信息
+// 商品销量信息
 func getSalesInfo() *redis.Script {
 	return redis.NewScript(`
 	local array={}
@@ -171,7 +172,7 @@ func getSalesInfo() *redis.Script {
 `)
 }
 
-//获取车主端主页信息
+// 获取车主端主页信息
 func getHomeStatic() *redis.Script {
 	return redis.NewScript(`
 	local array={}
@@ -198,7 +199,7 @@ func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ..
 	fmt.Println("列表长度", res, err)
 }
 
-//adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID）
+// adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID）
 func SalesOf7Days(c context.Context, rdb *redis.Client, adp, uname string, val ...string) [7]string {
 
 	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(adp, uname), val)
@@ -223,7 +224,7 @@ func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, v
 	fmt.Println("列表长度", res)
 }
 
-//改变销量信息的lua脚本
+// 改变销量信息的lua脚本
 func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) ([]string, error) {
 
 	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(adp, uname), val)
@@ -240,7 +241,7 @@ func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ..
 	return array, nil
 }
 
-//adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku/id：唯一标志符 sales:销售额，用于更改zset的分数
+// adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku/id：唯一标志符 sales:销售额，用于更改zset的分数
 func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, identification string, sales float64) {
 	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), identification, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
@@ -250,8 +251,8 @@ func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, identific
 	//fmt.Println(res)
 }
 
-//获取平台广告或者商品的排行
-//adp: rank类型 queryname:填入广告或者商品的唯一标志符，广告的ID，商品的SKU
+// 获取平台广告或者商品的排行
+// adp: rank类型 queryname:填入广告或者商品的唯一标志符，广告的ID，商品的SKU
 func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mode int) ([]model.ProductRank, error) {
 	if mode < 0 || mode > 5 {
 		mode = 0
@@ -271,7 +272,7 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 	return ranklist, nil
 }
 
-//获取平台销量信息
+// 获取平台销量信息
 func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]string, error) {
 	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(adp, uname))
 	res, err := ret.Float64Slice()
@@ -289,7 +290,7 @@ func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]st
 	return array, nil
 }
 
-//依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
+// 依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
 func GetHomeStatic(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
 	//var arr []float64
 	ret := rdb.EvalSha(c, SHASET.GetHomeStatic, GetDriverSalesKeys(uname))

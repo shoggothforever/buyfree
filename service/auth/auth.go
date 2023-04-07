@@ -49,50 +49,6 @@ func PlatformRegister(c *gin.Context) {
 	c.Next()
 }
 
-//// PlatformAccount godoc
-//// @Summary 平台用户登录
-//// @Description 	Input user's nickname and password
-//// @Tags			User
-//// @accept			json
-//// @Produce			json
-//// @Param loginInfo body model.LoginInfo true "输入昵称，密码"
-//// @Success			200 {object} response.LoginResponse
-//// @Failure			400 {object} response.LoginResponse
-//// @Router			/pt/login [post]
-//func PlatformLogin(c *gin.Context) {
-//	var l []model.LoginInfo
-//	var info model.LoginInfo
-//	var admin model.Platform
-//	//输入昵称，密码 需要用户id和盐
-//	c.ShouldBind(&info)
-//	fmt.Println(info)
-//	var password string = info.Password
-//	dal.Getdb().Raw("select id,password_salt from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin)
-//	psw := utils.Messagedigest5(password, admin.PasswordSalt)
-//	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
-//	if len(l) != 0 {
-//		c.Set("name", admin.Name)
-//		c.JSON(200, response.LoginResponse{
-//			response.Response{
-//				200,
-//				"登录成功"},
-//			l[0].UserID,
-//			l[0].Jwt,
-//		})
-//		c.Set("Authorization", "Bearer:"+l[0].Jwt)
-//		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
-//	} else {
-//		c.JSON(200, response.LoginResponse{
-//			response.Response{
-//				500,
-//				"登录失败"},
-//			-1,
-//			"",
-//		})
-//	}
-//	c.Next()
-//}
-
 // PlatformAccount godoc
 // @Summary 平台用户登录
 // @Description 	Input user's nickname and password
@@ -100,7 +56,7 @@ func PlatformRegister(c *gin.Context) {
 // @accept			json
 // @Produce			json
 // @Param loginInfo body model.LoginInfo true "输入昵称，密码"
-// @Success			200 {object} response.TemporaryLoginResponse
+// @Success			200 {object} response.LoginResponse
 // @Failure			400 {object} response.LoginResponse
 // @Router			/pt/login [post]
 func PlatformLogin(c *gin.Context) {
@@ -111,16 +67,16 @@ func PlatformLogin(c *gin.Context) {
 	c.ShouldBind(&info)
 	fmt.Println(info)
 	var password string = info.Password
-	dal.Getdb().Raw("select * from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin)
+	dal.Getdb().Raw("select id,password_salt from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin)
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
 	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
 	if len(l) != 0 {
 		c.Set("name", admin.Name)
-		c.JSON(200, response.TemporaryLoginResponse{
+		c.JSON(200, response.LoginResponse{
 			response.Response{
 				200,
 				"登录成功"},
-			admin,
+			l[0].UserID,
 			l[0].Jwt,
 		})
 		c.Set("Authorization", "Bearer:"+l[0].Jwt)
@@ -136,6 +92,50 @@ func PlatformLogin(c *gin.Context) {
 	}
 	c.Next()
 }
+
+//// PlatformAccount godoc
+//// @Summary 平台用户登录
+//// @Description 	Input user's nickname and password
+//// @Tags			User
+//// @accept			json
+//// @Produce			json
+//// @Param loginInfo body model.LoginInfo true "输入昵称，密码"
+//// @Success			200 {object} response.TemporaryLoginResponse
+//// @Failure			400 {object} response.LoginResponse
+//// @Router			/pt/login [post]
+//func PlatformLogin(c *gin.Context) {
+//	var l []model.LoginInfo
+//	var info model.LoginInfo
+//	var admin model.Platform
+//	//输入昵称，密码 需要用户id和盐
+//	c.ShouldBind(&info)
+//	fmt.Println(info)
+//	var password string = info.Password
+//	dal.Getdb().Raw("select * from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin)
+//	psw := utils.Messagedigest5(password, admin.PasswordSalt)
+//	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
+//	if len(l) != 0 {
+//		c.Set("name", admin.Name)
+//		c.JSON(200, response.TemporaryLoginResponse{
+//			response.Response{
+//				200,
+//				"登录成功"},
+//			admin,
+//			l[0].Jwt,
+//		})
+//		c.Set("Authorization", "Bearer:"+l[0].Jwt)
+//		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
+//	} else {
+//		c.JSON(200, response.LoginResponse{
+//			response.Response{
+//				500,
+//				"登录失败"},
+//			-1,
+//			"",
+//		})
+//	}
+//	c.Next()
+//}
 
 // PlatformAccount godoc
 // @Summary 获取用户信息

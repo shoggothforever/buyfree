@@ -379,6 +379,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/dr/inventory/{device_id}": {
+            "get": {
+                "description": "乘客端和用户端交互的接口,(用户端扫码，获取该设备的商品信息）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver"
+                ],
+                "summary": "车主单个设备库存",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.InventoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/dr/login": {
             "post": {
                 "description": "Input user's nickname and password",
@@ -800,6 +829,35 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/home": {
+            "get": {
+                "description": "用户扫码打开小程序，",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver"
+                ],
+                "summary": "乘客端首页",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.HomePageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -1302,7 +1360,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.TemporaryLoginResponse"
+                            "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
                     "400": {
@@ -3302,24 +3360,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.DriverOrderForm"
                     }
-                }
-            }
-        },
-        "response.TemporaryLoginResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "jwt": {
-                    "description": "鉴权信息，用于保持用户登录状态",
-                    "type": "string"
-                },
-                "msg": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.Platform"
                 }
             }
         },

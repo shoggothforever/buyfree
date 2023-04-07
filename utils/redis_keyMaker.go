@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-//热销榜，排行榜data struct ZSET  key:data    val: productname  score sale func:zrankbyscore,
-//清理过去数据使用 ZREMRANGEBYLEX
-//统计七天销售数据 data struct List key:date	val:sales 策略：每天0点 使用lpush操作添加
+// 热销榜，排行榜data struct ZSET  key:data    val: productname  score sale func:zrankbyscore,
+// 清理过去数据使用 ZREMRANGEBYLEX
+// 统计七天销售数据 data struct List key:date	val:sales 策略：每天0点 使用lpush操作添加
 const (
 	DailySalesKey          string = "Sales:Daily"    //val:product
 	Constantly7aysSalesKey string = "Sales:7days"    //要求连续 val:
@@ -31,9 +31,10 @@ const (
 	LOCATION               string = "LOCATION"
 	DRIVERLOCATION         string = "DRIVERLOCATION"
 	ALL                    string = "All"
+	PTNAME                 string = "PLATFORM"
 )
 
-//获得一天开头的确切时间
+// 获得一天开头的确切时间
 func GetBeginningOfTheDay(offset int) string {
 	y, m, d := time.Now().In(time.Local).AddDate(0, 0, offset).Date()
 	return fmt.Sprintf("%d-%d-%d 00:00:00", y, m, d)
@@ -45,7 +46,7 @@ func GetDailySalesKey(adp, uname string, offset int) string {
 	return fmt.Sprintf("%s:%s:%d-%d-%d", uname, adp+DailySalesKey, y, m, d)
 }
 
-//平台获取所有时间节点的销量信息
+// 平台获取所有时间节点的销量信息
 func GetAllTimeKeys(adp, uname string) []string {
 	keys := []string{
 		GetBeginningOfTheDay(0),
@@ -67,7 +68,7 @@ func GetAllTimeKeys(adp, uname string) []string {
 	return keys
 }
 
-//根据模式获取相应的时间 0一天的开始，1：一周的开始，2：当月第一天，3：当年第一天.4:连续七天,5:总榜
+// 根据模式获取相应的时间 0一天的开始，1：一周的开始，2：当月第一天，3：当年第一天.4:连续七天,5:总榜
 func GetSalesKeyByMode(adp, uname string, mode int) string {
 	now := time.Now().In(time.Local)
 	y, timem, d := now.Date()
@@ -93,7 +94,7 @@ func GetSalesKeyByMode(adp, uname string, mode int) string {
 	return "root:root:2006-1-2 15:-4:-5"
 }
 
-//根据模式获取相应的时间 0一天的开始，1：周排行榜键名，2：月排行榜键名，3：年排行榜键名.4:总榜
+// 根据模式获取相应的时间 0一天的开始，1：周排行榜键名，2：月排行榜键名，3：年排行榜键名.4:总榜
 func GetRankKeyByMode(adp, uname string, mode int) string {
 	now := time.Now().In(time.Local)
 	y, timem, d := now.Date()

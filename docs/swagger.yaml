@@ -1110,18 +1110,6 @@ definitions:
           $ref: '#/definitions/model.DriverOrderForm'
         type: array
     type: object
-  response.TemporaryLoginResponse:
-    properties:
-      code:
-        type: integer
-      jwt:
-        description: 鉴权信息，用于保持用户登录状态
-        type: string
-      msg:
-        type: string
-      user:
-        $ref: '#/definitions/model.Platform'
-    type: object
   response.WeiXinLoginResponse:
     properties:
       code:
@@ -1384,6 +1372,25 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
       summary: 车主设备库存
+      tags:
+      - Driver
+  /dr/inventory/{device_id}:
+    get:
+      consumes:
+      - application/json
+      description: 乘客端和用户端交互的接口,(用户端扫码，获取该设备的商品信息）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.InventoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 车主单个设备库存
       tags:
       - Driver
   /dr/login:
@@ -1663,6 +1670,25 @@ paths:
       summary: 场站用户注册
       tags:
       - User
+  /home:
+    get:
+      consumes:
+      - application/json
+      description: 用户扫码打开小程序，
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.HomePageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 乘客端首页
+      tags:
+      - Driver
   /login:
     post:
       consumes:
@@ -1992,7 +2018,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.TemporaryLoginResponse'
+            $ref: '#/definitions/response.LoginResponse'
         "400":
           description: Bad Request
           schema:
