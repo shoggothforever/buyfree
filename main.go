@@ -28,11 +28,11 @@ import (
 // @externalDocs.url          https://swagger.io/resources/open-api/
 var once sync.Once
 
-//func Exit() {
-//	//意外关闭的时候要注意将管道中的数据做持久化处理
-//	close(utils.Refundchannel)
-//	close(utils.Orderchannel)
-//}
+//	func Exit() {
+//		//意外关闭的时候要注意将管道中的数据做持久化处理
+//		close(utils.Refundchannel)
+//		close(utils.Orderchannel)
+//	}
 func init() {
 	//cmd := exec.Command("swag", "init")
 	//err := cmd.Run()
@@ -47,6 +47,8 @@ func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
 	mrpc.PlatFormService.Run()
+	mrpc.DriverService.Run()
+	go service.Passengerrouter()
 	go service.Driverrouter()
 	service.PlatFormrouter()
 

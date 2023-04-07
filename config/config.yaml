@@ -10,3 +10,6 @@ qiniu:
   ak: "krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_-"
   sk: "XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4"
   bk: "bfcloud"
+weixinapp:
+  appid: "wxd776834423fadf04"
+  appsecret: "00a3239022c4146ec4c3209792539c0b"

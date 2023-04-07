@@ -1122,6 +1122,22 @@ definitions:
       user:
         $ref: '#/definitions/model.Platform'
     type: object
+  response.WeiXinLoginResponse:
+    properties:
+      code:
+        type: integer
+      errcode:
+        default: 0
+        type: integer
+      errmsg:
+        type: string
+      msg:
+        type: string
+      openid:
+        type: string
+      unionid:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -1647,6 +1663,43 @@ paths:
       summary: 场站用户注册
       tags:
       - User
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 小程序提供code，操作流程按照https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html指示，前端调用wx.login()获取临时登录凭证code，以formData的格式传到后端服务器
+      parameters:
+      - description: 登录凭证
+        in: formData
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WeiXinLoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+        "40029":
+          description: ""
+          schema:
+            $ref: '#/definitions/response.Response'
+        "40226":
+          description: ""
+          schema:
+            $ref: '#/definitions/response.Response'
+        "45011":
+          description: ""
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户登录
+      tags:
+      - Passenger/Authentication
   /pt/ads:
     post:
       consumes:

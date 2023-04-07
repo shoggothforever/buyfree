@@ -3,6 +3,7 @@ package dal
 import (
 	"buyfree/config"
 	"buyfree/repo/model"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -30,6 +31,7 @@ func ReadPostgresSQLlinfo() {
 
 func init() {
 	ReadPostgresSQLlinfo()
+	fmt.Println(dsn)
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer 日志输出的目标，前缀和日志包含的内容
 		logger.Config{

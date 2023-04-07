@@ -51,7 +51,7 @@ type User struct {
 	//BankCardInfos BankCardInfo `gorm:"foreignkey:id" json:"bank_card_infos" form:"bank_card_infos"`
 }
 
-//创建此表时还会创建用户的购物车表以及订单表
+// 创建此表时还会创建用户的购物车表以及订单表
 type Passenger struct {
 	//积分
 	User
@@ -83,11 +83,30 @@ type LoginInfo struct {
 	UserName string `json:"user_name" form:"user_name"`
 	ROLE     int64  `gorm:"commenr:0代表乘客，1代表司机，2代表场站，3代表平台" json:"role" form:"role"`
 	Password string `json:"password" form:"password"`
-	Salt     string `gorm:"comment:加密盐" json:"salt" form:"salt"`
+	Salt     string `gorm:"comment:加密盐" json:"salt" form:"salt" defatult:"salt"`
 	Jwt      string `gorm:"comment:鉴权值" json:"jwt" form:"jwt"`
 }
 
-//TODO:用户银行卡信息
+func NewLoginInfo(id, role int64, name, password, salt, jwt string) *LoginInfo {
+	var log *LoginInfo
+	log.UserID = id
+	log.ROLE = role
+	log.UserName = name
+	if password != "" {
+		log.Password = password
+	} else {
+		log.Password = "123456"
+	}
+	if salt != "" {
+		log.Salt = salt
+	} else {
+		log.Salt = "salt"
+	}
+	log.Jwt = jwt
+	return log
+}
+
+// TODO:用户银行卡信息
 type BankCardInfo struct {
 	//外键
 	ID       int64   `gorm:"comment:用户ID" json:"id" form:"id"`

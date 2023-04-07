@@ -13,10 +13,11 @@ const (
 )
 
 var PlatFormService *WorkerPool
+var DriverService *WorkerPool
 
 func init() {
 	PlatFormService = NewWorkerPool(WORKERNUMS)
-
+	DriverService = NewWorkerPool(WORKERNUMS)
 }
 
 type ReplyQueue chan bool
@@ -121,38 +122,3 @@ func (p *WorkerPool) Run() {
 		}
 	}()
 }
-
-//func DetectSaleSign(work DealWithOrderForm, OrderChannel chan *CountRequest, ofsquit chan bool) {
-//	var ticker = time.NewTicker(time.Duration(TimeOut))
-//	defer ticker.Stop()
-//	for {
-//		sem <- true
-//		select {
-//		case orderformrequest := <-OrderChannel:
-//			go work(orderformrequest) //购物
-//		case <-ofsquit:
-//			return
-//		case <-ticker.C:
-//			ofsquit <- true
-//		default:
-//
-//		}
-//	}
-//}
-//func StartServer(work DealWithOrderForm) (service chan *CountRequest, quit chan bool) {
-//	service = make(chan *CountRequest, 512)
-//	quit = make(chan bool)
-//	go DetectSaleSign(work, service, quit)
-//	return service, quit
-//}
-//func ListenOrderFromRequest() {
-//	//TODO:迁移到main.go中去
-//	ordqueue, ofsquit := StartServer(HandleOrderForm)
-//	defer close(ordqueue)
-//	defer close(ofsquit)
-//	//ordqueue作为服务端暴露给客户端使用
-//
-//	//服务结束
-//	<-ofsquit
-//	fmt.Println("DealWithOrderForms Service shutdown ...")
-//}
