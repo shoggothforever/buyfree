@@ -70,7 +70,6 @@ func (p *PassengerPayReq) Handle() {
 	db := dal.Getdb()
 	var dp model.DeviceProduct
 	err := db.Model(&model.DeviceProduct{}).Where("device_id = ? and name = ? and inventory >0", p.DeviceID, p.Name).UpdateColumn("inventory", gorm.Expr("inventory - ?", 1)).First(&dp).Error
-
 	if err != nil {
 		logrus.Info("购买商品失败")
 		p.Send(false)
@@ -99,8 +98,8 @@ func (p *PassengerPayReq) Handle() {
 		p.Orderform.Cost = p.BuyPrice
 		p.Orderform.State = 2
 		p.Orderform.Location = driver.Address
+		p.Orderform.DriverCarID = driver.CarID
 		p.Orderform.PayTime = time.Now()
-
 		p.Send(true)
 	}
 }

@@ -13,3 +13,8 @@ type PassengerPayInfo struct {
 	Name     string  `json:"name,omitempty"`
 	BuyPrice float64 `json:"buy_price,omitempty"`
 }
+
+type PassengerOrderFormResponse struct {
+	Response
+	PassengerOrderForms []model.PassengerOrderForm
+}
