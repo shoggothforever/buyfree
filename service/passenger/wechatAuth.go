@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm/clause"
 	"strconv"
 )
 
@@ -51,20 +53,31 @@ func (w *WeiXinAuthController) Login(c *gin.Context) {
 	}
 	if authres.ErrCode == 0 {
 		openid, _ := strconv.ParseInt(authres.UnionID, 10, 64)
-		info := model.NewLoginInfo(openid, 0, authres.OpenID, "", "", authres.SessionKey)
-		err := dal.Getdb().Model(&model.LoginInfo{}).Create(&info).Error
+		var token = utils.DoubleMessagedigest5(authres.SessionKey, authres.OpenID)
+		info := model.NewLoginInfo(openid, 0, authres.OpenID, "", "", token)
+		err := dal.Getdb().Model(&model.LoginInfo{}).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "user_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"jwt"}),
+		}).Create(&info).Error
 		if err != nil {
-			if err != nil {
+			w.Error(c, 500, "服务器处理错误")
+			return
+		} else {
+
+			rdb := dal.Getrdb()
+			if _, rerr := rdb.SetEX(rdb.Context(), token, 1, utils.WechatExpire).Result(); rerr != nil {
+				logrus.Info("存储用户登录状态失败")
 				w.Error(c, 500, "服务器处理错误")
 			}
+			c.JSON(200, response.WeiXinLoginResponse{
+				response.Response{200, "请求验证信息成功"},
+				authres.OpenID,
+				authres.UnionID,
+				authres.ErrCode,
+				authres.ErrMsg,
+				token,
+			})
 		}
-		c.JSON(200, response.WeiXinLoginResponse{
-			response.Response{200, "请求验证信息成功"},
-			authres.OpenID,
-			authres.UnionID,
-			authres.ErrCode,
-			authres.ErrMsg,
-		})
 	} else if authres.ErrCode == 40029 {
 		w.Error(c, 40029, "js_code无效")
 	} else if authres.ErrCode == 45011 {

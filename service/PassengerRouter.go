@@ -39,10 +39,11 @@ func Passengerrouter() {
 	{
 		r.POST("/login", wat.Login)
 	}
-
+	//r.Use(middleware.AuthJwt())
+	var ht passenger.HomePageController
 	home := r.Group("home")
 	{
-		home.GET("/")
+		home.GET("/:id", ht.GetStatic)
 	}
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)

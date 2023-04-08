@@ -834,7 +834,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/home": {
+        "/home/{id}": {
             "get": {
                 "description": "用户扫码打开小程序，",
                 "consumes": [
@@ -847,11 +847,20 @@ const docTemplate = `{
                     "Driver"
                 ],
                 "summary": "乘客端首页",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "扫码获取的设备id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.HomePageResponse"
+                            "$ref": "#/definitions/response.PassengerHomeResponse"
                         }
                     },
                     "400": {
@@ -1723,6 +1732,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.ADurl": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "play_url": {
+                    "type": "string"
+                },
+                "video_cover": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Advertisement": {
             "type": "object",
             "properties": {
@@ -1868,6 +1891,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "weekly_sales": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DeviceProductPartInfo": {
+            "type": "object",
+            "properties": {
+                "buy_price": {
+                    "description": "销售价",
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pic": {
+                    "description": "图片",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "型号",
                     "type": "string"
                 }
             }
@@ -3180,6 +3223,29 @@ const docTemplate = `{
                 }
             }
         },
+        "response.PassengerHomeResponse": {
+            "type": "object",
+            "properties": {
+                "ad_urls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ADurl"
+                    }
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "device_product_infos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DeviceProductPartInfo"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
         "response.PayResponse": {
             "type": "object",
             "properties": {
@@ -3380,6 +3446,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "openid": {
+                    "type": "string"
+                },
+                "token": {
+                    "description": "自定义登录态，前端存入storage中,每次发起业务请求携带自定义登录态",
                     "type": "string"
                 },
                 "unionid": {

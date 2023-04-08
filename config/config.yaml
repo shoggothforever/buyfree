@@ -13,3 +13,6 @@ qiniu:
 weixinapp:
   appid: "wxd776834423fadf04"
   appsecret: "00a3239022c4146ec4c3209792539c0b"
+shorten:
+  appid: "urveqjgajrithmkd"
+  appsecret: "SEl2aHp5UTkySkFQWW5RdmJwNGRiZz09"

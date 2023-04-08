@@ -17,7 +17,7 @@ type ADController struct {
 	BasePtController
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 获取该平台的所有广告信息
 // @Description
 // @Tags	Platform/Advertisement
@@ -30,16 +30,18 @@ type ADController struct {
 // @Router /pt/ads/list/{page} [get]
 func (a *ADController) GetADList(c *gin.Context) {
 	page, _ := strconv.ParseInt(c.Param("page"), 10, 64)
-	iadmin, ok := c.Get(middleware.PTADMIN)
-	if ok != true {
-		a.Error(c, 400, "获取用户信息失败")
-		return
-	}
-	admin := iadmin.(model.Platform)
+	//iadmin, ok := c.Get(middleware.PTADMIN)
+	//if ok != true {
+	//	a.Error(c, 400, "获取用户信息失败")
+	//	return
+	//}
+	//admin := iadmin.(model.Platform)
 	var ads []model.Advertisement
 	//dal.Getdb().Model(model.Advertisement{}).Limit(20).Where("platform_id = ? ", admin.ID).Offset(int((page - 1) * 20)).Find(&ads)
+	//err := dal.Getdb().Raw("select * from advertisements inner join "+
+	//	"(select id from advertisements where platform_id = ? order by profit desc limit 20 offset ?  )as lim using (id)", admin.ID, (int((page - 1) * 20))).Find(&ads).Error
 	err := dal.Getdb().Raw("select * from advertisements inner join "+
-		"(select id from advertisements where platform_id = ? order by profit desc limit 20 offset ?  )as lim using (id)", admin.ID, (int((page - 1) * 20))).Find(&ads).Error
+		"(select id from advertisements order by profit desc limit 20 offset ?  )as lim using (id)", (int((page - 1) * 20))).Find(&ads).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		logrus.Info(err)
 		a.Error(c, 400, "获取广告信息失败")
@@ -52,7 +54,7 @@ func (a *ADController) GetADList(c *gin.Context) {
 		ads})
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 添加广告信息
 // @Description 按照Advertisement定义的内容传递json格式的数据,无需传入平台ID
 // @Tags	Platform/Advertisement
@@ -73,7 +75,7 @@ func (a *ADController) AddAD(c *gin.Context) {
 	}
 	admin := iadmin.(model.Platform)
 	ad.PlatformID = admin.ID
-	err := dal.Getdb().Model(model.Advertisement{}).Limit(20).Create(&ad).Error
+	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
 	ad.Profit = 0
 	ad.PlayTimes = 0
 	if err == nil {
@@ -88,7 +90,7 @@ func (a *ADController) AddAD(c *gin.Context) {
 	}
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 获取单个广告信息
 // @Description 传入广告ID
 // @Tags	Platform/Advertisement
@@ -115,7 +117,7 @@ func (a *ADController) GetADContent(c *gin.Context) {
 	}
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 获取单个广告效益
 // @Description 传入广告ID
 // @Tags	Platform/Advertisement

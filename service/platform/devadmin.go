@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type DevadminController struct {
@@ -24,7 +25,7 @@ func GetOnlineState(state bool) string {
 	}
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 获取设备信息
 // @Description 传入字段名:mode;mode=0:获取全部设备信息,mode=1，2,3,4分别对应获取在线，离线,激活，未激活的设备信息
 // @Tags Platform/Device
@@ -48,28 +49,54 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	var devs []*model.Device
 	var driver model.Driver
 	var err error
+	//if mode == "1" {
+	//	err = dal.Getdb().Model(&model.Device{}).Where("is_online = ? and platform_id = ?", true, pid).Find(&devs).Error
+	//	if err != nil {
+	//		d.Error(c, 400, "获取在线设备信息失败")
+	//	}
+	//} else if mode == "2" {
+	//	err = dal.Getdb().Model(&model.Device{}).Where("is_online = ? and platform_id = ?", false, pid).Find(&devs).Error
+	//	if err != nil {
+	//		d.Error(c, 400, "获取离线设备信息失败")
+	//	}
+	//} else if mode == "3" {
+	//	err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ? and platform_id = ?", true, pid).Find(&devs).Error
+	//	if err != nil {
+	//		d.Error(c, 400, "获取激活设备信息失败")
+	//	}
+	//} else if mode == "4" {
+	//	err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ? and platform_id = ?", false, pid).Find(&devs).Error
+	//	if err != nil {
+	//		d.Error(c, 400, "获取未激活设备信息失败")
+	//	}
+	//} else {
+	//	err = dal.Getdb().Model(&model.Device{}).Where("platform_id = ? ", pid).Find(&devs).Error
+	//	if err != nil {
+	//		d.Error(c, 400, "获取设备信息失败")
+	//	}
+	//}
 	if mode == "1" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ? and platform_id = ?", true, pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", true).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取在线设备信息失败")
 		}
 	} else if mode == "2" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ? and platform_id = ?", false, pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", false).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取离线设备信息失败")
 		}
 	} else if mode == "3" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ? and platform_id = ?", true, pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true, pid).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取激活设备信息失败")
 		}
 	} else if mode == "4" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ? and platform_id = ?", false, pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false, pid).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取未激活设备信息失败")
 		}
 	} else {
-		err = dal.Getdb().Model(&model.Device{}).Where("platform_id = ? ", pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取设备信息失败")
 		}
@@ -103,7 +130,7 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 添加设备信息
 // @Description 按照Device的定义 传入json格式的数据,添加的设备默认为未激活，未上线状态
 // @Tags	Platform/Device
@@ -137,6 +164,7 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	dev.PlatformID = admin.ID
 	err = dal.Getdb().Model(&model.Device{}).Omit("owner_id", "activated_time").Create(&dev).Error
 	if err == nil {
+		dal.Getrdb().Set(c, strconv.FormatInt(dev.ID, 10), utils.GenerateSourceUrl(dev.ID), -1)
 		c.JSON(201, response.AddDevResponse{
 			response.Response{200,
 				"添加设备成功",

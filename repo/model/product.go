@@ -41,6 +41,16 @@ func (d *DeviceProduct) Set(id, devid, drid, fid, inv int64, bprice, sprice floa
 	d.SalesData = SalesData{"0", "0", "0", "0", "0"}
 }
 
+type DeviceProductPartInfo struct {
+	Name string `gorm:"notnull;comment:产品名称" json:"name" form:"name"`
+	//图片
+	Pic string `gorm:"comment:图片" json:"pic" form:"pic"`
+	//型号
+	Type string `gorm:"notnull;comment:型号" json:"type" form:"type"`
+	//销售价
+	BuyPrice float64 `gorm:"notnull;comment:销售价" json:"buy_price" form:"buy_price"`
+}
+
 type FactoryProducts []FactoryProduct
 type FactoryProduct struct {
 	//场站名字
@@ -66,7 +76,7 @@ func (f *FactoryProduct) Set(id, fid int64, fname string, v *FactoryProduct) {
 
 type OrderProducts []*OrderProduct
 
-//购物车，订单中的商品信息
+// 购物车，订单中的商品信息
 type OrderProduct struct {
 	//外键
 	CartRefer  int64   `gorm:"comment:所属购物车;" json:"cart_refer" form:"cart_refer"`

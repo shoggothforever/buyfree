@@ -8,9 +8,12 @@ import (
 	"time"
 )
 
-//three month
-const EXPIRE time.Duration = 720 * time.Hour
-const issuer string = "Platform"
+// three month
+const (
+	EXPIRE       time.Duration = 720 * time.Hour
+	WechatExpire               = 24 * time.Hour
+	issuer       string        = "Platform"
+)
 
 type Claims struct {
 	ID   int64
@@ -29,6 +32,12 @@ func Messagedigest5(s, salt string) string {
 	}
 	data := md5.Sum([]byte(s + salt))
 	return fmt.Sprintf("%x", data)
+}
+func DoubleMessagedigest5(s, salt string) string {
+	if (s + salt) == "" {
+		s = "123456"
+	}
+	return Messagedigest5(Messagedigest5(s, salt), Messagedigest5(salt, s))
 }
 func GeneraterJwt(id int64, name, salt string) (string, error) {
 	now := time.Now().In(time.Local)
