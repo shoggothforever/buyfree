@@ -1294,7 +1294,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "use to identify Device",
+                        "description": "used to identify Device",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1571,48 +1571,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/products/down/{id}": {
-            "patch": {
-                "description": "输入商品id,获取场站中对应商品的详细信息",
-                "consumes": [
-                    "application/json",
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "下架场站商品",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "商品ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.FactoryGoodsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/pt/products/infos/{sku}": {
+        "/pt/products/infos/{factory_name}/{product_name}": {
             "get": {
-                "description": "输入商品SKU,获取场站中对应商品的详细信息",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -1627,8 +1587,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "sku 指向唯一的场站中的商品信息",
-                        "name": "sku",
+                        "description": "场站名",
+                        "name": "factory_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "商品名",
+                        "name": "product_name",
                         "in": "path",
                         "required": true
                     }
@@ -1649,9 +1616,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/products/on/{id}": {
+        "/pt/products/turn": {
             "patch": {
-                "description": "输入商品id,获取场站中对应商品的详细信息",
+                "description": "传入商品ID，上架商品",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -1665,11 +1632,13 @@ const docTemplate = `{
                 "summary": "上架场站商品",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "商品ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "传入factory_name + product_name 联合主键",
+                        "name": "Info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/response.UnionNameInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -1707,8 +1676,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "根据场站名字获取场站所有商品信息，默认获取所有商品信息",
                         "name": "factory_name",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "integer",
@@ -3684,6 +3652,17 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.DriverOrderForm"
                     }
+                }
+            }
+        },
+        "response.UnionNameInfo": {
+            "type": "object",
+            "properties": {
+                "factory_name": {
+                    "type": "string"
+                },
+                "product_name": {
+                    "type": "string"
                 }
             }
         },

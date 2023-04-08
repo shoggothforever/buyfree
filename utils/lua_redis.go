@@ -260,7 +260,7 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 	ret := rdb.ZRevRangeWithScores(c, GetRankKeyByMode(adp, queryname, mode), 0, 9)
 	res, err := ret.Result()
 	if err != nil {
-		logrus.Info("get ranklist error while getting ranklist", err)
+		logrus.Info("get rank list error while getting rank list", err)
 		return []model.ProductRank{}, err
 	}
 	//fmt.Println(res)

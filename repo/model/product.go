@@ -91,6 +91,17 @@ type OrderProduct struct {
 	Price      float64 `gorm:"notnull;comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价" json:"price" form:"price"`
 }
 
+func (o *OrderProduct) Set(cr, fr, cnt int64, pr float64, bi bool, name, sku, pic, Type string) {
+	o.CartRefer = cr
+	o.FactoryID = fr
+	o.Count = cnt
+	o.Price = pr
+	o.IsChosen = bi
+	o.Name = name
+	o.Sku = sku
+	o.Pic = pic
+	o.Type = Type
+}
 func (o *OrderProduct) GetAmount() float64 {
 	price := o.Price * float64(o.Count)
 	return price

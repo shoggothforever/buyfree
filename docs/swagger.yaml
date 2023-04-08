@@ -1219,6 +1219,13 @@ definitions:
           $ref: '#/definitions/model.DriverOrderForm'
         type: array
     type: object
+  response.UnionNameInfo:
+    properties:
+      factory_name:
+        type: string
+      product_name:
+        type: string
+    type: object
   response.WeiXinLoginResponse:
     properties:
       code:
@@ -2081,7 +2088,7 @@ paths:
       - multipart/form-data
       description: 输入设备的ID以查看对应设备的销量,绑定车主以及库存的信息
       parameters:
-      - description: use to identify Device
+      - description: used to identify Device
         in: path
         name: id
         required: true
@@ -2279,7 +2286,6 @@ paths:
       - description: 根据场站名字获取场站所有商品信息，默认获取所有商品信息
         in: path
         name: factory_name
-        required: true
         type: string
       - description: 按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}
         in: path
@@ -2300,42 +2306,20 @@ paths:
       summary: 获取所有商品
       tags:
       - Products
-  /pt/products/down/{id}:
-    patch:
-      consumes:
-      - application/json
-      - multipart/form-data
-      description: 输入商品id,获取场站中对应商品的详细信息
-      parameters:
-      - description: 商品ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.FactoryGoodsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: 下架场站商品
-      tags:
-      - Products
-  /pt/products/infos/{sku}:
+  /pt/products/infos/{factory_name}/{product_name}:
     get:
       consumes:
       - application/json
       - multipart/form-data
-      description: 输入商品SKU,获取场站中对应商品的详细信息
       parameters:
-      - description: sku 指向唯一的场站中的商品信息
+      - description: 场站名
         in: path
-        name: sku
+        name: factory_name
+        required: true
+        type: string
+      - description: 商品名
+        in: path
+        name: product_name
         required: true
         type: string
       produces:
@@ -2352,18 +2336,19 @@ paths:
       summary: 获取商品信息
       tags:
       - Products
-  /pt/products/on/{id}:
+  /pt/products/turn:
     patch:
       consumes:
       - application/json
       - multipart/form-data
-      description: 输入商品id,获取场站中对应商品的详细信息
+      description: 传入商品ID，上架商品
       parameters:
-      - description: 商品ID
-        in: path
-        name: id
+      - description: 传入factory_name + product_name 联合主键
+        in: body
+        name: Info
         required: true
-        type: integer
+        schema:
+          $ref: '#/definitions/response.UnionNameInfo'
       produces:
       - application/json
       responses:
