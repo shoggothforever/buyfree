@@ -4,6 +4,14 @@ type ScanResponse struct {
 	Response
 	DeviceID int64 `json:"device_id"`
 }
+type QRUrlInfo struct {
+	DeviceID int64  `json:"device_id,omitempty"`
+	QRUrl    string `json:"qr_url,omitempty"`
+}
+type QRCodeResponse struct {
+	Response
+	QRUrlInfos []QRUrlInfo `json:"qr_url_infos"`
+}
 type DriverAuthInfo struct {
 	DriverID int64  `json:"driver_id"`
 	DeviceID int64  `json:"device_id"`

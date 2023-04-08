@@ -12,7 +12,7 @@ const (
 	DONE
 )
 
-//abstract
+// abstract
 type OrderForm struct {
 	//订单编码
 	OrderID int64 `gorm:"primarykey" json:"order_id"`
@@ -30,7 +30,7 @@ type OrderForm struct {
 	ProductInfos []*OrderProduct `gorm:"foreignKey:OrderRefer"`
 }
 
-//需要关联创表
+// 需要关联创表
 type PassengerOrderForm struct {
 	//Passenger外键
 	PassengerID int64 `json:"passenger_id"`
@@ -39,7 +39,11 @@ type PassengerOrderForm struct {
 	OrderForm
 }
 
-//需要关联创表,其实是场站存放的司机发起的订单
+func (p *PassengerOrderForm) Set() {
+	p.PassengerID = p.PassengerID
+}
+
+// 需要关联创表,其实是场站存放的司机发起的订单
 type DriverOrderForm struct {
 	FactoryID   int64  `gorm:"comment:指向factory.id" json:"factory_id"`
 	FactoryName string `gorm:"comment:订单发货场站名" json:"factory_name"`

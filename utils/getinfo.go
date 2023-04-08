@@ -17,3 +17,14 @@ func GetDriveInfo(c *gin.Context) (admin model.Driver, ok bool) {
 	}
 	return admin, ok
 }
+func GetPassengerInfo(c *gin.Context) (admin model.Passenger, ok bool) {
+	iadmin, ok := c.Get(middleware.PAADMIN)
+	if ok != true {
+		return model.Passenger{}, false
+	}
+	admin, ok = iadmin.(model.Passenger)
+	if ok != true {
+		return model.Passenger{}, false
+	}
+	return admin, ok
+}

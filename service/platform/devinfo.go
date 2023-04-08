@@ -2,7 +2,6 @@ package platform
 
 import (
 	"buyfree/dal"
-	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -15,14 +14,14 @@ type DevinfoController struct {
 	BasePtController
 }
 
-//TODO: 利用redis对车主端的数据进行统计，
+// TODO: 利用redis对车主端的数据进行统计，
 func (d *DevinfoController) AnaSales(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,
 		"ok"})
 }
 
-//TODO:swagger
+// TODO:swagger
 // @Summary 展示设备详情信息
 // @Description	输入设备的ID以查看对应设备的销量,绑定车主以及库存的信息
 // @Tags	Platform/Device
@@ -39,7 +38,7 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 	dev := model.Device{}
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	err = dal.Getdb().Model(&model.Device{}).Where("id=?", id).First(&dev).Error
-	if err != gorm.ErrRecordNotFound && err != nil {
+	if err != nil {
 		c.JSON(200, response.Response{
 			400,
 			"查找对应设备信息失败,请检查输入ID是否正确",
@@ -65,15 +64,8 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 		})
 		return
 	}
-	iadmin, ok := c.Get(middleware.PTADMIN)
-	if ok != true {
-		d.Error(c, 400, "获取用户信息失败")
-		return
-	}
-	admin := iadmin.(model.Platform)
-	name := admin.Name
 	rdb := dal.Getrdb()
-	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, name)
+	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype3, strconv.FormatInt(dev.ID, 10))
 	if err != nil {
 		c.JSON(200, response.Response{
 			400,
@@ -112,7 +104,7 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 	}
 }
 
-//TODO:swagger
+// TODO:swagger
 func (d *DevinfoController) TakeDown(c *gin.Context) {
 	c.JSON(200, response.Response{
 		200,

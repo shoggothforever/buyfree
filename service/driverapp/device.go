@@ -1,11 +1,14 @@
 package driverapp
 
 import (
+	"buyfree/dal"
 	"buyfree/mrpc"
 	"buyfree/service/response"
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type DeviceController struct {
@@ -63,4 +66,37 @@ func (d *DeviceController) BindDevice(c *gin.Context) {
 	} else {
 		c.JSON(200, response.BindDeviceResponse{response.Response{200, "绑定用户信息成功"}, &info})
 	}
+}
+
+// @Summary 获取二维码
+// @Description 获取车主所有设备的二维码信息
+// @Tags Driver/Auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.QRCodeResponse
+// @Failure 400 {object} response.Response
+// @Router /dr/devices/QR [get]
+func (d *DeviceController) QR(c *gin.Context) {
+	admin, ok := utils.GetDriveInfo(c)
+	if !ok {
+		d.Error(c, 400, "获取用户信息失败")
+		return
+	}
+	var urlinfos []response.QRUrlInfo
+	var ids []int64
+	err := dal.Getdb().Raw("select id from devices where owner_id = ? ", admin.ID).Find(&ids).Error
+	if err != nil {
+		logrus.Info(err)
+		d.Error(c, 400, "未获取到该设备的二维码信息")
+		return
+	}
+	n := len(ids)
+	urlinfos = make([]response.QRUrlInfo, n)
+	rdb := dal.Getrdb()
+	for i := 0; i < n; i++ {
+		urlinfos[i].DeviceID = ids[i]
+		urlinfos[i].QRUrl, err = rdb.Get(c, strconv.FormatInt(ids[i], 10)).Result()
+	}
+	c.JSON(200, response.QRCodeResponse{response.Response{200, "扫码成功"}, urlinfos})
+
 }

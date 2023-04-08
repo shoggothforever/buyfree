@@ -80,6 +80,7 @@ func Driverrouter() {
 	}
 	devr := dr.Group("/devices")
 	{
+		devr.GET("/QR", det.QR)
 		devr.GET("/scan", det.Scan)
 		devr.POST("/bind", det.BindDevice)
 	}
