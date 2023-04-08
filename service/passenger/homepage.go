@@ -69,7 +69,7 @@ func (h *HomePageController) Pay(c *gin.Context) {
 	mrpc.DriverService.ReqChan <- payreq
 	<-payreq.DoneChan
 	if !payreq.Res {
-		h.Error(c, 500, "处理支付信息失败有误")
+		h.Error(c, 500, "处理支付信息失败")
 		return
 	} else {
 		payreq.Orderform.PassengerID = admin.ID
