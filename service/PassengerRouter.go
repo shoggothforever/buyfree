@@ -45,6 +45,12 @@ func Passengerrouter() {
 	{
 		home.GET("/:id", ht.GetStatic)
 		home.POST("/pay", ht.Pay)
+
+	}
+	mir := r.Group("infos")
+	{
+		mir.GET("/orders", ht.GetOrders)
+		mir.GET("/:id/orders", ht.GetOrders)
 	}
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)

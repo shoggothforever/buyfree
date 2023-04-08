@@ -856,6 +856,52 @@
                 }
             }
         },
+        "/home/pay": {
+            "post": {
+                "description": "点击商品购买按钮",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Passenger/home"
+                ],
+                "summary": "购买商品",
+                "parameters": [
+                    {
+                        "description": "将首页的商品信息传入",
+                        "name": "PayInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/response.PassengerPayInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PayResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/home/{id}": {
             "get": {
                 "description": "用户扫码打开小程序，",
@@ -866,7 +912,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Driver"
+                    "Passenger/home"
                 ],
                 "summary": "乘客端首页",
                 "parameters": [
@@ -883,6 +929,82 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.PassengerHomeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/infos/orders/{mode}": {
+            "get": {
+                "description": "根据输入mode查看全部，待付款，待取货订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Passenger/info"
+                ],
+                "summary": "获取订单信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "mode=0查看全部订单，mode=1查看待付款订单，mode=2查看待取货订单",
+                        "name": "mode",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PassengerOrderFormResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/infos/{id}/orders": {
+            "get": {
+                "description": "传入订单ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Passenger/info"
+                ],
+                "summary": "获取单个订单信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "订单编号",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PassengerOrderFormResponse"
                         }
                     },
                     "400": {
@@ -2378,6 +2500,54 @@
                 }
             }
         },
+        "model.PassengerOrderForm": {
+            "type": "object",
+            "properties": {
+                "car_id": {
+                    "description": "支付时存储车主车牌号",
+                    "type": "string"
+                },
+                "cost": {
+                    "description": "花费",
+                    "type": "number"
+                },
+                "location": {
+                    "description": "支付时存储位置(购物时获取车主位置）",
+                    "type": "string"
+                },
+                "order_id": {
+                    "description": "订单编码",
+                    "type": "integer"
+                },
+                "passenger_id": {
+                    "description": "Passenger外键",
+                    "type": "integer"
+                },
+                "pay_time": {
+                    "description": "支付时间（更改操作先于发送订单请求，支付时更新即可）",
+                    "type": "string"
+                },
+                "place_time": {
+                    "description": "下单时间（创建时更新即可）",
+                    "type": "string"
+                },
+                "productInfos": {
+                    "description": "商品信息",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderProduct"
+                    }
+                },
+                "state": {
+                    "description": "订单状态",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ORDERSTATE"
+                        }
+                    ]
+                }
+            }
+        },
         "model.Platform": {
             "type": "object",
             "properties": {
@@ -3264,6 +3434,37 @@
                     }
                 },
                 "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.PassengerOrderFormResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "passengerOrderForms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PassengerOrderForm"
+                    }
+                }
+            }
+        },
+        "response.PassengerPayInfo": {
+            "type": "object",
+            "properties": {
+                "buy_price": {
+                    "type": "number"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
                 }
             }

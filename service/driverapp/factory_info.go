@@ -213,24 +213,31 @@ func (i *FactoryController) Modify(c *gin.Context) {
 		i.Error(c, 400, "操作数据库失败")
 		return
 	} else {
-		var terr error
-		dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 			if op.Count == 0 {
-				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Update("count", 0).Error
-				fmt.Println(terr)
-				return terr
+				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Update("count", 0).Error
+				if terr != nil {
+					return terr
+				}
 			} else if op.Count+info.Count > 0 {
-				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+				if terr != nil {
+					return terr
+				}
 				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("is_chosen", true).Error
-				fmt.Println(terr)
-				return terr
+				if terr != nil {
+					return terr
+				}
 			} else if op.Count+info.Count <= 0 {
-				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Delete(&op).Error
+				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Delete(&op).Error
+				if terr != nil {
+					return terr
+				}
 			}
 			return nil
 		})
-		if terr != nil {
-			fmt.Println(terr)
+		if err != nil {
+			logrus.Info(err)
 			i.Error(c, 400, "更新购物车信息失败失败")
 			return
 		}
