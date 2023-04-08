@@ -44,6 +44,7 @@ func Passengerrouter() {
 	home := r.Group("home")
 	{
 		home.GET("/:id", ht.GetStatic)
+		home.POST("/pay", ht.Pay)
 	}
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)

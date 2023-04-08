@@ -25,6 +25,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/dr/devices/QR": {
+            "get": {
+                "description": "获取车主所有设备的二维码信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/Auth"
+                ],
+                "summary": "获取二维码",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.QRCodeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/dr/devices/bind": {
             "post": {
                 "description": "向服务端(平台)验签，等待设备激活",
@@ -3268,6 +3297,34 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/model.Platform"
+                }
+            }
+        },
+        "response.QRCodeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "qr_url_infos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.QRUrlInfo"
+                    }
+                }
+            }
+        },
+        "response.QRUrlInfo": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "integer"
+                },
+                "qr_url": {
+                    "type": "string"
                 }
             }
         },

@@ -52,34 +52,39 @@ func AuthJwt() gin.HandlerFunc {
 			c.Set("AuthInfo", "Success!")
 			c.Set("Jwt", jwt)
 			var id int64
-			dal.Getdb().Raw("select user_id from login_infos where jwt=?", jwt).First(&id)
+			err = dal.Getdb().Raw("select user_id from login_infos where jwt=?", jwt).First(&id).Error
+			if err != nil {
+				c.AbortWithStatusJSON(200, gin.H{
+					"code": 401, "msg": "验证信息失败",
+				})
+				return
+			}
 			var ptadmin []model.Platform
 
 			var passenger []model.Passenger
 			dal.Getdb().Model(&model.Passenger{}).Where("id=?", id).First(&passenger)
 			if len(passenger) != 0 {
 				c.Set(DRADMIN, passenger[0])
-				return
+				c.Next()
 			}
 			dal.Getdb().Model(&model.Platform{}).Where("id=?", id).First(&ptadmin)
 			if len(ptadmin) != 0 {
 				c.Set(PTADMIN, ptadmin[0])
-				return
+				c.Next()
 			}
 			var dradmin []model.Driver
 			dal.Getdb().Model(&model.Driver{}).Where("id=?", id).First(&dradmin)
 			if len(dradmin) != 0 {
 				c.Set(DRADMIN, dradmin[0])
-				return
+				c.Next()
 			}
 			var fadmin []model.Factory
 			dal.Getdb().Model(&model.Factory{}).Where("id=?", id).First(&fadmin)
 			if len(fadmin) != 0 {
 				c.Set(FADMIN, fadmin[0])
-				return
+				c.Next()
 			}
-
-			c.Next()
 		}
+		c.Abort()
 	}
 }

@@ -1044,6 +1044,24 @@ definitions:
       user:
         $ref: '#/definitions/model.Platform'
     type: object
+  response.QRCodeResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      qr_url_infos:
+        items:
+          $ref: '#/definitions/response.QRUrlInfo'
+        type: array
+    type: object
+  response.QRUrlInfo:
+    properties:
+      device_id:
+        type: integer
+      qr_url:
+        type: string
+    type: object
   response.ReplenishInfo:
     properties:
       count:
@@ -1184,6 +1202,25 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /dr/devices/QR:
+    get:
+      consumes:
+      - application/json
+      description: 获取车主所有设备的二维码信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.QRCodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取二维码
+      tags:
+      - Driver/Auth
   /dr/devices/bind:
     post:
       consumes:
