@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  model.ADurl:
+    properties:
+      id:
+        type: integer
+      play_url:
+        type: string
+      video_cover:
+        type: string
+    type: object
   model.Advertisement:
     properties:
       ad_owner:
@@ -99,6 +108,20 @@ definitions:
         description: 型号
         type: string
       weekly_sales:
+        type: string
+    type: object
+  model.DeviceProductPartInfo:
+    properties:
+      buy_price:
+        description: 销售价
+        type: number
+      name:
+        type: string
+      pic:
+        description: 图片
+        type: string
+      type:
+        description: 型号
         type: string
     type: object
   model.Driver:
@@ -990,6 +1013,21 @@ definitions:
           $ref: '#/definitions/response.FactoryProductsInfo'
         type: array
     type: object
+  response.PassengerHomeResponse:
+    properties:
+      ad_urls:
+        items:
+          $ref: '#/definitions/model.ADurl'
+        type: array
+      code:
+        type: integer
+      device_product_infos:
+        items:
+          $ref: '#/definitions/model.DeviceProductPartInfo'
+        type: array
+      msg:
+        type: string
+    type: object
   response.PayResponse:
     properties:
       code:
@@ -1122,6 +1160,9 @@ definitions:
       msg:
         type: string
       openid:
+        type: string
+      token:
+        description: 自定义登录态，前端存入storage中,每次发起业务请求携带自定义登录态
         type: string
       unionid:
         type: string
@@ -1670,18 +1711,24 @@ paths:
       summary: 场站用户注册
       tags:
       - User
-  /home:
+  /home/{id}:
     get:
       consumes:
       - application/json
       description: 用户扫码打开小程序，
+      parameters:
+      - description: 扫码获取的设备id
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.HomePageResponse'
+            $ref: '#/definitions/response.PassengerHomeResponse'
         "400":
           description: Bad Request
           schema:
