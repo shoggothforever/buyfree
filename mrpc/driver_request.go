@@ -241,9 +241,14 @@ func (o *OrderRequest) Handle() {
 				return terr
 			}
 			ms, _ := strconv.ParseInt(fp.MonthlySales, 10, 64)
+			ts, _ := strconv.ParseInt(fp.TotalSales, 10, 64)
 			ums := strconv.FormatInt(ms+v.Count, 10)
-			merr := tx.Model(&model.FactoryProduct{}).Select("monthly_sales").Where(
-				"factory_id = ? and name = ? and is_on_shelf =true", v.FactoryID, v.Name).Update("monthly_sales", ums).Error
+			uts := strconv.FormatInt(ts+v.Count, 10)
+			merr := tx.Model(&model.FactoryProduct{}).Select("monthly_sales", "totally_sales").Where(
+				"factory_id = ? and name = ? and is_on_shelf =true", v.FactoryID, v.Name).UpdateColumns(map[string]string{
+				"monthly_sales": ums,
+				"totally_sales": uts,
+			}).Error
 			if merr != nil {
 				return merr
 			}

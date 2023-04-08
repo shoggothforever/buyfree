@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
@@ -39,13 +40,11 @@ func GetOnlineState(state bool) string {
 func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	//mode =0 全部 1 在线 2离线 3已激活 4 未激活
 	mode := c.Param("mode")
-	iadmin, ok := c.Get(middleware.PTADMIN)
+	_, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
 		d.Error(c, 400, "获取用户信息失败")
 		return
 	}
-	admin := iadmin.(model.Platform)
-	var pid = admin.ID
 	var devs []*model.Device
 	var driver model.Driver
 	var err error
@@ -78,27 +77,36 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	if mode == "1" {
 		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", true).Find(&devs).Error
 		if err != nil {
+			logger.Loger.Info(err)
 			d.Error(c, 400, "获取在线设备信息失败")
+			return
 		}
 	} else if mode == "2" {
 		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", false).Find(&devs).Error
 		if err != nil {
+			logger.Loger.Info(err)
 			d.Error(c, 400, "获取离线设备信息失败")
+			return
 		}
 	} else if mode == "3" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true, pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true).Find(&devs).Error
 		if err != nil {
+			logger.Loger.Info(err)
 			d.Error(c, 400, "获取激活设备信息失败")
+			return
 		}
 	} else if mode == "4" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false, pid).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false).Find(&devs).Error
 		if err != nil {
+			logger.Loger.Info(err)
 			d.Error(c, 400, "获取未激活设备信息失败")
+			return
 		}
 	} else {
 		err = dal.Getdb().Model(&model.Device{}).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取设备信息失败")
+			return
 		}
 	}
 	var size int = len(devs)
@@ -116,9 +124,21 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 		devres[k].DriverName = driver.Name
 		devres[k].Mobile = driver.Mobile
 		//TODO GET DRIVER LOCATION USING API
-		//devre.Location = driver.Location
+		devres[k].Location = driver.Address
 		//TODO: GET SALES DATA
-		//devres[k].SaleForToday=
+		rdb := dal.Getrdb()
+		var sales string
+		sales, _ = rdb.Get(c, utils.GetSalesKeyByMode(utils.Ranktype1, devres[k].DriverName, 0)).Result()
+		if sales != "" {
+			devres[k].SalesOfToday, err = strconv.ParseFloat(sales, 64)
+			if err != nil {
+				logger.Loger.Info(err)
+				d.Error(c, 400, "获取用户当日营销额信息失败")
+				return
+			}
+		} else {
+			devres[k].SalesOfToday = 0
+		}
 	}
 	c.JSON(200, response.DevResponse{
 		response.Response{

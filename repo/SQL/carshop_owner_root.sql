@@ -264,20 +264,19 @@ COMMENT ON COLUMN "public"."drivers"."latitude" IS '纬度';
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."order_products";
 CREATE TABLE "public"."order_products" (
-                                           "cart_refer" INT8,
-                                           "factory_id" INT8,
-                                           "order_refer" int8,
+                                           "cart_refer" INT8 NOT NULL,
+                                           "factory_id" INT8 NOT NULL,
+                                           "order_refer" INT8,
                                            "is_chosen" BOOL,
                                            "name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
-                                           "sku" TEXT COLLATE "pg_catalog"."default" ,
+                                           "sku" TEXT COLLATE "pg_catalog"."default",
                                            "pic" TEXT COLLATE "pg_catalog"."default",
                                            "type" TEXT COLLATE "pg_catalog"."default" NOT NULL,
                                            "count" INT8 NOT NULL,
                                            "price" NUMERIC NOT NULL,
-                                           CONSTRAINT "order_products_pkey" PRIMARY KEY ("type","name", "factory_id", "cart_refer")
+                                           CONSTRAINT "order_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer" )
 );
-ALTER TABLE "public"."order_products" OWNER TO "root
-";
+ALTER TABLE "public"."order_products" OWNER TO "root";
 COMMENT ON COLUMN "public"."order_products"."cart_refer" IS '所属购物车';
 COMMENT ON COLUMN "public"."order_products"."factory_id" IS '所属场站';
 COMMENT ON COLUMN "public"."order_products"."order_refer" IS '所属订单';

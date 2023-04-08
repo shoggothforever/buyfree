@@ -96,11 +96,11 @@ func PlatFormrouter() {
 
 		//默认展示全部
 		ord.GET("/:mode/factory/:factory_name/", gdc.GetAllProducts)
-		ord.GET("/infos/:sku", gdc.GetGoodsInfo)
+		ord.GET("/infos/:factory_name/:product_name", gdc.GetGoodsInfo)
 
-		//TODO:上下架操作整合
-		ord.PATCH("/on/:id", gdc.OnShelfGoods)
-		ord.PATCH("/down/:id", gdc.DownShelfGoods)
+		ord.PATCH("/turn", gdc.TurnOver)
+		//ord.PATCH("/on", gdc.OnShelfGoods)
+		//ord.PATCH("/down", gdc.DownShelfGoods)
 	}
 	//销售统计
 	//TODO:默认显示

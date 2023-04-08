@@ -16,6 +16,10 @@ type FactoryProductsResponse struct {
 	Response
 	Products []FactoryProductsInfo
 }
+type UnionNameInfo struct {
+	FactoryName string `json:"factory_name,omitempty"`
+	ProductName string `json:"product_name,omitempty"`
+}
 type FactoryGoodsResponse struct {
 	Response
 	model.FactoryProduct

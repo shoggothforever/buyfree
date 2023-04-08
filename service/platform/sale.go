@@ -2,12 +2,14 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -37,18 +39,24 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	//name := admin.Name
 	curve := utils.SalesOf7Days(c, rdb, utils.Ranktype1, utils.PTNAME)
 	//fmt.Println(name)
-	err := dal.Getdb().Raw("select count(*) from devices").First(&si.DevNums).Error
+	err := dal.Getdb().Raw("select count(*) from  devices").First(&si.DevNums).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
+		logger.Loger.Info(err)
+		logrus.Info(err)
 		s.Error(c, 400, "无法获取设备数量")
 		return
 	}
 	err = dal.Getdb().Raw("select count(*) from devices where is_online = ?", true).First(&si.OnlineDevNums).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
+		logger.Loger.Info(err)
+		logrus.Info(err)
 		s.Error(c, 400, "无法获取上线设备信息")
 		return
 	}
+
 	err = dal.Getdb().Raw("select * from advertisements  where platform_id= ? order by profit desc limit 10", admin.ID).Find(&si.ADList).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
+		logger.Loger.Info(err)
 		s.Error(c, 400, "无法获取广告信息")
 		return
 	}
@@ -56,6 +64,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 
 	info, err := utils.GetSalesInfo(c, rdb, utils.Ranktype1, utils.PTNAME)
 	if err != nil {
+		logger.Loger.Info(err)
 		s.Error(c, 400, "获取用户信息失败")
 		return
 	}
@@ -68,6 +77,7 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	salesinfo.TotalSales = info[4]
 	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, utils.PTNAME, 1)
 	if err != nil {
+		logger.Loger.Info(err)
 		s.Error(c, 400, "获取排名信息失败")
 	}
 	si.SalesData = salesinfo
@@ -140,27 +150,3 @@ func (s *SalesController) GetSales(c *gin.Context) {
 		})
 	}
 }
-
-////从数据库获取相关信息
-//func (s *SalesController) GetDevCnt(c *gin.Context) {
-//	c.JSON(200, response.Response{
-//		200,
-//		"ok"})
-//}
-//func (s *SalesController) GetLocation(c *gin.Context) {
-//	c.JSON(200, response.Response{
-//		200,
-//		"ok"})
-//}
-//
-//func (s *SalesController) AnalyzeAD(c *gin.Context) {
-//	c.JSON(200, response.Response{
-//		200,
-//		"ok"})
-//}
-//
-//func (s *SalesController) GetSaleRank(c *gin.Context) {
-//	c.JSON(200, response.Response{
-//		200,
-//		"ok"})
-//}

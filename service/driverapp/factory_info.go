@@ -2,6 +2,7 @@ package driverapp
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/mrpc"
 	"buyfree/repo/model"
 	"buyfree/service/response"
@@ -165,12 +166,12 @@ func (i *FactoryController) Detail(c *gin.Context) {
 func (i *FactoryController) Modify(c *gin.Context) {
 	var info response.ReplenishInfo
 	err := c.ShouldBind(&info)
-	fmt.Println("获取到的记录是", info)
 	if err != nil {
 		logrus.Info("传入信息错误", err)
 		i.Error(c, 400, "获取传入信息失败")
 		return
 	}
+	logger.Loger.Info("传入的商品信息是", info)
 	var cartrefer int64
 	admin, ok := utils.GetDriveInfo(c)
 	if !ok {
@@ -179,14 +180,13 @@ func (i *FactoryController) Modify(c *gin.Context) {
 	}
 	//获取购物车编号
 	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
-	fmt.Println("购物车编号", cartrefer)
 	if err != nil {
 		logrus.Info("获取购物车信息失败", err)
 		i.Error(c, 400, "获取购物车信息失败")
 		return
 	}
+	logger.Loger.Info("购物车编号", cartrefer)
 	var op model.OrderProduct
-
 	err = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).First(&op).Error
 	fmt.Println(op, err)
 	if err == gorm.ErrRecordNotFound {
@@ -195,15 +195,8 @@ func (i *FactoryController) Modify(c *gin.Context) {
 			i.Error(c, 403, "未定义操作")
 			return
 		}
-		op.Name = info.ProductName
-		op.Pic = info.Pic
-		op.Count = info.Count
-		op.Price = info.Price
-		op.Type = info.Type
-		op.FactoryID = info.FactoryID
-		op.IsChosen = true
-		op.CartRefer = cartrefer
-		err = dal.Getdb().Create(&op).Error
+		op.Set(cartrefer, info.FactoryID, info.Count, info.Price, true, info.ProductName, info.ProductName, info.Pic, info.Type)
+		err = dal.Getdb().Model(&model.OrderProduct{}).Create(&op).Error
 		if err != nil {
 			fmt.Println(err)
 			i.Error(c, 403, "添加商品信息失败")
