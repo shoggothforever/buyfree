@@ -2,7 +2,6 @@ package driverapp
 
 import (
 	"buyfree/dal"
-	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -25,18 +24,13 @@ type HomePageController struct {
 // @Failure 400 {object} response.Response
 // @Router /dr/home [get]
 func (h *HomePageController) GetStatic(c *gin.Context) {
-	iadmin, ok := c.Get(middleware.DRADMIN)
-	if ok != true {
-		h.Error(c, 400, "获取用户信息失败")
-		return
-	}
-	rdb := dal.Getrdb()
-	admin, ok := iadmin.(model.Driver)
+	admin, ok := utils.GetDriveInfo(c)
 	if ok != true {
 		h.Error(c, 400, "获取车主信息失败")
 		return
 	}
 	//fmt.Println(admin)
+	rdb := dal.Getrdb()
 	array, err := utils.GetHomeStatic(c, rdb, admin.Name)
 	fmt.Println(array, err)
 	if err != nil {
@@ -96,4 +90,34 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 	}
 	//fmt.Println(static)
 	c.JSON(200, response.HomePageResponse{response.Response{200, "首页信息:"}, static})
+}
+
+// @Summary 实时更新车主地理位置信息
+// @Description 传入车主地理位置信息
+// @Tags Driver
+// @Accept json
+// @Produce json
+// @Param geo body model.Geo true "实时更新车主的位置信息,传入经度，纬度,address可传"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /dr/ping [post]
+func (h *HomePageController) Ping(c *gin.Context) {
+	var info model.Geo
+	err := c.ShouldBind(&info)
+	if err != nil {
+		h.Error(c, 400, "传输数据格式错误")
+		return
+	}
+	admin, ok := utils.GetDriveInfo(c)
+	if ok != true {
+		h.Error(c, 400, "获取车主信息失败")
+		return
+	}
+	rdb := dal.Getrdb()
+	_, err = rdb.Do(c, "geoadd", utils.DRIVERLOCATION, info.Longitude, info.Latitude, admin.Name).Result()
+	if err != nil {
+		h.Error(c, 400, "更新车主位置信息失败")
+	} else {
+		c.JSON(200, response.Response{200, "更新车主位置信息成功"})
+	}
 }

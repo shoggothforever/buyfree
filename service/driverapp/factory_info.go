@@ -37,6 +37,7 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 		i.Error(c, 400, "地理信息获取失败,请传入正确的地理信息")
 		return
 	}
+	//radius := c.Param("radius")
 	admin, ok := utils.GetDriveInfo(c)
 	if ok != true {
 		i.Error(c, 400, "获取车主信息失败")
@@ -47,7 +48,7 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 	ctx := rdb.Context()
 	//更新车主位置信息
 	rdb.Do(ctx, "geoadd", utils.DRIVERLOCATION, locinfo.Longitude, locinfo.Latitude, admin.CarID)
-	ires, err := utils.LocRadiusWithDist(ctx, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "100", "km")
+	ires, err := utils.LocRadiusWithDist(ctx, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "1000", "km")
 	if err != nil {
 		i.Error(c, 400, "附近场站信息获取失败,请传入正确的地理信息")
 		return

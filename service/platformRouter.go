@@ -52,8 +52,19 @@ func PlatFormrouter() {
 	{
 		pt.POST("/register", auth.PlatformRegister, middleware.AuthJwt())
 		pt.POST("/login", auth.PlatformLogin, middleware.AuthJwt())
-		pt.POST("/userinfo", auth.PlatformUserInfo)
+		pt.GET("/userinfo", middleware.AuthJwt(), auth.PlatformUserInfo)
 
+	}
+	var fat platform.FactoryadminController
+	fa := r.Group("/fa")
+	{
+		fa.POST("/register", auth.FactoryRegister)
+		fa.POST("/login", auth.FactoryLogin)
+		fa.POST("/userinfo", middleware.AuthJwt(), auth.FactoryUserInfo)
+		fa.POST("/inventory", middleware.AuthJwt(), fat.Add)
+		fa.PATCH("/inventory/:product_name/:inv", middleware.AuthJwt(), middleware.AuthJwt(), fat.AddInv)
+		fa.GET("/infos/all/:mode", middleware.AuthJwt(), fat.GetAllProducts)
+		fa.GET("/infos/detail/:product_name", middleware.AuthJwt(), fat.GetGoodsInfo)
 	}
 	//鉴权
 	pt.Use(middleware.AuthJwt())
@@ -66,13 +77,14 @@ func PlatFormrouter() {
 	psc := pt.Group("/screen")
 	{
 		psc.GET("", salect.GetScreenData)
+		psc.GET("/:longitude/:latitude", salect.GetNearbyDriver)
 	}
-	var fa platform.FactoryadminController
+
 	fdr := pt.Group("/factory-admin")
 	{
-		fdr.POST("/register", fa.Register)
-		fdr.POST("/:factory_name/products", fa.Add)
-		fdr.PATCH("/:factory_name/products/:product_name/:inv", fa.AddInv)
+		fdr.POST("/register", fat.PRegister)
+		fdr.POST("/:factory_name/products", fat.PAdd)
+		fdr.PATCH("/:factory_name/products/:product_name/:inv", fat.PAddInv)
 	}
 
 	//设备管理
@@ -84,23 +96,15 @@ func PlatFormrouter() {
 		var devinfoct platform.DevinfoController
 		//设备详情
 		rdv.GET("/infos/:id", devinfoct.LsInfo)
-
-		////TODO:下架功能取消
-		//rdv.PUT("/shelf", devinfoct.TakeDown)
 	}
 
-	//商品管理
-	//var orderct platform.OrderController
 	ord := pt.Group("/products")
 	{
 
 		//默认展示全部
-		ord.GET("/:mode/factory/:factory_name/", gdc.GetAllProducts)
-		ord.GET("/infos/:factory_name/:product_name", gdc.GetGoodsInfo)
-
+		ord.GET("/:mode/factory/:factory_name/", gdc.PGetAllProducts)
+		ord.GET("/infos/:factory_name/:product_name", gdc.PGetGoodsInfo)
 		ord.PATCH("/turn", gdc.TurnOver)
-		//ord.PATCH("/on", gdc.OnShelfGoods)
-		//ord.PATCH("/down", gdc.DownShelfGoods)
 	}
 	//销售统计
 	//TODO:默认显示

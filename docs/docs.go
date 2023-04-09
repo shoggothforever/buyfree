@@ -705,6 +705,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/dr/ping": {
+            "post": {
+                "description": "传入车主地理位置信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver"
+                ],
+                "summary": "实时更新车主地理位置信息",
+                "parameters": [
+                    {
+                        "description": "实时更新车主的位置信息,传入经度，纬度,address可传",
+                        "name": "geo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Geo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/dr/register": {
             "post": {
                 "description": "Input info as model.User",
@@ -746,7 +786,7 @@ const docTemplate = `{
             }
         },
         "/dr/userinfo": {
-            "post": {
+            "get": {
                 "description": "传入jwt/token 获取用户信息",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -758,12 +798,42 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "获取车主用户信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DrInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/infos/all/:mode": {
+            "get": {
+                "description": "传入场站名，获取该场站所有商品信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Factory"
+                ],
+                "summary": "获取所有商品",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "鉴权信息",
-                        "name": "jwt",
-                        "in": "formData",
+                        "type": "integer",
+                        "description": "按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}",
+                        "name": "mode",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -771,7 +841,134 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.DrInfoResponse"
+                            "$ref": "#/definitions/response.FactoryProductsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/infos/detail/:product_name": {
+            "get": {
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Factory"
+                ],
+                "summary": "获取商品信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "商品名",
+                        "name": "product_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryGoodsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/inventory": {
+            "post": {
+                "description": "添加一个或多个的商品",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Factory"
+                ],
+                "summary": "场站添加商品信息",
+                "parameters": [
+                    {
+                        "description": "sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price",
+                        "name": "factoryInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.FactoryProduct"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryProductsModifyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/inventory/{product_name}/{inv}": {
+            "patch": {
+                "description": "传入增加的库存量",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Factory"
+                ],
+                "summary": "场站更新商品库存信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "商品名字",
+                        "name": "product_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "增加的库存值",
+                        "name": "inv",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FactoryProductsModifyResponse"
                         }
                     },
                     "400": {
@@ -838,7 +1035,7 @@ const docTemplate = `{
                 "summary": "场站用户注册",
                 "parameters": [
                     {
-                        "description": "填入用户名，密码，password_salt为可选项",
+                        "description": "用户名(name)，密码(password)，GEO(longitude,latitude)为必填项,password_salt为可选项",
                         "name": "RegisterInfo",
                         "in": "body",
                         "required": true,
@@ -858,6 +1055,35 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/userinfo": {
+            "get": {
+                "description": "传入jwt/token 获取用户信息",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "获取场站用户信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.FaInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -1401,7 +1627,7 @@ const docTemplate = `{
                 "tags": [
                     "Platform/factory"
                 ],
-                "summary": "场站添加商品信息",
+                "summary": "平台为场站添加商品信息",
                 "parameters": [
                     {
                         "type": "string",
@@ -1452,7 +1678,7 @@ const docTemplate = `{
                 "tags": [
                     "Platform/factory"
                 ],
-                "summary": "场站更新商品库存信息",
+                "summary": "平台为场站更新商品库存信息",
                 "parameters": [
                     {
                         "type": "string",
@@ -1494,7 +1720,7 @@ const docTemplate = `{
         },
         "/pt/login": {
             "post": {
-                "description": "Input user's nickname and password",
+                "description": "Input user_name and password",
                 "consumes": [
                     "application/json"
                 ],
@@ -1573,6 +1799,7 @@ const docTemplate = `{
         },
         "/pt/products/infos/{factory_name}/{product_name}": {
             "get": {
+                "description": "传如对应场站名以及商品名",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -1583,7 +1810,7 @@ const docTemplate = `{
                 "tags": [
                     "Products"
                 ],
-                "summary": "获取商品信息",
+                "summary": "平台获取场站获取商品信息",
                 "parameters": [
                     {
                         "type": "string",
@@ -1618,7 +1845,7 @@ const docTemplate = `{
         },
         "/pt/products/turn": {
             "patch": {
-                "description": "传入商品ID，上架商品",
+                "description": "传入场站名与商品名",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -1629,7 +1856,7 @@ const docTemplate = `{
                 "tags": [
                     "Products"
                 ],
-                "summary": "上架场站商品",
+                "summary": "调整场站商品上下架状态",
                 "parameters": [
                     {
                         "description": "传入factory_name + product_name 联合主键",
@@ -1645,7 +1872,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.FactoryGoodsResponse"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
@@ -1680,7 +1907,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}",
+                        "description": "按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}",
                         "name": "mode",
                         "in": "path",
                         "required": true
@@ -1772,6 +1999,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/pt/screen/{longituded}/{latitude}": {
+            "get": {
+                "description": "输入经纬度坐标，表示查找圆的中心，返回半径1000km内的所有车主信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform"
+                ],
+                "summary": "获取附近的车主信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "经度",
+                        "name": "longitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "纬度",
+                        "name": "latitude",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LocationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/pt/static/{mode}": {
             "get": {
                 "description": "展示管理场站的销售数据，获取详细的销售排行信息",
@@ -1812,7 +2085,7 @@ const docTemplate = `{
             }
         },
         "/pt/userinfo": {
-            "post": {
+            "get": {
                 "description": "传入jwt/token 获取用户信息",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -1823,16 +2096,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "获取用户信息",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "鉴权信息",
-                        "name": "jwt",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
+                "summary": "获取平台信息",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2402,6 +2666,17 @@ const docTemplate = `{
                 "V",
                 "VI"
             ]
+        },
+        "model.LocationInfo": {
+            "type": "object",
+            "properties": {
+                "geo": {
+                    "$ref": "#/definitions/model.Geo"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
         },
         "model.LoginInfo": {
             "type": "object",
@@ -2992,6 +3267,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.FaInfoResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.Factory"
+                }
+            }
+        },
         "response.FactoryDetail": {
             "type": "object",
             "properties": {
@@ -3348,6 +3637,23 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.DeviceProduct"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.LocationResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "driverInfos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.LocationInfo"
                     }
                 },
                 "msg": {

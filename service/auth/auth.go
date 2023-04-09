@@ -2,6 +2,7 @@ package auth
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -51,7 +52,7 @@ func PlatformRegister(c *gin.Context) {
 
 // PlatformAccount godoc
 // @Summary 平台用户登录
-// @Description 	Input user's nickname and password
+// @Description 	Input user_name and password
 // @Tags			User
 // @accept			json
 // @Produce			json
@@ -65,11 +66,31 @@ func PlatformLogin(c *gin.Context) {
 	var admin model.Platform
 	//输入昵称，密码 需要用户id和盐
 	c.ShouldBind(&info)
-	fmt.Println(info)
-	var password string = info.Password
-	dal.Getdb().Raw("select id,password_salt from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin)
+	var password = info.Password
+	err := dal.Getdb().Raw("select id,password_salt from platforms where name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&admin).Error
+	if err != nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+		return
+	}
+	jwt, err := utils.GeneraterJwt(admin.ID, info.UserName, admin.PasswordSalt)
+	if err != nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+		return
+	}
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
-	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
+	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).UpdateColumn("jwt", jwt).First(&l)
 	if len(l) != 0 {
 		c.Set("name", admin.Name)
 		c.JSON(200, response.LoginResponse{
@@ -138,31 +159,33 @@ func PlatformLogin(c *gin.Context) {
 //}
 
 // PlatformAccount godoc
-// @Summary 获取用户信息
+// @Summary 获取平台信息
 // @Description 	传入jwt/token 获取用户信息
 // @Tags			User
 // @accept			application/x-www-form-urlencoded
 // @Produce			json
-// @Param jwt formData string true "鉴权信息"
 // @Success			200 {object} response.PtInfoResponse
 // @Failure			400 {object} response.Response
-// @Router			/pt/userinfo [post]
+// @Router			/pt/userinfo [get]
 func PlatformUserInfo(c *gin.Context) {
-	jwt := c.PostForm("jwt")
+	jwt := c.GetHeader("Authorization")
+	if len(jwt) > 7 {
+		jwt = jwt[7:]
+	}
 	db := dal.Getdb()
 	var admin model.Platform
 	var info model.LoginInfo
 	err := db.Model(&model.LoginInfo{}).Where("jwt = ?", jwt).First(&info).Error
 	if err != nil {
-		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取用户数据"})
+		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取平台数据"})
 		return
 	}
 	err = db.Model(&model.Platform{}).Where("id = ?", info.UserID).First(&admin).Error
 	if err != nil {
-		c.JSON(200, response.Response{400, "查找用户信息失败"})
+		c.JSON(200, response.Response{400, "查找平台信息失败"})
 		return
 	}
-	c.JSON(200, response.PtInfoResponse{response.Response{200, "获取用户信息成功"}, admin})
+	c.JSON(200, response.PtInfoResponse{response.Response{200, "获取平台信息成功"}, admin})
 
 }
 
@@ -217,12 +240,32 @@ func DriverLogin(c *gin.Context) {
 	//输入昵称，密码 需要用户id和盐
 	c.ShouldBind(&info)
 	fmt.Println(info)
-	var password string = info.Password
+	var password = info.Password
 	//查找数据库获得用户的密码盐
 	err := dal.Getdb().Raw("select id,password_salt from drivers where name = ? and role = ?", info.UserName, model.DRIVER).First(&admin).Error
-	fmt.Println(admin, err)
+	if err != nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+		return
+	}
+	jwt, err := utils.GeneraterJwt(admin.ID, info.UserName, admin.PasswordSalt)
+	if err != nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+		return
+	}
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
-	err = dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l).Error
+	err = dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).UpdateColumn("jwt", jwt).First(&l).Error
 	fmt.Println(l)
 	if len(l) != 0 {
 		c.JSON(200, response.LoginResponse{
@@ -252,26 +295,28 @@ func DriverLogin(c *gin.Context) {
 // @Tags			User
 // @accept			application/x-www-form-urlencoded
 // @Produce			json
-// @Param jwt formData string true "鉴权信息"
 // @Success			200 {object} response.DrInfoResponse
 // @Failure			400 {object} response.Response
-// @Router			/dr/userinfo [post]
+// @Router			/dr/userinfo [get]
 func DriverUserInfo(c *gin.Context) {
-	jwt := c.PostForm("jwt")
+	jwt := c.GetHeader("Authorization")
+	if len(jwt) > 7 {
+		jwt = jwt[7:]
+	}
 	db := dal.Getdb()
 	var admin model.Driver
 	var info model.LoginInfo
 	err := db.Model(&model.LoginInfo{}).Where("jwt = ?", jwt).First(&info).Error
 	if err != nil {
-		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取用户数据"})
+		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取车主数据"})
 		return
 	}
 	err = db.Model(&model.Driver{}).Where("id = ?", info.UserID).First(&admin).Error
 	if err != nil {
-		c.JSON(200, response.Response{400, "查找用户信息失败"})
+		c.JSON(200, response.Response{400, "查找车主信息失败"})
 		return
 	}
-	c.JSON(200, response.DrInfoResponse{response.Response{200, "获取用户信息成功"}, admin})
+	c.JSON(200, response.DrInfoResponse{response.Response{200, "获取车主信息成功"}, admin})
 
 }
 
@@ -280,7 +325,7 @@ func DriverUserInfo(c *gin.Context) {
 // @Tags			User
 // @accept			json
 // @Produce			json
-// @Param	RegisterInfo body model.Factory true "填入用户名，密码，password_salt为可选项"
+// @Param	RegisterInfo body model.Factory true "用户名(name)，密码(password)，GEO(longitude,latitude)为必填项,password_salt为可选项"
 // @Success			200 {object} response.LoginResponse
 // @failure			400 {object} response.LoginResponse
 // @Router			/fa/register [post]
@@ -288,6 +333,7 @@ func FactoryRegister(c *gin.Context) {
 	//一定要定义成值类型，在bind里要传地址
 	var admin model.Factory
 	c.ShouldBind(&admin)
+	fmt.Println(admin)
 	rdb := dal.Getrdb()
 	ctx := rdb.Context()
 	//向redis中写入场站的地理位置信息
@@ -324,14 +370,36 @@ func FactoryRegister(c *gin.Context) {
 // @Router			/fa/login [post]
 func FactoryLogin(c *gin.Context) {
 	var l []model.LoginInfo
+	var info model.LoginInfo
 	var admin model.Driver
 	//输入昵称，密码 需要用户id和盐
-	c.ShouldBind(&admin)
-	var password string = admin.Password
+	c.ShouldBind(&info)
+	var password = info.Password
 	//查找数据库获得用户的密码盐
-	dal.Getdb().Raw("select id,password_salt from factorys where name = ? and role = ?", admin.Name, model.FACTORYADMIN).First(&admin)
+	err := dal.Getdb().Raw("select id,password_salt from factories where name = ? and role = ?", info.UserName, model.FACTORYADMIN).First(&admin).Error
+	if err != nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+		return
+	}
+	jwt, err := utils.GeneraterJwt(admin.ID, info.UserName, admin.PasswordSalt)
+	if err != nil {
+		c.JSON(200, response.LoginResponse{
+			response.Response{
+				500,
+				"登录失败"},
+			-1,
+			"",
+		})
+		return
+	}
 	psw := utils.Messagedigest5(password, admin.PasswordSalt)
-	dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).First(&l)
+	err = dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ? and password = ?", admin.ID, psw).UpdateColumn("jwt", jwt).First(&l).Error
 	if len(l) != 0 {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -352,4 +420,43 @@ func FactoryLogin(c *gin.Context) {
 		})
 	}
 	c.Next()
+}
+
+// @Summary 获取场站用户信息
+// @Description 	传入jwt/token 获取用户信息
+// @Tags			User
+// @accept			application/x-www-form-urlencoded
+// @Produce			json
+// @Success			200 {object} response.FaInfoResponse
+// @Failure			400 {object} response.Response
+// @Router			/fa/userinfo [get]
+func FactoryUserInfo(c *gin.Context) {
+	jwt := c.GetHeader("Authorization")
+	if len(jwt) > 7 {
+		jwt = jwt[7:]
+	}
+	logger.Loger.Info(jwt)
+	db := dal.Getdb()
+	var admin model.Factory
+	var info model.LoginInfo
+	err := db.Model(&model.LoginInfo{}).Where("jwt = ?", jwt).First(&info).Error
+	if err != nil {
+		logger.Loger.Info(err)
+		c.JSON(200, response.Response{400, "鉴权信息失效，无法获取用户数据"})
+		return
+	}
+	err = db.Model(&model.Factory{}).Where("id = ?", info.UserID).First(&admin).Error
+	if err != nil {
+		logger.Loger.Info(err)
+		c.JSON(200, response.Response{400, "查找场站信息失败"})
+		return
+	}
+	err = db.Model(&model.FactoryProduct{}).Where("factory_id = ?", admin.ID).Find(&admin.Products).Error
+	if err != nil {
+		logger.Loger.Info(err)
+		c.JSON(200, response.Response{400, "获取场站商品信息失败"})
+		return
+	}
+	c.JSON(200, response.FaInfoResponse{response.Response{200, "获取场站信息成功"}, admin})
+
 }

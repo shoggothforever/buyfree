@@ -54,17 +54,17 @@ func AuthJwt() gin.HandlerFunc {
 			var id int64
 			err = dal.Getdb().Raw("select user_id from login_infos where jwt=?", jwt).First(&id).Error
 			if err != nil {
+				c.Set("AUthInfo", "Failed!")
 				c.AbortWithStatusJSON(200, gin.H{
 					"code": 401, "msg": "验证信息失败",
 				})
 				return
 			}
 			var ptadmin []model.Platform
-
 			var passenger []model.Passenger
 			dal.Getdb().Model(&model.Passenger{}).Where("id=?", id).First(&passenger)
 			if len(passenger) != 0 {
-				c.Set(DRADMIN, passenger[0])
+				c.Set(PAADMIN, passenger[0])
 				c.Next()
 			}
 			dal.Getdb().Model(&model.Platform{}).Where("id=?", id).First(&ptadmin)
