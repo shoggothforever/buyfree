@@ -295,14 +295,17 @@ func DriverLogin(c *gin.Context) {
 // @Tags			User
 // @accept			application/x-www-form-urlencoded
 // @Produce			json
+// @Param jwt formData string true "鉴权信息"
 // @Success			200 {object} response.DrInfoResponse
 // @Failure			400 {object} response.Response
-// @Router			/dr/userinfo [get]
+// @Router			/dr/userinfo [post]
 func DriverUserInfo(c *gin.Context) {
-	jwt := c.GetHeader("Authorization")
-	if len(jwt) > 7 {
-		jwt = jwt[7:]
-	}
+	//jwt := c.GetHeader("Authorization")
+	//if len(jwt) > 7 {
+	//	jwt = jwt[7:]
+	//}
+	jwt := c.PostForm("jwt")
+	logger.Loger.Info(jwt)
 	db := dal.Getdb()
 	var admin model.Driver
 	var info model.LoginInfo

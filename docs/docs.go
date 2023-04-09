@@ -164,7 +164,7 @@ const docTemplate = `{
             }
         },
         "/dr/factory/cart": {
-            "post": {
+            "get": {
                 "description": "\"传入查看附近场站信息获取到的所有场站距离信息，要打开购物车必须先进入场站界面“",
                 "consumes": [
                     "application/json"
@@ -176,19 +176,6 @@ const docTemplate = `{
                     "Driver/Replenish"
                 ],
                 "summary": "购物车界面",
-                "parameters": [
-                    {
-                        "description": "附近场站信息，已经获取了，打包后直接传入",
-                        "name": "DistanceInfos",
-                        "in": "body",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.FactoryDistanceReq"
-                            }
-                        }
-                    }
-                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -786,7 +773,7 @@ const docTemplate = `{
             }
         },
         "/dr/userinfo": {
-            "get": {
+            "post": {
                 "description": "传入jwt/token 获取用户信息",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -798,6 +785,15 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "获取车主用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权信息",
+                        "name": "jwt",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

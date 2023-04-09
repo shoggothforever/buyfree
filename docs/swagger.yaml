@@ -1380,18 +1380,10 @@ paths:
       tags:
       - Driver/Replenish
   /dr/factory/cart:
-    post:
+    get:
       consumes:
       - application/json
       description: '"传入查看附近场站信息获取到的所有场站距离信息，要打开购物车必须先进入场站界面“'
-      parameters:
-      - description: 附近场站信息，已经获取了，打包后直接传入
-        in: body
-        name: DistanceInfos
-        schema:
-          items:
-            $ref: '#/definitions/response.FactoryDistanceReq'
-          type: array
       produces:
       - application/json
       responses:
@@ -1785,10 +1777,16 @@ paths:
       tags:
       - User
   /dr/userinfo:
-    get:
+    post:
       consumes:
       - application/x-www-form-urlencoded
       description: 传入jwt/token 获取用户信息
+      parameters:
+      - description: 鉴权信息
+        in: formData
+        name: jwt
+        required: true
+        type: string
       produces:
       - application/json
       responses:
