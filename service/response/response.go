@@ -29,3 +29,7 @@ type DrInfoResponse struct {
 	Response
 	User model.Driver `json:"user"`
 }
+type FaInfoResponse struct {
+	Response
+	User model.Factory `json:"user"`
+}

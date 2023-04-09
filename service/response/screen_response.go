@@ -18,6 +18,10 @@ type ScreenInfoResponse struct {
 	ScreenInfo
 }
 
+type LocationResponse struct {
+	Response
+	DriverInfos []model.LocationInfo
+}
 type SaleStaticResponse struct {
 	Response
 	model.SalesData

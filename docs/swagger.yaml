@@ -382,6 +382,13 @@ definitions:
     - IV
     - V
     - VI
+  model.LocationInfo:
+    properties:
+      geo:
+        $ref: '#/definitions/model.Geo'
+      name:
+        type: string
+    type: object
   model.LoginInfo:
     properties:
       id:
@@ -777,6 +784,15 @@ definitions:
           $ref: '#/definitions/model.DriverOrderForm'
         type: array
     type: object
+  response.FaInfoResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      user:
+        $ref: '#/definitions/model.Factory'
+    type: object
   response.FactoryDetail:
     properties:
       address:
@@ -1019,6 +1035,17 @@ definitions:
       dev_products:
         items:
           $ref: '#/definitions/model.DeviceProduct'
+        type: array
+      msg:
+        type: string
+    type: object
+  response.LocationResponse:
+    properties:
+      code:
+        type: integer
+      driverInfos:
+        items:
+          $ref: '#/definitions/model.LocationInfo'
         type: array
       msg:
         type: string
@@ -1705,6 +1732,32 @@ paths:
       summary: 生成多个场站的订单信息
       tags:
       - Driver/Pay
+  /dr/ping:
+    post:
+      consumes:
+      - application/json
+      description: 传入车主地理位置信息
+      parameters:
+      - description: 实时更新车主的位置信息,传入经度，纬度,address可传
+        in: body
+        name: geo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Geo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 实时更新车主地理位置信息
+      tags:
+      - Driver
   /dr/register:
     post:
       consumes:
@@ -1732,16 +1785,10 @@ paths:
       tags:
       - User
   /dr/userinfo:
-    post:
+    get:
       consumes:
       - application/x-www-form-urlencoded
       description: 传入jwt/token 获取用户信息
-      parameters:
-      - description: 鉴权信息
-        in: formData
-        name: jwt
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1756,6 +1803,116 @@ paths:
       summary: 获取车主用户信息
       tags:
       - User
+  /fa/infos/all/:mode:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入场站名，获取该场站所有商品信息
+      parameters:
+      - description: 按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}
+        in: path
+        name: mode
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryProductsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取所有商品
+      tags:
+      - Factory
+  /fa/infos/detail/:product_name:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      parameters:
+      - description: 商品名
+        in: path
+        name: product_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryGoodsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取商品信息
+      tags:
+      - Factory
+  /fa/inventory:
+    post:
+      consumes:
+      - application/json
+      description: 添加一个或多个的商品
+      parameters:
+      - description: sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price
+        in: body
+        name: factoryInfo
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/model.FactoryProduct'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryProductsModifyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 场站添加商品信息
+      tags:
+      - Factory
+  /fa/inventory/{product_name}/{inv}:
+    patch:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入增加的库存量
+      parameters:
+      - description: 商品名字
+        in: path
+        name: product_name
+        required: true
+        type: string
+      - description: 增加的库存值
+        in: path
+        name: inv
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FactoryProductsModifyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 场站更新商品库存信息
+      tags:
+      - Factory
   /fa/login:
     post:
       consumes:
@@ -1788,7 +1945,7 @@ paths:
       - application/json
       description: Input info as model.User
       parameters:
-      - description: 填入用户名，密码，password_salt为可选项
+      - description: 用户名(name)，密码(password)，GEO(longitude,latitude)为必填项,password_salt为可选项
         in: body
         name: RegisterInfo
         required: true
@@ -1806,6 +1963,25 @@ paths:
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 场站用户注册
+      tags:
+      - User
+  /fa/userinfo:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 传入jwt/token 获取用户信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FaInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取场站用户信息
       tags:
       - User
   /home/{id}:
@@ -2159,7 +2335,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 场站添加商品信息
+      summary: 平台为场站添加商品信息
       tags:
       - Platform/factory
   /pt/factory-admin/{factory_name}/prdoucts/{product_name}/{inv}:
@@ -2195,7 +2371,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 场站更新商品库存信息
+      summary: 平台为场站更新商品库存信息
       tags:
       - Platform/factory
   /pt/factory-admin/register:
@@ -2228,7 +2404,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Input user's nickname and password
+      description: Input user_name and password
       parameters:
       - description: 输入昵称，密码
         in: body
@@ -2287,7 +2463,7 @@ paths:
         in: path
         name: factory_name
         type: string
-      - description: 按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}
+      - description: 按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}
         in: path
         name: mode
         required: true
@@ -2311,6 +2487,7 @@ paths:
       consumes:
       - application/json
       - multipart/form-data
+      description: 传如对应场站名以及商品名
       parameters:
       - description: 场站名
         in: path
@@ -2333,7 +2510,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 获取商品信息
+      summary: 平台获取场站获取商品信息
       tags:
       - Products
   /pt/products/turn:
@@ -2341,7 +2518,7 @@ paths:
       consumes:
       - application/json
       - multipart/form-data
-      description: 传入商品ID，上架商品
+      description: 传入场站名与商品名
       parameters:
       - description: 传入factory_name + product_name 联合主键
         in: body
@@ -2355,12 +2532,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.FactoryGoodsResponse'
+            $ref: '#/definitions/response.Response'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 上架场站商品
+      summary: 调整场站商品上下架状态
       tags:
       - Products
   /pt/register:
@@ -2409,6 +2586,37 @@ paths:
       summary: 展示销售数据
       tags:
       - Platform
+  /pt/screen/{longituded}/{latitude}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 输入经纬度坐标，表示查找圆的中心，返回半径1000km内的所有车主信息
+      parameters:
+      - description: 经度
+        in: path
+        name: longitude
+        required: true
+        type: string
+      - description: 纬度
+        in: path
+        name: latitude
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LocationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取附近的车主信息
+      tags:
+      - Platform
   /pt/static/{mode}:
     get:
       consumes:
@@ -2437,16 +2645,10 @@ paths:
       tags:
       - Platform
   /pt/userinfo:
-    post:
+    get:
       consumes:
       - application/x-www-form-urlencoded
       description: 传入jwt/token 获取用户信息
-      parameters:
-      - description: 鉴权信息
-        in: formData
-        name: jwt
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2458,7 +2660,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 获取用户信息
+      summary: 获取平台信息
       tags:
       - User
 securityDefinitions:

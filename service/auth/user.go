@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//注册 后续可以增加修改密码功能
+// 注册 后续可以增加修改密码功能
 func SavePtUser(admin *model.Platform) (model.LoginInfo, error) {
 	admin.Role = int(model.PLATFORMADMIN)
 	admin.ID = utils.GetSnowFlake()
@@ -48,6 +48,7 @@ func SaveFUser(admin *model.Factory) (model.LoginInfo, error) {
 	admin.Role = int(model.FACTORYADMIN)
 	admin.ID = utils.GetSnowFlake()
 	logininfo, err := SaveFLoginInfo(admin)
+
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
@@ -95,10 +96,10 @@ func SaveFLoginInfo(admin *model.Factory) (model.LoginInfo, error) {
 	var err error
 	loginInfo.UserID = admin.ID
 	loginInfo.Salt = admin.PasswordSalt
+	loginInfo.UserName = admin.Name
 	loginInfo.ROLE = model.FACTORYADMIN
 	loginInfo.Password = utils.Messagedigest5(admin.Password, admin.PasswordSalt)
 	loginInfo.Jwt, err = utils.GeneraterJwt(admin.ID, admin.Name, admin.PasswordSalt)
-	loginInfo.UserName = admin.Name
 	if err != nil {
 		logrus.Info("JWT created fail")
 		return model.LoginInfo{}, err

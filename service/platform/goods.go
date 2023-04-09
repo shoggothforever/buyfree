@@ -20,11 +20,11 @@ type GoodsController struct {
 // @Accept mpfd
 // @Produce json
 // @Param factory_name path string false "根据场站名字获取场站所有商品信息，默认获取所有商品信息"
-// @Param mode path int true "按照不同模式获取订单信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}"
+// @Param mode path int true "按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}"
 // @Success 200 {object} response.FactoryProductsResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/products/{mode}/factory/{factory_name}/ [get]
-func (o *GoodsController) GetAllProducts(c *gin.Context) {
+func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 	fname := c.Param("factory_name")
 	mode := c.Param("mode")
 	var sf bool
@@ -58,20 +58,6 @@ func (o *GoodsController) GetAllProducts(c *gin.Context) {
 			o.Error(c, 200, "获取商品信息失败")
 		}
 	}
-	//n := len(infos)
-	//infos := make([]response.FactoryOrderInfo, n)
-	//for j := 0; j < n; j++ {
-	//	factoryname := products[j].FactoryName
-	//	infos[j].FactoryName = factoryname
-	//	infos[j].Name = products[j].Name
-	//	infos[j].Sku = products[j].Sku
-	//	infos[j].Pic = products[j].Pic
-	//	infos[j].Type = products[j].Type
-	//	//TODO:展示在首页和上架就交给前端吧,获取订单中的商品在场站的上下架状态，根据factoryID 和 商品SKU在场站的商品表中查询对应的状态信息
-	//	infos[j].IsOnShelf = products[j].IsOnShelf
-	//	infos[j].TotalSales = products[j].TotalSales
-	//	infos[j].Inventory = products[j].Inventory
-	//}
 	if len(infos) != 0 {
 		c.JSON(200, response.FactoryProductsResponse{
 			response.Response{
@@ -93,8 +79,8 @@ func (o *GoodsController) GetAllProducts(c *gin.Context) {
 	c.Next()
 }
 
-// @Summary  获取商品信息
-// @Description
+// @Summary  平台获取场站获取商品信息
+// @Description 传如对应场站名以及商品名
 // @Tags Products
 // @Accept json
 // @Accept mpfd
@@ -104,7 +90,7 @@ func (o *GoodsController) GetAllProducts(c *gin.Context) {
 // @Success 200 {object} response.FactoryGoodsResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/products/infos/{factory_name}/{product_name} [get]
-func (o *GoodsController) GetGoodsInfo(c *gin.Context) {
+func (o *GoodsController) PGetGoodsInfo(c *gin.Context) {
 	factoryName := c.Param("factory_name")
 	productName := c.Param("product_name")
 	var product model.FactoryProduct
@@ -124,14 +110,14 @@ func (o *GoodsController) GetGoodsInfo(c *gin.Context) {
 	})
 }
 
-// @Summary  上架场站商品
-// @Description 传入商品ID，上架商品
+// @Summary  调整场站商品上下架状态
+// @Description 传入场站名与商品名
 // @Tags Products
 // @Accept json
 // @Accept mpfd
 // @Produce json
 // @Param Info body response.UnionNameInfo true "传入factory_name + product_name 联合主键"
-// @Success 200 {object} response.FactoryGoodsResponse
+// @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /pt/products/turn [patch]
 func (o *GoodsController) TurnOver(c *gin.Context) {
@@ -150,77 +136,12 @@ func (o *GoodsController) TurnOver(c *gin.Context) {
 		} else {
 			msg = "商品下架成功"
 		}
-		c.JSON(200, response.FactoryGoodsResponse{
-			response.Response{
-				200,
-				msg,
-			}, pr,
+		c.JSON(200, response.Response{
+			200,
+			msg,
 		})
 	} else {
 		logrus.Info(err)
 		o.Error(c, 400, "调整商品上/下架信息失败")
 	}
 }
-
-//// @Summary  上架场站商品
-//// @Description 传入商品ID，上架商品
-//// @Tags Products
-//// @Accept json
-//// @Accept mpfd
-//// @Produce json
-//// @Param Info body response.UnionNameInfo true "传入factory_name + product_name 联合主键"
-//// @Success 200 {object} response.FactoryGoodsResponse
-//// @Failure 400 {object} response.Response
-//// @Router /pt/products/turn [patch]
-//func (o *GoodsController) OnShelfGoods(c *gin.Context) {
-//	var info response.UnionNameInfo
-//	err := c.ShouldBind(&info)
-//	if err != nil {
-//		o.Error(c, 400, "传入信息格式有误")
-//		return
-//	}
-//	var pr model.FactoryProduct
-//	err = dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ?", info.FactoryName, info.ProductName).Update("is_on_shelf", true).First(&pr).Error
-//	if err == nil {
-//		c.JSON(200, response.FactoryGoodsResponse{
-//			response.Response{
-//				200,
-//				"商品上架成功",
-//			}, pr,
-//		})
-//	} else {
-//		o.Error(c, 400, "商品上架失败")
-//	}
-//}
-//
-//// @Summary  下架场站商品
-//// @Description 输入商品id,获取场站中对应商品的详细信息
-//// @Tags Products
-//// @Accept json
-//// @Accept mpfd
-//// @Produce json
-//// @Param id path int true "商品ID"
-//// @Success 200 {object} response.FactoryGoodsResponse
-//// @Failure 400 {object} response.Response
-//// @Router /pt/products/down/{id} [patch]
-//func (o *GoodsController) DownShelfGoods(c *gin.Context) {
-//	var info response.UnionNameInfo
-//	err := c.ShouldBind(&info)
-//	if err != nil {
-//		o.Error(c, 400, "传入信息格式有误")
-//		return
-//	}
-//
-//	var pr model.FactoryProduct
-//	err = dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ?", info.FactoryName, info.ProductName).Update("is_on_shelf", false).First(&pr).Error
-//	if err == nil {
-//		c.JSON(200, response.FactoryGoodsResponse{
-//			response.Response{
-//				200,
-//				"商品下架成功",
-//			}, pr,
-//		})
-//	} else {
-//		o.Error(c, 400, "商品下架失败")
-//	}
-//}

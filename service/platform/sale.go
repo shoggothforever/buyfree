@@ -83,9 +83,50 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 	si.SalesData = salesinfo
 	si.SalesCurve = curve
 	si.ProductRankList = ranklist
+	//TODO:获取设备的位置
+
 	c.JSON(200, response.ScreenInfoResponse{
 		response.Response{200, "获取统计数据成功"},
 		si})
+}
+
+// TODO: 统计数据补全计划
+// @Summary	获取附近的车主信息
+// @Description	输入经纬度坐标，表示查找圆的中心，返回半径1000km内的所有车主信息
+// @Tags Platform
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Param longitude path string true "经度"
+// @Param latitude path string true "纬度"
+// @Success 200 {object} response.LocationResponse
+// @Failure 500 {object} response.Response
+// @Router /pt/screen/{longituded}/{latitude} [get]
+func (s *SalesController) GetNearbyDriver(c *gin.Context) {
+	lgt := c.Param("longitude")
+	lat := c.Param("latitude")
+	rdb := dal.Getrdb()
+	res, err := utils.LocRadiusWithCoord(c, rdb, utils.DRIVERLOCATION, lgt, lat, "1000", "km")
+	if err != nil {
+		logger.Loger.Info(err)
+		s.Error(c, 500, "获取附近车主信息失败")
+		return
+	}
+	n := len(res.([]interface{}))
+	infos := make([]model.LocationInfo, n)
+	for k, iiv := range res.([]interface{}) {
+		iv := iiv.([]interface{})
+		infos[k].Name = iv[0].(string)
+		v := iv[1].([]interface{})
+		infos[k].Longitude = v[0].(string)
+		infos[k].Latitude = v[1].(string)
+	}
+	c.JSON(200, response.LocationResponse{
+		response.Response{
+			200,
+			"成功获取附近车主位置信息"},
+		infos,
+	})
 }
 
 func getsalesmessage(mode int64) string {
