@@ -55,7 +55,7 @@ func Driverrouter() {
 	{
 		dr.POST("/register", auth.DriverRegister)
 		dr.POST("/login", auth.DriverLogin)
-		dr.GET("/userinfo", auth.DriverUserInfo)
+		dr.POST("/userinfo", auth.DriverUserInfo)
 
 	}
 	dr.Use(middleware.AuthJwt())
@@ -69,7 +69,7 @@ func Driverrouter() {
 	fa := dr.Group("/factory")
 	{
 		fa.POST("", ft.FactoryOverview)
-		fa.POST("/cart", cat.OpenCart)
+		fa.GET("/cart", cat.OpenCart)
 		fa.POST("/infos", ft.Detail)
 	}
 	od := dr.Group("/order")
