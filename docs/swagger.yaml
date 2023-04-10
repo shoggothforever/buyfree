@@ -411,8 +411,8 @@ definitions:
     - 2
     type: integer
     x-enum-varnames:
-    - CANCLE
-    - WAIT
+    - UNPAID
+    - PAID
     - DONE
   model.OrderProduct:
     properties:
@@ -722,8 +722,6 @@ definitions:
   response.DriverAuthInfo:
     properties:
       device_id:
-        type: integer
-      driver_id:
         type: integer
       mobile:
         type: string
@@ -1493,7 +1491,7 @@ paths:
       - application/json
       description: 根据输入mode查看全部，代付款，待取货订单
       parameters:
-      - description: mode=0查看全部订单，mode=1查看待付款订单，mode=2查看待取货订单
+      - description: mode=0查看未支付订单，mode=1查看待付款订单，mode=2查看待取货订单
         in: path
         name: mode
         required: true
@@ -1598,6 +1596,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "410":
+          description: Gone
+          schema:
+            $ref: '#/definitions/response.Response'
       summary: 补货订单取货(添加单个订单信息)
       tags:
       - Driver/Pay
@@ -1618,6 +1624,10 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
       summary: 选中购物车中的商品
@@ -1666,6 +1676,10 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
       summary: 添加/移除出购物车

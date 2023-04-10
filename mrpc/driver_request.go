@@ -4,7 +4,6 @@ import (
 	"buyfree/dal"
 	"buyfree/logger"
 	"buyfree/repo/model"
-	"buyfree/service/response"
 	"buyfree/utils"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -101,10 +100,9 @@ type DeviceAuthRequest struct {
 	// 车主ID
 	DriverID int64 `json:"driver_id,omitempty"`
 	//
-	DeviceID     int64                    `json:"device_id"`
-	DriverName   string                   `json:"driver_name,omitempty"`
-	Mobile       string                   `json:"mobile,omitempty"`
-	AuthResponse *response.DriverAuthInfo `json:"auth_response"`
+	DeviceID   int64  `json:"device_id"`
+	DriverName string `json:"driver_name,omitempty"`
+	Mobile     string `json:"mobile,omitempty"`
 	Communicator
 }
 
@@ -114,7 +112,6 @@ func NewDeviceAuthRequest(driver_id, device_id int64, driver_name, mobile string
 		DeviceID:     device_id,
 		DriverName:   driver_name,
 		Mobile:       mobile,
-		AuthResponse: &response.DriverAuthInfo{},
 		Communicator: NewCommunicator(),
 	}
 }
@@ -155,65 +152,48 @@ func (o *CountRequest) Handle() {
 	//fmt.Println("管道大小", len(o.ReplyChan))
 }
 func (s *ScanRequest) Handle() {
-	err := dal.Getdb().Model(&model.Driver{}).Where("id=?", s.DriverID).Error
-	fmt.Println(s.DriverID)
+	var id int64
+	dal.Getdb().Model(&model.Platform{}).Select("id").Take(&id)
+	err := dal.Getdb().Model(&model.Driver{}).Where("id=?", s.DriverID).Update("platform_id", id).Error
 	if err != nil {
 		logrus.Info("用户认证失败")
 		s.Send(false)
 	} else {
 		dal.Getdb().Model(&model.Device{}).Select("id").Where("is_activated = false").First(s.DeviceID)
-		//*s.DeviceID = utils.IDWorker.NextId()
 		s.Send(true)
 	}
 }
 func (d *DeviceAuthRequest) Handle() {
-	err := dal.Getdb().Model(&model.Device{}).Where("id=?", d.DeviceID).UpdateColumn("is_activated", true).Error
-	fmt.Println(d.DriverID)
+	err := dal.Getdb().Model(&model.Device{}).Where("id=?", d.DeviceID).UpdateColumns(map[string]interface{}{"is_activated": true, "owner_id": d.DriverID}).Error
 	if err != nil {
 		logrus.Info("设备激活失败", err)
-		d.ReplyChan <- false
-		d.Res = false
-		d.DoneChan <- struct{}{}
-
+		d.Send(false)
 	} else {
-		err = dal.Getdb().Model(&model.Driver{}).Where("id = ?", d.DriverID).UpdateColumn("is_auth", true).Error
-		if err != nil {
-			logrus.Info("设备激活失败", err)
-			d.ReplyChan <- false
-			d.Res = false
-			d.DoneChan <- struct{}{}
-
-		} else {
-			d.ReplyChan <- true
-			d.Res = true
-			d.DoneChan <- struct{}{}
-		}
+		d.Send(true)
 	}
 }
 func (p *PayRequest) Handle() {
+	if p.Cash == 0 {
+		p.Send(true)
+		return
+	}
 	//fmt.Println("pay handle begin")
 	rdb := dal.Getrdb()
 	ctx := rdb.Context()
 	var name string
 	err := dal.Getdb().Model(&model.Platform{}).Select("name").Where("id= ?", p.PlatFormID).First(&name).Error
 	if err != nil {
-		fmt.Println(err)
-		p.ReplyChan <- false
-		p.Res = false
-		p.DoneChan <- struct{}{}
+		logger.Loger.Info(err)
+		p.Send(false)
 		return
 	}
 	scash := strconv.FormatFloat(p.Cash, 'f', 2, 64)
-	_, err = utils.ModifySales(ctx, rdb, utils.Ranktype1, name, scash)
+	_, err = utils.ModifySales(ctx, rdb, utils.Ranktype1, utils.PTNAME, scash)
 	if err != nil {
-		fmt.Println(err)
-		p.Res = false
-		p.ReplyChan <- false
-		p.DoneChan <- struct{}{}
+		logger.Loger.Info(err)
+		p.Send(false)
 	} else {
-		p.Res = true
-		p.ReplyChan <- true
-		p.DoneChan <- struct{}{}
+		p.Send(true)
 
 	}
 }
@@ -226,8 +206,6 @@ func (o *OrderRequest) Handle() {
 		for k, _ := range *o.ProductInfos {
 			v := *(*o.ProductInfos)[k]
 			fmt.Println(v)
-			//var inv int64 = -9192631770
-			//var ms int64 = 0
 			var fp model.FactoryProduct
 			terr := tx.Model(&model.FactoryProduct{}).Where(
 				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).First(&fp).UpdateColumn(
@@ -244,16 +222,17 @@ func (o *OrderRequest) Handle() {
 			ts, _ := strconv.ParseInt(fp.TotalSales, 10, 64)
 			ums := strconv.FormatInt(ms+v.Count, 10)
 			uts := strconv.FormatInt(ts+v.Count, 10)
-			merr := tx.Model(&model.FactoryProduct{}).Select("monthly_sales", "totally_sales").Where(
-				"factory_id = ? and name = ? and is_on_shelf =true", v.FactoryID, v.Name).UpdateColumns(map[string]string{
+			merr := tx.Model(&model.FactoryProduct{}).Select("monthly_sales", "total_sales").Where(
+				"factory_id = ? and name = ? and is_on_shelf =true", v.FactoryID, v.Name).UpdateColumns(map[string]interface{}{
 				"monthly_sales": ums,
-				"totally_sales": uts,
+				"total_sales":   uts,
 			}).Error
 			if merr != nil {
+				logger.Loger.Info("Update Factory_products error:\n", merr)
 				return merr
 			}
 		}
-		fmt.Println("订单编号：", o.OrderID)
+		//fmt.Println("订单编号：", o.OrderID)
 		//TODO更新榜单信息
 		rdb := dal.Getrdb()
 		ctx := rdb.Context()
@@ -270,16 +249,12 @@ func (o *OrderRequest) Handle() {
 		return nil
 	})
 	if err != nil {
-		logrus.Info(err)
-		fmt.Println(err)
-		o.Res = false
-		o.ReplyChan <- false
-		o.DoneChan <- struct{}{}
+		logger.Loger.Info("OrderRequest Transaction error\n", err)
+		o.Send(false)
 		return
+	} else {
+		o.Send(true)
 	}
-	o.Res = true
-	o.ReplyChan <- true
-	o.DoneChan <- struct{}{}
 }
 
 // ------------------------------------------------------------------------------------------------------------------------

@@ -13,7 +13,6 @@ type QRCodeResponse struct {
 	QRUrlInfos []QRUrlInfo `json:"qr_url_infos"`
 }
 type DriverAuthInfo struct {
-	DriverID int64  `json:"driver_id"`
 	DeviceID int64  `json:"device_id"`
 	Name     string `json:"name,omitempty"`
 	Mobile   string `json:"mobile,omitempty"`

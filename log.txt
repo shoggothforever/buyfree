@@ -1,5 +1,54 @@
-{"level":"info","msg":"record not found","time":"2023-04-10T19:25:34+08:00"}
-y\" (SQLSTATE 23505)","time":"2023-04-10T14:44:22+08:00"}
-{"level":"info","msg":"错误: 重复键违反唯一约束\"platforms_name_key\" (SQLSTATE 23505)","time":"2023-04-10T14:34:00+08:00"}
-LCJpc3MiOiJQbGF0Zm9ybWhkdSJ9.bdLg_R3mVH0HfnQueKlF_TXrqjue83EBxRZIxYP0gkI","time":"2023-04-09T13:19:40+08:00"}
-MiOiJQbGF0Zm9ybWhkdSJ9.bdLg_R3mVH0HfnQueKlF_TXrqjue83EBxRZIxYP0gkI","time":"2023-04-09T13:18:56+08:00"}
+{"level":"info","msg":"获取到%d条订单信息\n1","time":"2023-04-11T03:27:10+08:00"}
+{"level":"info","msg":"获取到%d条订单信息\n0","time":"2023-04-11T03:27:17+08:00"}
+{"level":"info","msg":"获取到%d条订单信息\n4","time":"2023-04-11T03:27:20+08:00"}
+{"level":"info","msg":"获取到%d条订单信息\n5","time":"2023-04-11T03:27:44+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T03:27:58+08:00"}
+1:44:59+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:45:03+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:45:04+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:45:04+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:45:16+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:45:29+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:48:33+08:00"}
+{"level":"info","msg":"错误: 重复键违反唯一约束\"order_products_pkey\" (SQLSTATE 23505)","time":"2023-04-11T01:48:33+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:49:01+08:00"}
+{"level":"info","msg":"错误: 重复键违反唯一约束\"order_products_pkey\" (SQLSTATE 23505)","time":"2023-04-11T01:49:01+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:50:16+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:57:32+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:58:48+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:58:49+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:58:49+08:00"}
+{"level":"info","msg":"错误: 重复键违反唯一约束\"order_products_pkey\" (SQLSTATE 23505)","time":"2023-04-11T01:59:23+08:00"}
+":"2023-04-11T01:36:15+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"{242958965510508544 213 0 true silk  silk.jpg toy 6 5} \u003cnil\u003e","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"{242958965510508544 213 0 true silk  silk.jpg toy 5 5} \u003cnil\u003e","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:17+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:18+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:18+08:00"}
+{"level":"info","msg":"{242958965510508544 213 0 true silk  silk.jpg toy 4 5} \u003cnil\u003e","time":"2023-04-11T01:36:18+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:18+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"{242958965510508544 213 0 true silk  silk.jpg toy 3 5} \u003cnil\u003e","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"{242958965510508544 213 0 true silk  silk.jpg toy 2 5} \u003cnil\u003e","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:19+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"{242958965510508544 213 0 true silk  silk.jpg toy 1 5} \u003cnil\u003e","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"{0 0 0 false     0 0} record not found","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:20+08:00"}
+{"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:22+08:00"}
+{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:22+08:00"}
+{"level":"info","msg":"{0 0 0 false     0 0} record not found","time":"2023-04-11T01:36:22+08:00"}
+{"level":"info","msg":"record not found","time":"2023-04-11T01:36:22+08:00"}

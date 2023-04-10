@@ -42,7 +42,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 		ID   int64  `json:"id,omitempty"`
 	}
 	var nis []nid
-	err = dal.Getdb().Raw("select name,id  from factories where id in (select distinct factory_id from order_products where cart_refer = ?)", cart.CartID).Find(&nis).Error
+	err = dal.Getdb().Raw("select name,id  from factories where id in (select distinct factory_id from cart_products where cart_refer = ?)", cart.CartID).Find(&nis).Error
 	if err != nil {
 		logrus.Error("获取场站信息失败", err)
 		ct.Error(c, 200, "获取场站信息失败")
@@ -56,7 +56,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 		var g response.CartGroup
 		g.DistanceInfo.FactoryName = v.Name
 		g.DistanceInfo.FactoryID = v.ID
-		err = tx.Raw("select name,pic,type,count,price from order_products where cart_refer = ? and factory_id = ?", cart.CartID, v.ID).Find(&g.ProductDetails).Error
+		err = tx.Raw("select name,pic,type,count,price from cart_products where cart_refer = ? and factory_id = ?", cart.CartID, v.ID).Find(&g.ProductDetails).Error
 		if err == nil {
 			gs = append(gs, &g)
 			for _, gv := range g.ProductDetails {
