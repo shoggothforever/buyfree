@@ -56,7 +56,7 @@ func init() {
 	//Create TABLES
 	{
 		dB.AutoMigrate(
-			&model.BankCardInfo{},
+			&model.FundInfo{},
 			&model.LoginInfo{},
 			&model.Passenger{},
 			&model.PassengerCart{},

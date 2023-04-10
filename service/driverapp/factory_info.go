@@ -171,6 +171,8 @@ func (i *FactoryController) Modify(c *gin.Context) {
 		logrus.Info("传入信息错误", err)
 		i.Error(c, 400, "获取传入信息失败")
 		return
+	} else {
+		c.JSON(200, response.Response{200, fmt.Sprintf("传入的数据是%v", info)})
 	}
 	logger.Loger.Info("传入的商品信息是", info)
 	var cartrefer int64
@@ -193,17 +195,19 @@ func (i *FactoryController) Modify(c *gin.Context) {
 	if err == gorm.ErrRecordNotFound {
 		fmt.Println("获取到的记录是", info)
 		if info.Count < 0 {
+			logger.Loger.Info(err)
 			i.Error(c, 403, "未定义操作")
 			return
 		}
 		op.Set(cartrefer, info.FactoryID, info.Count, info.Price, true, info.ProductName, info.ProductName, info.Pic, info.Type)
 		err = dal.Getdb().Model(&model.OrderProduct{}).Create(&op).Error
 		if err != nil {
-			fmt.Println(err)
+			logger.Loger.Info(err)
 			i.Error(c, 403, "添加商品信息失败")
 			return
 		}
 	} else if err != nil {
+		logger.Loger.Info(err)
 		i.Error(c, 400, "操作数据库失败")
 		return
 	} else {
@@ -211,20 +215,24 @@ func (i *FactoryController) Modify(c *gin.Context) {
 			if op.Count == 0 {
 				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Update("count", 0).Error
 				if terr != nil {
+					logger.Loger.Info(terr)
 					return terr
 				}
 			} else if op.Count+info.Count > 0 {
 				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
 				if terr != nil {
+					logger.Loger.Info(terr)
 					return terr
 				}
 				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("is_chosen", true).Error
 				if terr != nil {
+					logger.Loger.Info(terr)
 					return terr
 				}
 			} else if op.Count+info.Count <= 0 {
 				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Delete(&op).Error
 				if terr != nil {
+					logger.Loger.Info(terr)
 					return terr
 				}
 			}

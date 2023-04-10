@@ -23,7 +23,7 @@ CREATE TABLE "public"."login_infos" (
                                         "jwt" TEXT COLLATE "pg_catalog"."default",
                                         "role" INT8 NOT NULL,
                                         "user_name" TEXT COLLATE "pg_catalog"."default",
-                                        CONSTRAINT "login_infos_pkey" PRIMARY KEY ( "user_id", "role" )
+                                        CONSTRAINT "login_infos_pkey" PRIMARY KEY ("role","user_name" )
 );
 ALTER TABLE "public"."login_infos" OWNER TO "root
 ";
@@ -43,7 +43,7 @@ CREATE TABLE "public"."passengers" (
                                        "balance" NUMERIC,
                                        "pic" TEXT COLLATE "pg_catalog"."default",
                                        "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                       "password" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                       "password" TEXT COLLATE "pg_catalog"."default" ,
                                        "password_salt" TEXT COLLATE "pg_catalog"."default",
                                        "mobile" TEXT COLLATE "pg_catalog"."default",
                                        "id_card" TEXT COLLATE "pg_catalog"."default",
@@ -116,7 +116,7 @@ CREATE TABLE "public"."factories" (
                                       "balance" NUMERIC,
                                       "pic" TEXT COLLATE "pg_catalog"."default",
                                       "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                      "password" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                      "password" TEXT COLLATE "pg_catalog"."default",
                                       "mobile" TEXT COLLATE "pg_catalog"."default",
                                       "id_card" TEXT COLLATE "pg_catalog"."default",
                                       "role" INT8 NOT NULL,
@@ -196,7 +196,7 @@ CREATE TABLE "public"."platforms" (
                                       "balance" NUMERIC,
                                       "pic" TEXT COLLATE "pg_catalog"."default",
                                       "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                      "password" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                      "password" TEXT COLLATE "pg_catalog"."default" ,
                                       "mobile" TEXT COLLATE "pg_catalog"."default",
                                       "id_card" TEXT COLLATE "pg_catalog"."default",
                                       "role" INT8 NOT NULL,
@@ -227,7 +227,7 @@ CREATE TABLE "public"."drivers" (
                                     "balance" NUMERIC,
                                     "pic" TEXT COLLATE "pg_catalog"."default",
                                     "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                    "password" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                    "password" TEXT COLLATE "pg_catalog"."default",
                                     "mobile" TEXT COLLATE "pg_catalog"."default",
                                     "id_card" TEXT COLLATE "pg_catalog"."default",
                                     "role" INT8 NOT NULL,
@@ -240,7 +240,6 @@ CREATE TABLE "public"."drivers" (
                                     "longitude" VARCHAR COLLATE "pg_catalog"."default",
                                     "latitude" VARCHAR COLLATE "pg_catalog"."default",
                                     CONSTRAINT "drivers_pkey" PRIMARY KEY ( "id" ),
-                                    CONSTRAINT "fk_platforms_authorized_drivers" FOREIGN KEY ( "platform_id" ) REFERENCES "public"."platforms" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
                                     CONSTRAINT "idx_drivers_name" UNIQUE ( "name" )
 );
 ALTER TABLE "public"."drivers" OWNER TO "root
@@ -437,24 +436,22 @@ COMMENT ON COLUMN "public"."advertisements"."ad_state" IS '广告状态 1上线 
 
 
 -- ----------------------------
--- Table structure for bank_card_infos
+-- Table structure for fund_infos
 -- ----------------------------
-DROP TABLE IF EXISTS "public"."bank_card_infos";
-CREATE TABLE "public"."bank_card_infos" (
-                                            "id" INT8 NOT NULL,
-                                            "card_id" INT8,
-                                            "bank_name" TEXT COLLATE "pg_catalog"."default",
-                                            "password" TEXT COLLATE "pg_catalog"."default",
-                                            "cash" NUMERIC,
-                                            "bank_fund" NUMERIC,
-                                            CONSTRAINT "bank_card_infos_pkey" PRIMARY KEY ( "id" ),
-                                            CONSTRAINT "bank_card_infos_card_id_key" UNIQUE ( "card_id" )
+DROP TABLE IF EXISTS "public"."fund_infos";
+CREATE TABLE "public"."fund_infos" (
+                                       "user_id" INT8 NOT NULL DEFAULT nextval( 'bank_card_infos_id_seq' :: REGCLASS ),
+                                       "card_id" INT8,
+                                       "bank_name" TEXT COLLATE "pg_catalog"."default",
+                                       "cash" NUMERIC,
+                                       "bank_fund" NUMERIC,
+                                       CONSTRAINT "bank_card_infos_pkey" PRIMARY KEY ( "user_id" ),
+                                       CONSTRAINT "bank_card_infos_card_id_key" UNIQUE ( "card_id" )
 );
-ALTER TABLE "public"."bank_card_infos" OWNER TO "root
-";
-COMMENT ON COLUMN "public"."bank_card_infos"."id" IS '用户ID';
-COMMENT ON COLUMN "public"."bank_card_infos"."cash" IS '账户余额';
-COMMENT ON COLUMN "public"."bank_card_infos"."bank_fund" IS '银行资金';
+ALTER TABLE "public"."fund_infos" OWNER TO "root";
+COMMENT ON COLUMN "public"."fund_infos"."user_id" IS '用户ID';
+COMMENT ON COLUMN "public"."fund_infos"."cash" IS '账户余额';
+COMMENT ON COLUMN "public"."fund_infos"."bank_fund" IS '银行资金';
 -- ----------------------------
 -- Table structure for ad_devices
 -- ----------------------------
