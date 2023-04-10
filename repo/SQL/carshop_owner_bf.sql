@@ -278,6 +278,36 @@ COMMENT ON COLUMN "public"."order_products"."pic" IS '图片';
 COMMENT ON COLUMN "public"."order_products"."type" IS '商品型号';
 COMMENT ON COLUMN "public"."order_products"."count" IS '需求量';
 COMMENT ON COLUMN "public"."order_products"."price" IS '价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价';
+
+-- ----------------------------
+-- Table structure for cart_products
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."cart_products";
+CREATE TABLE "public"."cart_products" (
+                                           "cart_refer" INT8 NOT NULL,
+                                           "factory_id" INT8 NOT NULL,
+                                           "order_refer" INT8,
+                                           "is_chosen" BOOL,
+                                           "name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                           "sku" TEXT COLLATE "pg_catalog"."default",
+                                           "pic" TEXT COLLATE "pg_catalog"."default",
+                                           "type" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                           "count" INT8 NOT NULL,
+                                           "price" NUMERIC NOT NULL,
+                                           CONSTRAINT "cart_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer" )
+);
+ALTER TABLE "public"."cart_products" OWNER TO "bf";
+COMMENT ON COLUMN "public"."cart_products"."cart_refer" IS '所属购物车';
+COMMENT ON COLUMN "public"."cart_products"."factory_id" IS '所属场站';
+COMMENT ON COLUMN "public"."cart_products"."order_refer" IS '所属订单';
+COMMENT ON COLUMN "public"."cart_products"."is_chosen" IS '场站是否上线该产品 1-上线 0-下线';
+COMMENT ON COLUMN "public"."cart_products"."name" IS '商品名称';
+COMMENT ON COLUMN "public"."cart_products"."sku" IS '库存控制最小可用单位';
+COMMENT ON COLUMN "public"."cart_products"."pic" IS '图片';
+COMMENT ON COLUMN "public"."cart_products"."type" IS '商品型号';
+COMMENT ON COLUMN "public"."cart_products"."count" IS '需求量';
+COMMENT ON COLUMN "public"."cart_products"."price" IS '价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价';
+
 -- ----------------------------
 -- Table structure for devices
 -- ----------------------------

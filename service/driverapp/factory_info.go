@@ -351,7 +351,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
 		//err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Find(&om.ProductInfos).Error
 		if err != nil {
-			fmt.Println(err)
+			logger.Loger.Info(err)
 			i.Error(c, 400, "获取商品信息失败")
 			return err
 		} else if len(om.ProductInfos) == 0 {
@@ -362,6 +362,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		for _, pv := range om.ProductInfos {
 			ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Update("is_chosen", false).Error
 			//ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Delete(&pv).Error
+			logger.Loger.Info(ferr)
 			if ferr != nil {
 				fmt.Println(ferr)
 				return ferr
@@ -446,10 +447,10 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 				om.OrderID).Find(&om.ProductInfos).Error
 			//terr := tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Find(&om.ProductInfos).Error
 			if terr != nil && terr != gorm.ErrRecordNotFound {
-				logrus.Info(terr)
+				logger.Loger.Info(err)
 				return terr
 			} else if len(om.ProductInfos) == 0 {
-				logrus.Info("没有选择该场站的商品", cartrefer, fid)
+				logger.Loger.Info("没有选择该场站的商品", cartrefer, fid)
 				return gorm.ErrRecordNotFound
 			}
 			var ferr error
@@ -457,7 +458,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 				ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Update("is_chosen", false).Error
 				//ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Delete(&pv).Error
 				if ferr != nil {
-					fmt.Println(ferr)
+					logger.Loger.Info(err)
 					return ferr
 				}
 			}
@@ -634,7 +635,7 @@ func (i *FactoryController) Load(c *gin.Context) {
 	fmt.Println(id)
 	err := dal.Getdb().Model(&model.Device{}).Select("id").Where("owner_id = ?", admin.ID).First(&devid).Error
 	if err != nil {
-		i.Error(c, 400, "获取设别信息失败")
+		i.Error(c, 400, "获取设备信息失败")
 		return
 	}
 	var devpros []model.DeviceProduct

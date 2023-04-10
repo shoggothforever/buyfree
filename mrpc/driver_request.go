@@ -2,6 +2,7 @@ package mrpc
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -231,13 +232,12 @@ func (o *OrderRequest) Handle() {
 			terr := tx.Model(&model.FactoryProduct{}).Where(
 				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).First(&fp).UpdateColumn(
 				"inventory", gorm.Expr("inventory - ?", v.Count)).Error
-			fmt.Println(fp)
 			if terr != nil {
 				var s string
 				if terr == gorm.ErrRecordNotFound {
 					s = fmt.Sprintf("%d场站%s商品库存不足,订单取消", v.FactoryID, v.Name)
 				}
-				logrus.Info(s, terr)
+				logger.Loger.Info(s, terr)
 				return terr
 			}
 			ms, _ := strconv.ParseInt(fp.MonthlySales, 10, 64)
