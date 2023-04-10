@@ -763,8 +763,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
                         }
@@ -1047,8 +1047,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
                         }
@@ -1057,7 +1057,7 @@ const docTemplate = `{
             }
         },
         "/fa/userinfo": {
-            "get": {
+            "post": {
                 "description": "传入jwt/token 获取用户信息",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -1069,6 +1069,15 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "获取场站用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权信息",
+                        "name": "jwt",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1745,8 +1754,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.LoginResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponse"
                         }
@@ -2081,7 +2090,7 @@ const docTemplate = `{
             }
         },
         "/pt/userinfo": {
-            "get": {
+            "post": {
                 "description": "传入jwt/token 获取用户信息",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -2093,6 +2102,15 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "获取平台信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权信息",
+                        "name": "jwt",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

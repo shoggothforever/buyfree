@@ -106,13 +106,12 @@ func NewLoginInfo(id, role int64, name, password, salt, jwt string) *LoginInfo {
 	return log
 }
 
-// TODO:用户银行卡信息
-type BankCardInfo struct {
+// TODO:用户资金信息
+type FundInfo struct {
 	//外键
-	ID       int64   `gorm:"comment:用户ID" json:"id" form:"id"`
+	UserID   int64   `gorm:"comment:用户ID" json:"user_id" form:"user_id"`
 	CardID   int64   `gorm:"unique" json:"card_id" form:"card_id"`
-	BankName string  `gorm:"银行名称" json:"bankName" form:"bank_name"`
-	Password string  `json:"password" form:"password"`
+	BankName string  `gorm:"comment:银行名称" json:"bankName" form:"bank_name"`
 	Cash     float64 `gorm:"comment:账户余额" json:"cash" form:"cash"`
 	BankFund float64 `gorm:"comment:银行资金" json:"bank_fund" form:"bank_fund"`
 }

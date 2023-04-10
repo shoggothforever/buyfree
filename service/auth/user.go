@@ -2,10 +2,10 @@ package auth
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/utils"
 	"context"
-	"fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,30 +13,33 @@ import (
 func SavePtUser(admin *model.Platform) (model.LoginInfo, error) {
 	admin.Role = int(model.PLATFORMADMIN)
 	admin.ID = utils.GetSnowFlake()
+	err := dal.Getdb().Model(&model.Platform{}).Omit("password", "password_salt").Create(&admin).Error
+	if err != nil {
+		logger.Loger.Info("创建用户信息失败", err)
+		return model.LoginInfo{}, err
+	}
 	logininfo, err := SavePtLoginInfo(admin)
 	if err != nil {
 		return model.LoginInfo{}, err
 	}
-	//TODO:对密码加密再存储，现在为了方便就先不管了
-	return logininfo, dal.Getdb().Model(&model.Platform{}).Create(&admin).Error
+	return logininfo, err
 
 }
 func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
 	admin.Role = int(model.DRIVER)
 	admin.ID = utils.GetSnowFlake()
-	logininfo, err := SaveDrLoginInfo(admin)
+	err := dal.Getdb().Model(&model.Driver{}).Omit("password", "password_salt").Create(&admin).Error
 	if err != nil {
-		fmt.Println(err)
+		logger.Loger.Info("创建用户信息失败", err)
 		return model.LoginInfo{}, err
 	}
-
-	//TODO:对密码加密再存储，现在为了方便就先不管了
-
-	cart := model.DriverCart{DriverID: admin.ID, Cart: model.Cart{CartID: utils.GetSnowFlake(), TotalCount: 0, TotalAmount: 0}}
-	err = dal.Getdb().Model(&model.Driver{}).Create(&admin).Error
+	logininfo, err := SaveDrLoginInfo(admin)
 	if err != nil {
-		logrus.Info("创建用户信息失败", err)
+		logger.Loger.Info("创建用户登录表失败", err)
+		return model.LoginInfo{}, err
 	}
+	cart := model.DriverCart{DriverID: admin.ID, Cart: model.Cart{CartID: utils.GetSnowFlake(), TotalCount: 0, TotalAmount: 0}}
+
 	cerr := dal.Getdb().Model(&model.DriverCart{}).Create(&cart).Error
 	if cerr != nil {
 		logrus.Info("创建购物车信息失败", err)
@@ -47,13 +50,18 @@ func SaveDrUser(admin *model.Driver) (model.LoginInfo, error) {
 func SaveFUser(admin *model.Factory) (model.LoginInfo, error) {
 	admin.Role = int(model.FACTORYADMIN)
 	admin.ID = utils.GetSnowFlake()
-	logininfo, err := SaveFLoginInfo(admin)
-
+	err := dal.Getdb().Model(&model.Factory{}).Omit("password", "password_salt").Create(&admin).Error
 	if err != nil {
+		logger.Loger.Info("创建用户信息失败", err)
+		return model.LoginInfo{}, err
+	}
+	logininfo, err := SaveFLoginInfo(admin)
+	if err != nil {
+		logger.Loger.Info("创建用户登录表失败", err)
 		return model.LoginInfo{}, err
 	}
 	//TODO:对密码加密再存储，现在为了方便就先不管了
-	return logininfo, dal.Getdb().Model(&model.Factory{}).Create(&admin).Error
+	return logininfo, err
 
 }
 func SavePtLoginInfo(admin *model.Platform) (model.LoginInfo, error) {

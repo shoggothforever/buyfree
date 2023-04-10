@@ -1769,8 +1769,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.LoginResponse'
-        "400":
-          description: Bad Request
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 车主用户注册
@@ -1956,18 +1956,24 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.LoginResponse'
-        "400":
-          description: Bad Request
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 场站用户注册
       tags:
       - User
   /fa/userinfo:
-    get:
+    post:
       consumes:
       - application/x-www-form-urlencoded
       description: 传入jwt/token 获取用户信息
+      parameters:
+      - description: 鉴权信息
+        in: formData
+        name: jwt
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -2417,8 +2423,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.LoginResponse'
-        "400":
-          description: Bad Request
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/response.LoginResponse'
       summary: 平台用户登录
@@ -2643,10 +2649,16 @@ paths:
       tags:
       - Platform
   /pt/userinfo:
-    get:
+    post:
       consumes:
       - application/x-www-form-urlencoded
       description: 传入jwt/token 获取用户信息
+      parameters:
+      - description: 鉴权信息
+        in: formData
+        name: jwt
+        required: true
+        type: string
       produces:
       - application/json
       responses:

@@ -52,7 +52,7 @@ func PlatFormrouter() {
 	{
 		pt.POST("/register", auth.PlatformRegister, middleware.AuthJwt())
 		pt.POST("/login", auth.PlatformLogin, middleware.AuthJwt())
-		pt.GET("/userinfo", middleware.AuthJwt(), auth.PlatformUserInfo)
+		pt.POST("/userinfo", auth.PlatformUserInfo)
 
 	}
 	var fat platform.FactoryadminController
@@ -60,9 +60,9 @@ func PlatFormrouter() {
 	{
 		fa.POST("/register", auth.FactoryRegister)
 		fa.POST("/login", auth.FactoryLogin)
-		fa.POST("/userinfo", middleware.AuthJwt(), auth.FactoryUserInfo)
+		fa.POST("/userinfo", auth.FactoryUserInfo)
 		fa.POST("/inventory", middleware.AuthJwt(), fat.Add)
-		fa.PATCH("/inventory/:product_name/:inv", middleware.AuthJwt(), middleware.AuthJwt(), fat.AddInv)
+		fa.PATCH("/inventory/:product_name/:inv", middleware.AuthJwt(), fat.AddInv)
 		fa.GET("/infos/all/:mode", middleware.AuthJwt(), fat.GetAllProducts)
 		fa.GET("/infos/detail/:product_name", middleware.AuthJwt(), fat.GetGoodsInfo)
 	}
