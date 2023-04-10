@@ -344,7 +344,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "mode=0查看全部订单，mode=1查看待付款订单，mode=2查看待取货订单",
+                        "description": "mode=0查看未支付订单，mode=1查看待付款订单，mode=2查看待取货订单",
                         "name": "mode",
                         "in": "path",
                         "required": true
@@ -494,6 +494,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
                     }
                 }
             }
@@ -565,6 +571,12 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -685,6 +697,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "410": {
+                        "description": "Gone",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -2723,8 +2747,8 @@ const docTemplate = `{
                 2
             ],
             "x-enum-varnames": [
-                "CANCLE",
-                "WAIT",
+                "UNPAID",
+                "PAID",
                 "DONE"
             ]
         },
@@ -3185,9 +3209,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "device_id": {
-                    "type": "integer"
-                },
-                "driver_id": {
                     "type": "integer"
                 },
                 "mobile": {

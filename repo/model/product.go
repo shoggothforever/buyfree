@@ -76,7 +76,7 @@ func (f *FactoryProduct) Set(id, fid int64, fname string, v *FactoryProduct) {
 
 type OrderProducts []*OrderProduct
 
-// 购物车，订单中的商品信息
+// 订单中的商品信息
 type OrderProduct struct {
 	//外键
 	CartRefer  int64   `gorm:"comment:所属购物车;" json:"cart_refer" form:"cart_refer"`
@@ -91,7 +91,8 @@ type OrderProduct struct {
 	Price      float64 `gorm:"notnull;comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价" json:"price" form:"price"`
 }
 
-func (o *OrderProduct) Set(cr, fr, cnt int64, pr float64, bi bool, name, sku, pic, Type string) {
+func (o *OrderProduct) Set(ore, cr, fr, cnt int64, pr float64, bi bool, name, sku, pic, Type string) {
+	o.OrderRefer = ore
 	o.CartRefer = cr
 	o.FactoryID = fr
 	o.Count = cnt
@@ -101,6 +102,45 @@ func (o *OrderProduct) Set(cr, fr, cnt int64, pr float64, bi bool, name, sku, pi
 	o.Sku = sku
 	o.Pic = pic
 	o.Type = Type
+}
+
+type CartProduct struct {
+	//外键
+	CartRefer  int64   `gorm:"comment:所属购物车;" json:"cart_refer" form:"cart_refer"`
+	FactoryID  int64   `gorm:"comment:所属场站" json:"factory_id" form:"factory_id"`
+	OrderRefer int64   `gorm:"comment:所属订单" json:"order_refer" form:"order_refer"`
+	IsChosen   bool    `gorm:"comment:场站是否上线该产品 1-上线 0-下线" json:"is_chosen" form:"is_chosen"`
+	Name       string  `gorm:"notnull;comment:商品名称" json:"name" form:"name"`
+	Sku        string  `gorm:"notnull;comment:库存控制最小可用单位" json:"sku" form:"sku"`
+	Pic        string  `gorm:"comment:图片" json:"pic" form:"pic"`
+	Type       string  `gorm:"notnull;comment:商品型号" json:"type" form:"type"`
+	Count      int64   `gorm:"notnull;comment:需求量" json:"count" form:"count"`
+	Price      float64 `gorm:"notnull;comment:价格,根据所属购物车种类赋予不同类型的价格，用户购物车内该值为零售价,车主购物车内该值为批发价" json:"price" form:"price"`
+}
+
+func (o *CartProduct) Set(ore, cr, fr, cnt int64, pr float64, bi bool, name, sku, pic, Type string) {
+	o.OrderRefer = ore
+	o.CartRefer = cr
+	o.FactoryID = fr
+	o.Count = cnt
+	o.Price = pr
+	o.IsChosen = bi
+	o.Name = name
+	o.Sku = sku
+	o.Pic = pic
+	o.Type = Type
+}
+func (c CartProduct) Trans(o OrderProduct) {
+	c.OrderRefer = o.OrderRefer
+	c.CartRefer = o.CartRefer
+	c.FactoryID = o.FactoryID
+	c.Count = o.Count
+	c.Price = o.Price
+	c.IsChosen = o.IsChosen
+	c.Name = o.Name
+	c.Sku = o.Sku
+	c.Pic = o.Pic
+	c.Type = o.Type
 }
 func (o *OrderProduct) GetAmount() float64 {
 	price := o.Price * float64(o.Count)

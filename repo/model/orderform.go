@@ -7,8 +7,8 @@ import (
 type ORDERSTATE int
 
 const (
-	CANCLE ORDERSTATE = iota
-	WAIT
+	UNPAID ORDERSTATE = iota
+	PAID
 	DONE
 )
 
@@ -58,7 +58,7 @@ type DriverOrderForm struct {
 	OrderForm
 }
 
-func (d *DriverOrderForm) Set(fid, did int64, cost float64, fname, carid, loc string) {
+func (d *DriverOrderForm) Set(fid, did int64, state ORDERSTATE, cost float64, fname, carid, loc string) {
 	d.FactoryID = fid
 	d.DriverID = did
 	d.Cost = cost
@@ -68,8 +68,7 @@ func (d *DriverOrderForm) Set(fid, did int64, cost float64, fname, carid, loc st
 	// d.GetTime = gtime time.time
 	d.PlaceTime = time.Now()
 	d.Location = loc
-	d.State = 0
-
+	d.State = state
 }
 
 type ReplenInfo struct {

@@ -162,7 +162,7 @@ func (i *FactoryController) Detail(c *gin.Context) {
 // @Produce json
 // @Param productInfo body response.ReplenishInfo true "传入场站名以及ID，商品名称、型号、价格、选购数量、图片信息"
 // @Success 200 {object} response.Response
-// @Failure 200 {object} response.Response
+// @Failure 400 {object} response.Response
 // @Router /dr/order/replenish [post]
 func (i *FactoryController) Modify(c *gin.Context) {
 	var info response.ReplenishInfo
@@ -171,84 +171,129 @@ func (i *FactoryController) Modify(c *gin.Context) {
 		logrus.Info("传入信息错误", err)
 		i.Error(c, 400, "获取传入信息失败")
 		return
-	} else {
-		c.JSON(200, response.Response{200, fmt.Sprintf("传入的数据是%v", info)})
 	}
-	logger.Loger.Info("传入的商品信息是", info)
-	var cartrefer int64
+	var cr int64
 	admin, ok := utils.GetDriveInfo(c)
 	if !ok {
 		i.Error(c, 400, "获取用户信息失败")
 		return
 	}
 	//获取购物车编号
-	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
+	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cr).Error
 	if err != nil {
 		logrus.Info("获取购物车信息失败", err)
 		i.Error(c, 400, "获取购物车信息失败")
 		return
 	}
-	logger.Loger.Info("购物车编号", cartrefer)
+	logger.Loger.Info("购物车编号", cr)
 	var op model.OrderProduct
-	err = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).First(&op).Error
-	fmt.Println(op, err)
-	if err == gorm.ErrRecordNotFound {
-		fmt.Println("获取到的记录是", info)
-		if info.Count < 0 {
-			logger.Loger.Info(err)
-			i.Error(c, 403, "未定义操作")
-			return
-		}
-		op.Set(cartrefer, info.FactoryID, info.Count, info.Price, true, info.ProductName, info.ProductName, info.Pic, info.Type)
-		err = dal.Getdb().Model(&model.OrderProduct{}).Create(&op).Error
-		if err != nil {
-			logger.Loger.Info(err)
-			i.Error(c, 403, "添加商品信息失败")
-			return
-		}
-	} else if err != nil {
-		logger.Loger.Info(err)
-		i.Error(c, 400, "操作数据库失败")
-		return
-	} else {
-		err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
-			if op.Count == 0 {
-				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Update("count", 0).Error
-				if terr != nil {
-					logger.Loger.Info(terr)
-					return terr
-				}
-			} else if op.Count+info.Count > 0 {
-				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
-				if terr != nil {
-					logger.Loger.Info(terr)
-					return terr
-				}
-				terr = dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).UpdateColumn("is_chosen", true).Error
-				if terr != nil {
-					logger.Loger.Info(terr)
-					return terr
-				}
-			} else if op.Count+info.Count <= 0 {
-				terr := dal.Getdb().Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cartrefer).Delete(&op).Error
-				if terr != nil {
-					logger.Loger.Info(terr)
-					return terr
-				}
+	var cp model.CartProduct
+	var terr error
+	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		terr = tx.Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ? and order_refer =0", info.ProductName, info.FactoryID, cr).First(&op).Error
+		if terr == gorm.ErrRecordNotFound {
+			if info.Count < 0 {
+				logger.Loger.Info(terr)
+				i.Error(c, 403, "订购未定义操作")
+				return terr
 			}
-			return nil
-		})
-		if err != nil {
-			logrus.Info(err)
-			i.Error(c, 400, "更新购物车信息失败失败")
-			return
+			op.Set(0, cr, info.FactoryID, info.Count, info.Price, true, info.ProductName, info.ProductName, info.Pic, info.Type)
+			terr = tx.Model(&model.OrderProduct{}).Create(&op).Error
+			if terr != nil {
+				logger.Loger.Info(terr)
+				i.Error(c, 403, "添加商品信息失败")
+				return terr
+			}
+		} else if terr != nil {
+			logger.Loger.Info(err)
+			i.Error(c, 400, "操作数据库失败")
+			return terr
+		} else {
+			terr = tx.Transaction(func(tx *gorm.DB) error {
+				if op.Count+info.Count > 0 {
+					terr := tx.Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+					if terr != nil {
+						logger.Loger.Info(terr)
+						return terr
+					}
+					terr = tx.Model(&model.OrderProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).UpdateColumn("is_chosen", true).Error
+					if terr != nil {
+						logger.Loger.Info(terr)
+						return terr
+					}
+				} else {
+					terr := tx.Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).Delete(&model.OrderProduct{}).Error
+					if terr != nil {
+						logger.Loger.Info(terr)
+						return terr
+					}
+				}
+				return nil
+			})
+			if terr != nil {
+				logrus.Info(err)
+				i.Error(c, 400, "更新订单货品信息失败失败")
+				return terr
+			}
 		}
-	}
-	if err != nil {
-		c.JSON(200, response.Response{400, "操作数据库失败"})
-	} else {
+
+		terr = tx.Model(&model.CartProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).First(&cp).Error
+		if terr == gorm.ErrRecordNotFound {
+			if info.Count < 0 {
+				logger.Loger.Info(terr)
+				i.Error(c, 403, "购物车未定义操作")
+				return terr
+			}
+			cp.Set(0, cr, info.FactoryID, info.Count, info.Price, true, info.ProductName, info.ProductName, info.Pic, info.Type)
+			terr = tx.Model(&model.CartProduct{}).Create(&cp).Error
+			if terr != nil {
+				logger.Loger.Info(err)
+				i.Error(c, 403, "添加商品信息失败")
+				return terr
+			}
+		} else if terr != nil {
+			logger.Loger.Info(err)
+			i.Error(c, 400, "操作数据库失败")
+			return terr
+		} else {
+			terr = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+				if cp.Count+info.Count > 0 {
+					terr := tx.Model(&model.CartProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).UpdateColumn("count", gorm.Expr("count + ?", info.Count)).Error
+					if terr != nil {
+						logger.Loger.Info(terr)
+						return terr
+					}
+					terr = tx.Model(&model.CartProduct{}).Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).UpdateColumn("is_chosen", true).Error
+					if terr != nil {
+						logger.Loger.Info(terr)
+						return terr
+					}
+				} else {
+					terr := tx.Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, info.FactoryID, cr).Delete(&model.CartProduct{}).Error
+					if terr != nil {
+						logger.Loger.Info(terr)
+						return terr
+					}
+				}
+				return nil
+			})
+			if terr != nil {
+				logrus.Info(err)
+				i.Error(c, 400, "更新购物车信息失败")
+				return terr
+			}
+		}
+		return nil
+	})
+	if err == nil {
 		c.JSON(200, response.Response{200, "成功添加/减少商品"})
 	}
+}
+
+type cartpronotfound struct{}
+
+func (c cartpronotfound) Error() string {
+	return "购物车中不存在该商品"
 }
 
 // @Summary 选中购物车中的商品
@@ -258,14 +303,14 @@ func (i *FactoryController) Modify(c *gin.Context) {
 // @Produce json
 // @Param productInfo body response.ReplenishInfo true "传入场站名,商品名称"
 // @Success 200 {object} response.Response
-// @Failure 200 {object} response.Response
+// @Failure 400 {object} response.Response
 // @Router /dr/order/choose [patch]
 func (i *FactoryController) Choose(c *gin.Context) {
 	var info response.ReplenishInfo
 	err := c.ShouldBind(&info)
 	fmt.Println("获取到的记录是", info)
 	if err != nil {
-		logrus.Info("传入信息错误", err)
+		logger.Loger.Info("传入信息错误", err)
 		i.Error(c, 400, "获取传入信息失败")
 		return
 	}
@@ -279,32 +324,51 @@ func (i *FactoryController) Choose(c *gin.Context) {
 	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
 	fmt.Println("购物车编号", cartrefer)
 	if err != nil {
-		logrus.Info("获取购物车信息失败", err)
+		logger.Loger.Info("获取购物车信息失败", err)
 		i.Error(c, 400, "获取购物车信息失败原因：获取购物车id失败")
 		return
 	}
 	if err = dal.Getdb().Model(&model.Factory{}).Select("id").Where("name = ?", info.FactoryName).First(&fid).Error; err != nil {
 		if err != nil {
-			fmt.Println(err)
+			logger.Loger.Info(err)
 			i.Error(c, 400, "操作购物车商品信息失败原因：获取场站id失败")
 			return
 		}
 	}
-	var op model.OrderProduct
-	err = dal.Getdb().Model(&model.OrderProduct{}).Select("is_chosen").Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, fid, cartrefer).First(&op).Update("is_chosen", !op.IsChosen).Error
-	fmt.Println(op, err)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			i.Error(c, 403, "传入数据有误")
-			return
+	//同步更新购物车和订购货品信息表
+	var op model.CartProduct
+
+	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		uerr := dal.Getdb().Model(&model.CartProduct{}).Select("is_chosen").Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, fid, cartrefer).First(&op).Update("is_chosen", !op.IsChosen).Error
+		if uerr != nil {
+			logger.Loger.Info(uerr)
+			if uerr == gorm.ErrRecordNotFound {
+				return cartpronotfound{}
+			}
+			return uerr
 		}
+		uerr = dal.Getdb().Model(&model.OrderProduct{}).Select("is_chosen").Where("name= ? and factory_id =? and cart_refer = ?", info.ProductName, fid, cartrefer).First(&op).Update("is_chosen", !op.IsChosen).Error
+		if uerr != nil {
+			logger.Loger.Info(uerr)
+			if uerr == gorm.ErrRecordNotFound {
+				return uerr
+			}
+			return uerr
+		}
+		return nil
+	})
+	if err != nil && err.Error() == "购物车中不存在该商品" {
+		logger.Loger.Info(err)
+		i.Error(c, 400, "购物车中不存在该商品")
+	} else if err != nil {
+		logger.Loger.Info(err)
 		i.Error(c, 400, "操作数据库失败")
-		return
-	}
-	if !op.IsChosen {
-		c.JSON(200, response.Response{200, "成功选中商品"})
 	} else {
-		c.JSON(200, response.Response{200, "成功取消选中商品"})
+		if !op.IsChosen {
+			c.JSON(200, response.Response{200, "成功选中商品"})
+		} else {
+			c.JSON(200, response.Response{200, "成功取消选中商品"})
+		}
 	}
 }
 
@@ -340,16 +404,18 @@ func (i *FactoryController) Submit(c *gin.Context) {
 			i.Error(c, 400, "获取购物车信息失败")
 			return err
 		}
-
 		err = tx.Model(&model.Factory{}).Select("id").Where("name = ?", finfo.FactoryName).First(&fid).Error
 		if err != nil {
 			fmt.Println(err)
 			i.Error(c, 400, "获取场站信息失败")
 			return err
 		}
-
-		err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
-		//err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Find(&om.ProductInfos).Error
+		//更新订单中的商品的外键信息，指向生成的订单号
+		//err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and is_chosen = true", fid, cartrefer).Update("order_refer", om.OrderID).Find(&om.ProductInfos).Error
+		err = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer= ? and order_refer = 0 and is_chosen = true ", fid, cartrefer).Find(&om.ProductInfos).UpdateColumns(map[string]interface{}{
+			"is_chosen":   false,
+			"order_refer": om.OrderID,
+		}).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			i.Error(c, 400, "获取商品信息失败")
@@ -357,15 +423,10 @@ func (i *FactoryController) Submit(c *gin.Context) {
 		} else if len(om.ProductInfos) == 0 {
 			i.Error(c, 400, "未选中商品信息")
 			return gorm.ErrRecordNotFound
-		}
-		var ferr error
-		for _, pv := range om.ProductInfos {
-			ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Update("is_chosen", false).Error
-			//ferr = tx.Model(&model.OrderProduct{}).Where(" factory_id = ? and cart_refer = ? and name = ?", fid, cartrefer, pv.Name).Delete(&pv).Error
-			logger.Loger.Info(ferr)
-			if ferr != nil {
-				fmt.Println(ferr)
-				return ferr
+		} else {
+			for k, _ := range om.ProductInfos {
+				om.ProductInfos[k].OrderRefer = om.OrderID
+				om.ProductInfos[k].IsChosen = false
 			}
 		}
 		return nil
@@ -373,11 +434,13 @@ func (i *FactoryController) Submit(c *gin.Context) {
 	var sum float64 = 0
 	if err == nil {
 		var cost float64 = 0
+		//计算订单总价
 		for _, v := range om.ProductInfos {
 			cost += float64(v.Count) * v.Price
 		}
 		sum += cost
-		om.Set(fid, admin.ID, cost, finfo.FactoryName, admin.CarID, admin.Address)
+		om.Set(fid, admin.ID, model.UNPAID, cost, finfo.FactoryName, admin.CarID, admin.Address)
+		//生成订单信息
 		if cerr := dal.Getdb().Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: "order_id"}},
@@ -387,14 +450,22 @@ func (i *FactoryController) Submit(c *gin.Context) {
 			dal.Getdb().Model(&model.DriverOrderForm{}).Delete(&om)
 			i.Error(c, 400, "创建订单表失败")
 			return
+		} else {
+			derr := dal.Getdb().Where("factory_id=? and cart_refer= ? and is_chosen = true", fid, cartrefer).Delete(&model.CartProduct{}).Error
+			if derr != nil {
+				logger.Loger.Info(derr)
+				i.Error(c, 400, "删除购物车中提交的商品信息失败")
+				return
+			} else {
+				c.JSON(200, response.DriverOrdersResponse{
+					Response:          response.Response{200, "订单提交成功"},
+					Cash:              sum,
+					FactoriesDistance: []response.FactoryDistanceReq{finfo},
+					OrderInfos:        []model.DriverOrderForm{om},
+				})
+			}
 		}
-		c.JSON(200, response.DriverOrdersResponse{
-			Response:          response.Response{200, "订单提交成功"},
-			Cash:              sum,
-			FactoriesDistance: []response.FactoryDistanceReq{finfo},
-			OrderInfos:        []model.DriverOrderForm{om},
-		})
-	} else if err != gorm.ErrRecordNotFound {
+	} else {
 		i.Error(c, 400, "订单提交失败")
 	}
 	c.Next()
@@ -432,34 +503,31 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 		return
 	}
 	var sum float64 = 0
-	for _, v := range finfos {
+	for k, v := range finfos {
 		err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 			var om model.DriverOrderForm
 			om.OrderID = utils.IDWorker.NextId()
-			var fid int64
-			err = tx.Model(&model.Factory{}).Select("id").Where("name = ?", v.FactoryName).First(&fid).Error
+			err = tx.Model(&model.Factory{}).Select("id").Where("name = ?", v.FactoryName).First(&finfos[k].FactoryID).Error
 			if err != nil {
 				logrus.Info(err)
 				i.Error(c, 400, "获取场站信息失败")
 				return err
 			}
-			terr := tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Update("order_refer",
-				om.OrderID).Find(&om.ProductInfos).Error
-			//terr := tx.Model(&model.OrderProduct{}).Where("cart_refer= ? and factory_id = ? and is_chosen = true", cartrefer, fid).Find(&om.ProductInfos).Error
+
+			terr := tx.Model(&model.OrderProduct{}).Where("factory_id = ? and cart_refer= ? and order_refer = 0 and is_chosen = true", finfos[k].FactoryID, cartrefer).Find(&om.ProductInfos).UpdateColumns(map[string]interface{}{
+				"order_refer": om.OrderID,
+				"is_chosen":   false,
+			}).Error
 			if terr != nil && terr != gorm.ErrRecordNotFound {
 				logger.Loger.Info(err)
 				return terr
 			} else if len(om.ProductInfos) == 0 {
-				logger.Loger.Info("没有选择该场站的商品", cartrefer, fid)
+				logger.Loger.Info("没有选择该场站的商品", cartrefer, finfos[k].FactoryID)
 				return gorm.ErrRecordNotFound
-			}
-			var ferr error
-			for _, pv := range om.ProductInfos {
-				ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Update("is_chosen", false).Error
-				//ferr = tx.Model(&model.OrderProduct{}).Where("cart_refer = ? and factory_id = ? and name = ?", cartrefer, fid, pv.Name).Delete(&pv).Error
-				if ferr != nil {
-					logger.Loger.Info(err)
-					return ferr
+			} else {
+				for ik, _ := range om.ProductInfos {
+					om.ProductInfos[ik].OrderRefer = om.OrderID
+					om.ProductInfos[ik].IsChosen = false
 				}
 			}
 			var cost float64 = 0
@@ -467,7 +535,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 				cost += float64(pv.Count) * pv.Price
 			}
 			sum += cost
-			om.Set(fid, admin.ID, cost, v.FactoryName, admin.CarID, admin.Address)
+			om.Set(finfos[k].FactoryID, admin.ID, model.UNPAID, cost, v.FactoryName, admin.CarID, admin.Address)
 			oms = append(oms, om)
 			return nil
 		})
@@ -483,13 +551,29 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			logrus.Info(cerr)
 			i.Error(c, 400, "创建订单表失败")
 			return
+		} else {
+			rerr := dal.Getdb().Transaction(func(tx *gorm.DB) error {
+				for _, v := range finfos {
+					derr := tx.Where(" factory_id = ? and cart_refer= ? and is_chosen = true", v.FactoryID, cartrefer).Delete(&model.CartProduct{}).Error
+					if derr != nil {
+						logger.Loger.Info(derr)
+						i.Error(c, 400, "删除购物车中提交的商品信息失败")
+						return derr
+					}
+				}
+				return nil
+			})
+			if rerr != nil {
+				logrus.Info(rerr)
+				i.Error(c, 400, "删除购物车中的选中商品失败")
+			}
+			c.JSON(200, response.DriverOrdersResponse{
+				Response:          response.Response{200, "订单提交成功"},
+				Cash:              sum,
+				FactoriesDistance: finfos,
+				OrderInfos:        oms,
+			})
 		}
-		c.JSON(200, response.DriverOrdersResponse{
-			Response:          response.Response{200, "订单提交成功"},
-			Cash:              sum,
-			FactoriesDistance: finfos,
-			OrderInfos:        oms,
-		})
 	} else if err == gorm.ErrRecordNotFound {
 		i.Error(c, 400, "无选中商品，无需创建表单")
 	} else {
@@ -535,7 +619,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	for j := 0; j < n; j++ {
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", forms.OrderInfos[j].OrderID).First(&state).Error
 		if err != nil {
-			fmt.Println(err)
+			logger.Loger.Info(err)
 			i.Error(c, 500, "查询订单状态失败")
 			return
 		} else if state == 0 {
@@ -586,25 +670,29 @@ func (i *FactoryController) Pay(c *gin.Context) {
 		i.Error(c, 500, "服务器未能处理支付请求")
 		return
 	}
-
-	var st int64
-	for _, v := range forms.OrderInfos {
-		if v.State == 1 {
-
-			err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id=?", v.OrderID).First(&st).Update("state", 1).Error
-			if err != nil {
-				fmt.Println(err)
-				i.Error(c, 500, "更新订单状态失败")
+	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
+		for _, v := range forms.OrderInfos {
+			if v.State == 1 {
+				terr := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state", "pay_time").Where("order_id=?", v.OrderID).UpdateColumns(map[string]interface{}{"state": 1, "pay_time": time.Now()}).Error
+				if terr != nil {
+					logger.Loger.Info(terr)
+					return terr
+				}
 			}
 		}
-	}
-	if cnt != 0 {
-		c.JSON(200, response.PayResponse{
-			response.Response{201, "支付成功,更新订单状态成功，更新商品排行信息成功"},
-		})
+		return nil
+	})
+	if err == nil {
+		if cnt != 0 {
+			c.JSON(200, response.PayResponse{
+				response.Response{201, "支付成功,更新订单状态成功，更新商品排行信息成功"},
+			})
+		} else {
+			c.JSON(500, response.PayResponse{
+				response.Response{404, "没有订单能够支付"}})
+		}
 	} else {
-		c.JSON(500, response.PayResponse{
-			response.Response{404, "没有订单能够支付"}})
+		i.Error(c, 500, "支付成功，更新商品排行信息成功,更新订单状态失败")
 	}
 }
 
@@ -616,6 +704,8 @@ func (i *FactoryController) Pay(c *gin.Context) {
 // @Param id path int true "取货订单订单编号"
 // @Success 201 {object} response.LoadResponse
 // @Failure 400 {object} response.Response
+// @Failure 403 {object} response.Response
+// @Failure 410 {object} response.Response
 // @Router /dr/order/{id}/load [get]
 func (i *FactoryController) Load(c *gin.Context) {
 	id := c.Param("id")
@@ -626,14 +716,24 @@ func (i *FactoryController) Load(c *gin.Context) {
 		return
 	}
 	drid = admin.ID
-	//var orderforms model.DriverOrderForm
-	//err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("order_id = ?", id).First(&orderforms).Error
-	//if err != nil {
-	//	i.Error(c, 400, "获取订单信息失败")
-	//	return
-	//}
-	fmt.Println(id)
-	err := dal.Getdb().Model(&model.Device{}).Select("id").Where("owner_id = ?", admin.ID).First(&devid).Error
+	var orderform model.DriverOrderForm
+	err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", id).First(&orderform).Error
+	if err != nil {
+		i.Error(c, 400, "获取订单信息失败")
+		return
+	} else if orderform.State != 1 {
+		if orderform.State == 0 {
+			i.Error(c, 403, "该订单尚未完成支付，请支付后再试")
+			return
+		} else if orderform.State == 2 {
+			i.Error(c, 410, "该订单已经完成支付并取货")
+			return
+		} else {
+			i.Error(c, 403, "订单状态未定义")
+			return
+		}
+	}
+	err = dal.Getdb().Model(&model.Device{}).Select("id").Where("owner_id = ?", admin.ID).First(&devid).Error
 	if err != nil {
 		i.Error(c, 400, "获取设备信息失败")
 		return
@@ -652,17 +752,11 @@ func (i *FactoryController) Load(c *gin.Context) {
 			for k, v := range productInfos {
 				terr := tx.Model(&model.FactoryProduct{}).Select("buy_price").Where("factory_id = ? and name = ?", v.FactoryID, v.Name).First(&buyprice).Error
 				if terr != nil {
-					logrus.Info(fmt.Sprintf("获取%d场站%d商品零售价失败", v.FactoryID, v.Name))
-					return terr
-				}
-				terr = tx.Model(&model.OrderProduct{}).Where("order_refer = ? and name = ?", id, v.Name).Delete(&v).Error
-				if terr != nil {
-					logrus.Info("从购物车中清除商品失败", terr)
+					logrus.Info(fmt.Sprintf("获取%d场站%s商品零售价失败", v.FactoryID, v.Name))
 					return terr
 				}
 				time.Sleep(time.Nanosecond) //太快了导致雪花算法生成不了不同的值
 				devpros[k].Set(utils.GetSnowFlake(), devid, drid, v.FactoryID, v.Count, buyprice, v.Price, v.Name, v.Type, v.Sku, v.Pic)
-				//fmt.Println(devpros[k])
 			}
 			for _, v := range devpros {
 				var name string
@@ -680,7 +774,7 @@ func (i *FactoryController) Load(c *gin.Context) {
 					}
 				}
 			}
-			terr := tx.Model(&model.DriverOrderForm{}).Where("order_id = ?", id).UpdateColumn("state", 2).Error
+			terr := tx.Model(&model.DriverOrderForm{}).Where("order_id = ?", id).UpdateColumns(map[string]interface{}{"state": 2, "get_time": time.Now()}).Error
 			logrus.Info(terr)
 			if terr != nil {
 				logrus.Info("更新订单信息失败", terr)

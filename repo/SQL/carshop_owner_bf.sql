@@ -265,7 +265,7 @@ CREATE TABLE "public"."order_products" (
                                            "type" TEXT COLLATE "pg_catalog"."default" NOT NULL,
                                            "count" INT8 NOT NULL,
                                            "price" NUMERIC NOT NULL,
-                                           CONSTRAINT "order_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer" )
+                                           CONSTRAINT "order_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer", "order_refer" )
 );
 ALTER TABLE "public"."order_products" OWNER TO "bf";
 COMMENT ON COLUMN "public"."order_products"."cart_refer" IS '所属购物车';
@@ -294,7 +294,7 @@ CREATE TABLE "public"."cart_products" (
                                            "type" TEXT COLLATE "pg_catalog"."default" NOT NULL,
                                            "count" INT8 NOT NULL,
                                            "price" NUMERIC NOT NULL,
-                                           CONSTRAINT "cart_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer" )
+                                           CONSTRAINT "cart_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer", "order_refer" )
 );
 ALTER TABLE "public"."cart_products" OWNER TO "bf";
 COMMENT ON COLUMN "public"."cart_products"."cart_refer" IS '所属购物车';

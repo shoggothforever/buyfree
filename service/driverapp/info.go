@@ -2,6 +2,7 @@ package driverapp
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -31,7 +32,7 @@ func (i *InfoController) Getdevice(c *gin.Context) {
 // @Tags Driver/info
 // @Accept json
 // @Produce json
-// @Param mode path int true "mode=0查看全部订单，mode=1查看待付款订单，mode=2查看待取货订单"
+// @Param mode path int true "mode=0查看未支付订单，mode=1查看待付款订单，mode=2查看待取货订单"
 // @Success 200 {object} response.DriverOrderFormResponse
 // @Failure 400 {object} response.Response
 // @Router /dr/infos/orderform/{mode} [get]
@@ -46,18 +47,18 @@ func (it *InfoController) GetOrders(c *gin.Context) {
 	if mode == "0" || mode == "1" || mode == "2" {
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("driver_id = ? and state = ?", admin.ID, mode).Find(&dofs).Error
 		if err != nil {
-			it.Error(c, 400, "获取订单信息失败 1")
+			it.Error(c, 400, "获取订单信息失败")
 			return
 		}
 	} else {
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("driver_id = ?", admin.ID).Find(&dofs).Error
 		if err != nil {
-			it.Error(c, 400, "获取订单信息失败 1")
+			it.Error(c, 400, "获取订单信息失败")
 			return
 		}
 	}
 	n := len(dofs)
-	fmt.Printf("获取到%d条订单信息\n", n)
+	logger.Loger.Info("获取到%d条订单信息\n", n)
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for i := 0; i < n; i++ {
 			terr := tx.Model(&model.OrderProduct{}).Where("order_refer = ?", dofs[i].OrderID).Find(&dofs[i].ProductInfos).Error
@@ -107,12 +108,13 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 
 	err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("order_id = ?", id).First(&odinfos).Error
 	if err != nil {
-		fmt.Println(err)
+		logger.Loger.Info(err)
 		i.Error(c, 400, "获取订单信息失败")
 		return
 	}
-
+	err = dal.Getdb().Model(&model.OrderProduct{}).Where("order_refer = ?", id).Find(&odinfos[0].ProductInfos).Error
 	if err != nil {
+		logger.Loger.Info(err)
 		i.Error(c, 400, "获取订单信息失败")
 	} else {
 		idistance, _ := utils.LocDist(c, rdb, utils.LOCATION, admin.Name, odinfos[0].FactoryName, "m")

@@ -3,6 +3,7 @@ package driverapp
 import (
 	"buyfree/dal"
 	"buyfree/mrpc"
+	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
 	"fmt"
@@ -57,13 +58,19 @@ func (d *DeviceController) BindDevice(c *gin.Context) {
 		d.Error(c, 400, "获取提交信息失败")
 		return
 	}
-	var req = mrpc.NewDeviceAuthRequest(info.DriverID, info.DeviceID, info.Name, info.Mobile)
+	admin, ok := utils.GetDriveInfo(c)
+	if !ok {
+		d.Error(c, 400, "获取司机信息失败")
+		return
+	}
+	var req = mrpc.NewDeviceAuthRequest(admin.ID, info.DeviceID, info.Name, info.Mobile)
 	mrpc.PlatFormService.ReqChan <- req
 	<-req.DoneChan
 	if req.Res != true {
 		d.Error(c, 400, "绑定用户信息失败")
 		return
 	} else {
+		dal.Getdb().Model(&model.Driver{}).Where("id = ?", admin.ID).Update("is_auth", true)
 		c.JSON(200, response.BindDeviceResponse{response.Response{200, "绑定用户信息成功"}, &info})
 	}
 }
