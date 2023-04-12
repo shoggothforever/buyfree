@@ -157,7 +157,6 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 // @Accept json
 // @Accept mpfd
 // @Produce json
-// @Param	DeviceInfo body model.Device true "填入设备的基本信息,然而并不需要任何基本信息，都自动设定好了"
 // @Success 201 {object} response.AddDevResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/dev-admin/devs [post]
@@ -171,7 +170,7 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	dev.ID = utils.GetSnowFlake()
 	if err != nil {
 		fmt.Println(err)
-		d.Error(c, 400, "添加设备失败,，请输入正确的设备信息")
+		d.Error(c, 400, "添加设备失败")
 		return
 	}
 	//fmt.Println(dev)
@@ -184,15 +183,17 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	dev.PlatformID = admin.ID
 	err = dal.Getdb().Model(&model.Device{}).Omit("owner_id", "activated_time").Create(&dev).Error
 	if err == nil {
-		dal.Getrdb().Set(c, strconv.FormatInt(dev.ID, 10), utils.GenerateSourceUrl(dev.ID), -1)
-		c.JSON(201, response.AddDevResponse{
-			response.Response{200,
+		var qrcode = utils.GenerateSourceUrl(dev.ID)
+		rdb := dal.Getrdb()
+		rdb.Do(rdb.Context(), "set", "QR:"+strconv.FormatInt(dev.ID, 10), qrcode)
+		c.JSON(200, response.AddDevResponse{
+			response.Response{201,
 				"添加设备成功",
-			},
+			}, qrcode,
 			&dev,
 		})
 	} else {
 		fmt.Println(err)
-		d.Error(c, 400, "添加设备失败,，请输入正确的设备信息")
+		d.Error(c, 400, "添加设备失败")
 	}
 }

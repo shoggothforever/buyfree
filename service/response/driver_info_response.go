@@ -32,3 +32,7 @@ type LoadResponse struct {
 	Response
 	DevProducts []model.DeviceProduct `json:"dev_products"`
 }
+type BalanceResponse struct {
+	Response
+	Fund float64 `json:"fund"`
+}

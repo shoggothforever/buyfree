@@ -2,9 +2,11 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strconv"
@@ -95,4 +97,66 @@ func (d *DevinfoController) LsInfo(c *gin.Context) {
 			"加载页面失败",
 		})
 	}
+}
+
+// @Summary 投放广告
+// @Description 传入广告ID。激活的设备id
+// @Tags	Platform/Advertisement
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Param ad_ids body []int64 true "选中的广告ID"
+// @Param dev_id path int true "设备ID"
+// @Success 200 {object} response.ADLaunchResponse
+// @Failure 400 {object} response.Response
+// @Router /pt/dev-admin/launch/{dev_id} [post]
+func (a *DevinfoController) Launch(c *gin.Context) {
+	var lrsponse response.ADLaunchResponse
+	lrsponse.Response = response.Response{200, "广告成功上线"}
+	var ad_ids []int64
+	err := c.ShouldBind(&ad_ids)
+	fmt.Println(ad_ids)
+	if err != nil {
+		a.Error(c, 400, "获取广告列表失败")
+		return
+	}
+	dev_id := c.Param("dev_id")
+	db := dal.Getdb()
+	err = db.Transaction(func(tx *gorm.DB) error {
+		for _, ad_id := range ad_ids {
+			var id int64
+			ferr := db.Model(&model.Device{}).Select("owner_id").Where("id = ?", dev_id).First(&id).Error
+			if ferr != nil {
+				logger.Loger.Info(ferr)
+				a.Error(c, 400, "获取用户信息失败")
+				return ferr
+			}
+			var ids []int64
+			ferr = db.Model(&model.Device{}).Select("id").Where("owner_id = ?", id).Find(&ids).Error
+			if ferr != nil {
+				logger.Loger.Info(ferr)
+				a.Error(c, 400, "获取设备信息失败")
+				return ferr
+			}
+			var ads model.Ad_Device
+			ads.AdvertisementID = ad_id
+			ads.PlayTimes = 0
+			ads.Profit = 0
+			pair := make([]response.PAIR_DEV_AD, len(ids))
+			for k, v := range ids {
+				ads.DeviceID = v
+				pair[k].ADID = ad_id
+				pair[k].DEVID = v
+				db.Model(&model.Ad_Device{}).Create(&ads)
+			}
+			lrsponse.Pair = append(lrsponse.Pair, pair...)
+		}
+		return nil
+	})
+	if err == nil {
+		c.JSON(200, lrsponse)
+	} else {
+		c.JSON(200, response.Response{400, "广告上线失败"})
+	}
+
 }

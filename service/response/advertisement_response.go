@@ -4,13 +4,13 @@ import (
 	"buyfree/repo/model"
 )
 
-//获取广告信息以及添加广告的响应
+// 获取广告信息以及添加广告的响应
 type ADResponse struct {
 	Response
 	ADInfos []model.Advertisement
 }
 
-//广告效益信息
+// 广告效益信息
 type ADEfficientInfo struct {
 	DeviceID int64 `json:"device_id"`
 	//已经播放次数
@@ -23,8 +23,18 @@ type ADEfficientInfo struct {
 	DriverName string `json:"driver_name"`
 }
 
-//广告效益相应
+// 广告效益相应
 type ADEfficientResponse struct {
 	Response
 	ADEfficientInfos []ADEfficientInfo
+}
+type PAIR_DEV_AD struct {
+	ADID  int64
+	DEVID int64
+}
+
+// 广告效益相应
+type ADLaunchResponse struct {
+	Response `json:"response"`
+	Pair     []PAIR_DEV_AD `json:"pair,omitempty"`
 }

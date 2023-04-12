@@ -261,6 +261,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/dr/infos/balance": {
+            "get": {
+                "description": "余额组成:未结算广告收入+未体现设备收入",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/balance"
+                ],
+                "summary": "获取余额信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/dr/infos/devices": {
             "get": {
                 "description": "获取激活设备信息",
@@ -355,6 +384,35 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.DriverOrderFormResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dr/infos/withdraw": {
+            "get": {
+                "description": "余额组成:未结算广告收入+未体现设备收入",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Driver/balance"
+                ],
+                "summary": "提取余额信息（只支持全部提现)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BalanceResponse"
                         }
                     },
                     "400": {
@@ -1491,6 +1549,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/pt/ads/modify/{ad_id}": {
+            "patch": {
+                "description": "将广告投放到所有设备上",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform/Advertisement"
+                ],
+                "summary": "投放广告",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "广告ID",
+                        "name": "ad_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/pt/dev-admin/devs": {
             "post": {
                 "description": "按照Device的定义 传入json格式的数据,添加的设备默认为未激活，未上线状态",
@@ -1505,17 +1602,6 @@ const docTemplate = `{
                     "Platform/Device"
                 ],
                 "summary": "添加设备信息",
-                "parameters": [
-                    {
-                        "description": "填入设备的基本信息,然而并不需要任何基本信息，都自动设定好了",
-                        "name": "DeviceInfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Device"
-                        }
-                    }
-                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -1560,6 +1646,57 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.DevInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/pt/dev-admin/launch/{dev_id}": {
+            "post": {
+                "description": "传入广告ID。激活的设备id",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform/Advertisement"
+                ],
+                "summary": "投放广告",
+                "parameters": [
+                    {
+                        "description": "选中的广告ID",
+                        "name": "ad_ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "设备ID",
+                        "name": "dev_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ADLaunchResponse"
                         }
                     },
                     "400": {
@@ -2028,9 +2165,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/screen/{longituded}/{latitude}": {
+        "/pt/screen/location": {
             "get": {
-                "description": "输入经纬度坐标，表示查找圆的中心，返回半径1000km内的所有车主信息",
+                "description": "返回所有车主位置信息",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -2040,23 +2177,6 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "Platform"
-                ],
-                "summary": "获取附近的车主信息",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "经度",
-                        "name": "longitude",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "纬度",
-                        "name": "latitude",
-                        "in": "path",
-                        "required": true
-                    }
                 ],
                 "responses": {
                     "200": {
@@ -2962,6 +3082,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ADLaunchResponse": {
+            "type": "object",
+            "properties": {
+                "pair": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.PAIR_DEV_AD"
+                    }
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
+                }
+            }
+        },
         "response.ADResponse": {
             "type": "object",
             "properties": {
@@ -2982,11 +3116,25 @@ const docTemplate = `{
         "response.AddDevResponse": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
+                "device_QR": {
+                    "type": "string"
                 },
                 "devices": {
                     "$ref": "#/definitions/model.Device"
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
+                }
+            }
+        },
+        "response.BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "fund": {
+                    "type": "number"
                 },
                 "msg": {
                     "type": "string"
@@ -3728,6 +3876,17 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/response.FactoryProductsInfo"
                     }
+                }
+            }
+        },
+        "response.PAIR_DEV_AD": {
+            "type": "object",
+            "properties": {
+                "adid": {
+                    "type": "integer"
+                },
+                "devid": {
+                    "type": "integer"
                 }
             }
         },

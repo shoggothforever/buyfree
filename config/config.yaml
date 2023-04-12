@@ -27,3 +27,4 @@ minio_user:
   dsm:
     accessKeyID: "atP1p0fin9cHiHZ9"
     secreatAccessKey: "8Aojc9Ss8Q62eNdQkhTPBNwSlhKW9iau"
+    public_prefix: "minio.shoggothy.xyz:/buyfree/l"

@@ -39,7 +39,7 @@ func PlatformRegister(c *gin.Context) {
 				},
 				logininfo.UserID,
 				logininfo.Jwt})
-			c.Set("Authorization", "Bearer:"+logininfo.Jwt)
+			//c.Set("Authorization", "Bearer:"+logininfo.Jwt)
 		} else {
 			logger.Loger.Info(err)
 			c.JSON(200, response.LoginResponse{
@@ -97,8 +97,8 @@ func PlatformLogin(c *gin.Context) {
 			l[0].UserID,
 			l[0].Jwt,
 		})
-		c.Set("Authorization", "Bearer:"+l[0].Jwt)
-		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
+		//c.Set("Authorization", "Bearer:"+l[0].Jwt)
+		dal.Getrdb().Set(c, l[0].Jwt, model.PLATFORMADMIN, utils.EXPIRE)
 	} else {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -171,7 +171,7 @@ func DriverRegister(c *gin.Context) {
 				},
 				logininfo.UserID,
 				logininfo.Jwt})
-			c.Set("Authorization", "Bearer:"+logininfo.Jwt)
+			//c.Set("Authorization", "Bearer:"+logininfo.Jwt)
 		} else {
 			c.JSON(200, response.LoginResponse{
 				response.Response{
@@ -227,8 +227,8 @@ func DriverLogin(c *gin.Context) {
 			l[0].UserID,
 			l[0].Jwt,
 		})
-		c.Set("Authorization", "Bearer:"+l[0].Jwt)
-		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
+		//c.Set("Authorization", "Bearer:"+l[0].Jwt)
+		dal.Getrdb().Set(c, l[0].Jwt, model.DRIVER, utils.EXPIRE)
 	} else {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -304,7 +304,7 @@ func FactoryRegister(c *gin.Context) {
 				},
 				logininfo.UserID,
 				logininfo.Jwt})
-			c.Set("Authorization", "Bearer:"+logininfo.Jwt)
+			//c.Set("Authorization", "Bearer:"+logininfo.Jwt)
 		} else {
 			c.JSON(200, response.LoginResponse{
 				response.Response{
@@ -360,8 +360,8 @@ func FactoryLogin(c *gin.Context) {
 			l[0].UserID,
 			l[0].Jwt,
 		})
-		c.Set("Authorization", "Bearer:"+l[0].Jwt)
-		dal.Getrdb().Set(c, l[0].Jwt, 1, utils.EXPIRE)
+		//c.Set("Authorization", "Bearer:"+l[0].Jwt)
+		dal.Getrdb().Set(c, l[0].Jwt, model.FACTORYADMIN, utils.EXPIRE)
 	} else {
 		c.JSON(200, response.LoginResponse{
 			response.Response{
@@ -412,5 +412,4 @@ func FactoryUserInfo(c *gin.Context) {
 		return
 	}
 	c.JSON(200, response.FaInfoResponse{response.Response{200, "获取场站信息成功"}, admin})
-
 }

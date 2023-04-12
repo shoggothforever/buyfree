@@ -50,8 +50,8 @@ func PlatFormrouter() {
 	//注册与登录
 	pt := r.Group("/pt")
 	{
-		pt.POST("/register", auth.PlatformRegister, middleware.AuthJwt())
-		pt.POST("/login", auth.PlatformLogin, middleware.AuthJwt())
+		pt.POST("/register", auth.PlatformRegister)
+		pt.POST("/login", auth.PlatformLogin)
 		pt.POST("/userinfo", auth.PlatformUserInfo)
 
 	}
@@ -77,7 +77,7 @@ func PlatFormrouter() {
 	psc := pt.Group("/screen")
 	{
 		psc.GET("", salect.GetScreenData)
-		psc.GET("/:longitude/:latitude", salect.GetNearbyDriver)
+		psc.GET("/location", salect.GetNearbyDriver)
 	}
 
 	fdr := pt.Group("/factory-admin")
@@ -93,9 +93,11 @@ func PlatFormrouter() {
 	{
 		rdv.GET("/list/:mode", devct.GetdevBystate)
 		rdv.POST("/devs", devct.AddDev)
+		//rdv.GET("/owner/:id")
 		var devinfoct platform.DevinfoController
 		//设备详情
 		rdv.GET("/infos/:id", devinfoct.LsInfo)
+		rdv.POST("/launch/:dev_id", devinfoct.Launch)
 	}
 
 	ord := pt.Group("/products")
@@ -117,6 +119,8 @@ func PlatFormrouter() {
 		ads.GET("/list/:page", adct.GetADList)
 		ads.GET("/infos/:id", adct.GetADContent)
 		ads.GET("/efficient/:id", adct.GetADEfficient)
+
+		ads.PATCH("/modify/:ad_id", adct.Shelf)
 
 	}
 	QuitPlatformChan = make(chan os.Signal)

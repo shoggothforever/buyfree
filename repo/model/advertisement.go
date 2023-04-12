@@ -23,7 +23,7 @@ type Advertisement struct {
 	ADOwner           string    `gorm:"comment:广告商" json:"ad_owner" form:"ad_owner"`
 	PlayUrl           string    `gorm:"comment:广告播放地址" json:"play_url" form:"play_url"`
 	ExpireAt          time.Time `gorm:"comment:截止日期" json:"expire_at" form:"expire_at"`
-	ADState           int64     `gorm:"comment:广告状态 1上线 ， 0下线" json:"ad_state" form:"ad_state"`
+	ADState           int64     `gorm:"comment:广告状态 t上线 ， f下线" json:"ad_state" form:"ad_state"`
 	//在投放广告的时候需要注意
 	Devices []*Device `gorm:"many2many:Ad_Device"`
 }
@@ -33,8 +33,12 @@ type ADurl struct {
 	PlayUrl    string `json:"play_url" form:"play_url"`
 }
 type Ad_Device struct {
-	AdvertisementID int64   `gorm:"primarykey" json:"advertisement_id" form:"advertisement_id"`
-	DeviceID        int64   `gorm:"primarykey" json:"device_id" form:"device_id"`
-	PlayTimes       int64   `json:"play_times" form:"play_times"`
-	Profit          float64 `json:"profit" form:"profit"`
+	AdvertisementID int64   `gorm:"primarykey;column:advertisement_id" json:"advertisement_id" form:"advertisement_id"`
+	DeviceID        int64   `gorm:"primarykey;column:device_id" json:"device_id" form:"device_id"`
+	PlayTimes       int64   `json:"play_times;column:play_times" form:"play_times"`
+	Profit          float64 `json:"profit;column:profit" form:"profit"`
+}
+type ID int64
+type IDList struct {
+	IDS []ID `json:"IDS,omitempty"`
 }

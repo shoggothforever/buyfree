@@ -557,6 +557,15 @@ definitions:
       msg:
         type: string
     type: object
+  response.ADLaunchResponse:
+    properties:
+      pair:
+        items:
+          $ref: '#/definitions/response.PAIR_DEV_AD'
+        type: array
+      response:
+        $ref: '#/definitions/response.Response'
+    type: object
   response.ADResponse:
     properties:
       adinfos:
@@ -570,10 +579,19 @@ definitions:
     type: object
   response.AddDevResponse:
     properties:
-      code:
-        type: integer
+      device_QR:
+        type: string
       devices:
         $ref: '#/definitions/model.Device'
+      response:
+        $ref: '#/definitions/response.Response'
+    type: object
+  response.BalanceResponse:
+    properties:
+      code:
+        type: integer
+      fund:
+        type: number
       msg:
         type: string
     type: object
@@ -1071,6 +1089,13 @@ definitions:
           $ref: '#/definitions/response.FactoryProductsInfo'
         type: array
     type: object
+  response.PAIR_DEV_AD:
+    properties:
+      adid:
+        type: integer
+      devid:
+        type: integer
+    type: object
   response.PassengerHomeResponse:
     properties:
       ad_urls:
@@ -1441,6 +1466,25 @@ paths:
       summary: 车主端首页
       tags:
       - Driver
+  /dr/infos/balance:
+    get:
+      consumes:
+      - application/json
+      description: 余额组成:未结算广告收入+未体现设备收入
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取余额信息
+      tags:
+      - Driver/balance
   /dr/infos/devices:
     get:
       consumes:
@@ -1510,6 +1554,25 @@ paths:
       summary: 获取订单信息
       tags:
       - Driver/info
+  /dr/infos/withdraw:
+    get:
+      consumes:
+      - application/json
+      description: 余额组成:未结算广告收入+未体现设备收入
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 提取余额信息（只支持全部提现)
+      tags:
+      - Driver/balance
   /dr/inventory:
     get:
       consumes:
@@ -2248,19 +2311,38 @@ paths:
       summary: 获取该平台的所有广告信息
       tags:
       - Platform/Advertisement
+  /pt/ads/modify/{ad_id}:
+    patch:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 将广告投放到所有设备上
+      parameters:
+      - description: 广告ID
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 投放广告
+      tags:
+      - Platform/Advertisement
   /pt/dev-admin/devs:
     post:
       consumes:
       - application/json
       - multipart/form-data
       description: 按照Device的定义 传入json格式的数据,添加的设备默认为未激活，未上线状态
-      parameters:
-      - description: 填入设备的基本信息,然而并不需要任何基本信息，都自动设定好了
-        in: body
-        name: DeviceInfo
-        required: true
-        schema:
-          $ref: '#/definitions/model.Device'
       produces:
       - application/json
       responses:
@@ -2301,6 +2383,40 @@ paths:
       summary: 展示设备详情信息
       tags:
       - Platform/Device
+  /pt/dev-admin/launch/{dev_id}:
+    post:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入广告ID。激活的设备id
+      parameters:
+      - description: 选中的广告ID
+        in: body
+        name: ad_ids
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      - description: 设备ID
+        in: path
+        name: dev_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ADLaunchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 投放广告
+      tags:
+      - Platform/Advertisement
   /pt/dev-admin/list/{mode}:
     get:
       consumes:
@@ -2604,23 +2720,12 @@ paths:
       summary: 展示销售数据
       tags:
       - Platform
-  /pt/screen/{longituded}/{latitude}:
+  /pt/screen/location:
     get:
       consumes:
       - application/json
       - multipart/form-data
-      description: 输入经纬度坐标，表示查找圆的中心，返回半径1000km内的所有车主信息
-      parameters:
-      - description: 经度
-        in: path
-        name: longitude
-        required: true
-        type: string
-      - description: 纬度
-        in: path
-        name: latitude
-        required: true
-        type: string
+      description: 返回所有车主位置信息
       produces:
       - application/json
       responses:
@@ -2632,7 +2737,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 获取附近的车主信息
       tags:
       - Platform
   /pt/static/{mode}:

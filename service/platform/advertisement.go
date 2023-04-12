@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
@@ -11,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 type ADController struct {
@@ -74,7 +76,12 @@ func (a *ADController) AddAD(c *gin.Context) {
 		return
 	}
 	admin := iadmin.(model.Platform)
+	rdb := dal.Getrdb()
+	ctx := rdb.Context()
+	utils.ModifySales(ctx, rdb, utils.Ranktype2, utils.PTNAME, strconv.FormatFloat(ad.InvestFund, 'f', 2, 64))
+
 	ad.PlatformID = admin.ID
+	ad.ExpireAt = time.Now().AddDate(1, 0, 0)
 	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
 	ad.Profit = 0
 	ad.PlayTimes = 0
@@ -173,4 +180,67 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 			}, effinfos,
 		})
 	}
+}
+
+// TODO:swagger
+// @Summary 投放广告
+// @Description 将广告投放到所有设备上
+// @Tags	Platform/Advertisement
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Param ad_id path int true "广告ID"
+// @Success 201 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /pt/ads/modify/{ad_id} [patch]
+func (a *ADController) Shelf(c *gin.Context) {
+	id := c.Param("ad_id")
+	var adv model.Advertisement
+	db := dal.Getdb()
+	err := db.Model(&model.Advertisement{}).Where("id=?", id).First(&adv).Error
+	if err != nil {
+		a.Error(c, 400, "获取广告信息失败")
+		return
+	}
+	var msg string
+	//上线广告
+	if adv.ADState == 0 {
+		msg = "广告上线成功"
+		derr := db.Model(&model.Advertisement{}).Where("id=?", id).Update("ad_state", 1).Error
+		if derr != nil {
+			logger.Loger.Info(derr)
+			a.Error(c, 400, "广告上线失败")
+			return
+		}
+		var ads []model.Ad_Device
+		var ad model.Ad_Device
+		ad.Profit = 0
+		ad.PlayTimes = 0
+		ad.AdvertisementID, _ = strconv.ParseInt(id, 10, 64)
+		var dev_ids []int64
+		err = db.Model(&model.Device{}).Select("id").Where("is_activated = true").Find(&dev_ids).Error
+		if err != nil {
+			logger.Loger.Info(err)
+			a.Error(c, 400, "获取设备信息失败")
+			return
+		}
+		for _, v := range dev_ids {
+			ad.DeviceID = v
+			ads = append(ads, ad)
+		}
+		db.Model(&model.Ad_Device{}).Create(&ads)
+	} else {
+		msg = "广告下线成功"
+		err = db.Model(&model.Advertisement{}).Where("id = ?", id).Update("ad_state", 0).Error
+		if err != nil {
+			logger.Loger.Info(err)
+			a.Error(c, 400, "广告下线失败")
+			return
+		}
+	}
+	c.JSON(200,
+		response.Response{201,
+			msg},
+	)
+
 }

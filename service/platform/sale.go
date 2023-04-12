@@ -91,22 +91,20 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 }
 
 // TODO: 统计数据补全计划
-// @Summary	获取附近的车主信息
-// @Description	输入经纬度坐标，表示查找圆的中心，返回半径1000km内的所有车主信息
+// @Summary
+// @Description	返回所有车主位置信息
 // @Tags Platform
 // @Accept json
 // @Accept mpfd
 // @Produce json
-// @Param longitude path string true "经度"
-// @Param latitude path string true "纬度"
 // @Success 200 {object} response.LocationResponse
 // @Failure 500 {object} response.Response
-// @Router /pt/screen/{longituded}/{latitude} [get]
+// @Router /pt/screen/location [get]
 func (s *SalesController) GetNearbyDriver(c *gin.Context) {
-	lgt := c.Param("longitude")
-	lat := c.Param("latitude")
+	//lgt := c.Param("longitude")
+	//lat := c.Param("latitude")
 	rdb := dal.Getrdb()
-	res, err := utils.LocRadiusWithCoord(c, rdb, utils.DRIVERLOCATION, lgt, lat, "1000", "km")
+	res, err := utils.LocRadiusWithCoord(c, rdb, utils.DRIVERLOCATION, "120", "30", "10000000", "km")
 	if err != nil {
 		logger.Loger.Info(err)
 		s.Error(c, 500, "获取附近车主信息失败")

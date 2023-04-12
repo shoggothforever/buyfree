@@ -12,10 +12,11 @@ import (
 var apiurl = "https://cli.im/api/qrcode/code?text=%s&mhid=sRTBBAq/zMohMHYoLddTOqk"
 var shortenurl = "https://www.mxnzp.com/api/shortlink/create"
 var drinvurl = "http://bfp.shoggothy.xyz/home/%d"
+var drscanurl = "http://bfd.shoggothy.xyz/dr/devices/scan"
 
 func fetch(durl string) *html.Node {
 	url := fmt.Sprintf(apiurl, durl)
-	fmt.Println(url)
+	//fmt.Println(url)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62")
@@ -65,5 +66,9 @@ func shortenUrl(url string) string {
 // 根据设备编号生成相应的图片url并且存储在redis数据库中
 func GenerateSourceUrl(id int64) string {
 	url := fmt.Sprintf(drinvurl, id)
+	return shortenUrl(parseUrls(url))
+}
+func GenerateScanUrl() string {
+	url := fmt.Sprintf(drscanurl)
 	return shortenUrl(parseUrls(url))
 }

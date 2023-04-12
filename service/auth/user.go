@@ -78,7 +78,7 @@ func SavePtLoginInfo(admin *model.Platform) (model.LoginInfo, error) {
 		return model.LoginInfo{}, err
 	}
 	c := context.TODO()
-	dal.Getrdb().Set(c, loginInfo.Jwt, 1, utils.EXPIRE)
+	dal.Getrdb().Set(c, loginInfo.Jwt, model.PLATFORMADMIN, utils.EXPIRE)
 	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
 }
 
@@ -96,7 +96,7 @@ func SaveDrLoginInfo(admin *model.Driver) (model.LoginInfo, error) {
 		return model.LoginInfo{}, err
 	}
 	c := context.TODO()
-	dal.Getrdb().Set(c, loginInfo.Jwt, 1, utils.EXPIRE)
+	dal.Getrdb().Set(c, loginInfo.Jwt, model.DRIVER, utils.EXPIRE)
 	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
 }
 func SaveFLoginInfo(admin *model.Factory) (model.LoginInfo, error) {
@@ -113,6 +113,6 @@ func SaveFLoginInfo(admin *model.Factory) (model.LoginInfo, error) {
 		return model.LoginInfo{}, err
 	}
 	c := context.TODO()
-	dal.Getrdb().Set(c, loginInfo.Jwt, 1, utils.EXPIRE)
+	dal.Getrdb().Set(c, loginInfo.Jwt, model.FACTORYADMIN, utils.EXPIRE)
 	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
 }
