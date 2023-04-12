@@ -28,11 +28,11 @@ func (i *InfoController) Getdevice(c *gin.Context) {
 }
 
 // @Summary 获取订单信息
-// @Description 根据输入mode查看全部，代付款，待取货订单
+// @Description 根据输入mode查看全部，待付款，待取货订单
 // @Tags Driver/info
 // @Accept json
 // @Produce json
-// @Param mode path int true "mode=0查看未支付订单，mode=1查看待付款订单，mode=2查看待取货订单"
+// @Param mode path int true "mode=0查看未支付订单，mode=1查看待取货订单，mode=2查看已完成订单，mode=else 返回全部订单"
 // @Success 200 {object} response.DriverOrderFormResponse
 // @Failure 400 {object} response.Response
 // @Router /dr/infos/orderform/{mode} [get]

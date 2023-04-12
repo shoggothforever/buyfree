@@ -5,7 +5,8 @@ redis:
   password: ""
   DB: "10"
 postgresql:
-  dsn: "host=localhost port=5432 user=bf dbname=bfdb password=bf123  sslmode=disable  TimeZone=Asia/Shanghai"
+ dsn: "host=localhost port=5432 user=bf dbname=bfdb password=bf123  sslmode=disable  TimeZone=Asia/Shanghai"
+  # dsn: "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
 qiniu:
   ak: "krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_-"
   sk: "XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4"
@@ -16,3 +17,13 @@ weixinapp:
 shorten:
   appid: "urveqjgajrithmkd"
   appsecret: "SEl2aHp5UTkySkFQWW5RdmJwNGRiZz09"
+
+minio:
+  endpoint:
+  accessKeyID: "EXZmpBNygEhOOFiJ"
+  secreatAccessKey: "HdGjX5oJqjTLwWKANtY7LLTu8iC82cib"
+  secure:
+minio_user:
+  dsm:
+    accessKeyID: "atP1p0fin9cHiHZ9"
+    secreatAccessKey: "8Aojc9Ss8Q62eNdQkhTPBNwSlhKW9iau"
