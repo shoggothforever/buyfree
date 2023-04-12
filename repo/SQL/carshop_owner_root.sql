@@ -22,38 +22,36 @@ CREATE TABLE "public"."login_infos" (
                                         "salt" TEXT COLLATE "pg_catalog"."default",
                                         "jwt" TEXT COLLATE "pg_catalog"."default",
                                         "role" INT8 NOT NULL,
-                                        "user_name" TEXT COLLATE "pg_catalog"."default",
-                                        CONSTRAINT "login_infos_pkey" PRIMARY KEY ("role","user_name" )
+                                        "user_name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                        CONSTRAINT "login_infos_pkey" PRIMARY KEY ( "role", "user_name" )
 );
-ALTER TABLE "public"."login_infos" OWNER TO "root
-";
+ALTER TABLE "public"."login_infos" OWNER TO "root";
 COMMENT ON COLUMN "public"."login_infos"."salt" IS '加密盐';
 COMMENT ON COLUMN "public"."login_infos"."jwt" IS '鉴权值';
-COMMENT ON COLUMN "public"."login_infos"."user_name" IS '用户密码';
 
 -- ----------------------------
 -- Table structure for passengers
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."passengers";
 CREATE TABLE "public"."passengers" (
-                                       "id" INT8 NOT NULL ,
-                                       "created_at" TIMESTAMPTZ ( 6 ),
+                                       "id" INT8 NOT NULL,
+                                       "created_at" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
                                        "updated_at" TIMESTAMPTZ ( 6 ),
                                        "deleted_at" TIMESTAMPTZ ( 6 ),
-                                       "balance" NUMERIC,
-                                       "pic" TEXT COLLATE "pg_catalog"."default",
+                                       "balance" NUMERIC NOT NULL DEFAULT 0,
+                                       "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
                                        "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                       "password" TEXT COLLATE "pg_catalog"."default" ,
+                                       "password" VARCHAR ( 40 ) COLLATE "pg_catalog"."default",
+                                       "mobile" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                       "id_card" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                       "role" INT8 NOT NULL DEFAULT 0,
+                                       "level" INT8 NOT NULL DEFAULT 0,
+                                       "score" INT8 NOT NULL DEFAULT 0,
                                        "password_salt" TEXT COLLATE "pg_catalog"."default",
-                                       "mobile" TEXT COLLATE "pg_catalog"."default",
-                                       "id_card" TEXT COLLATE "pg_catalog"."default",
-                                       "role" INT8 NOT NULL,
-                                       "level" INT8 NOT NULL,
-                                       "score" INT8,
-                                       CONSTRAINT "passengers_pkey" PRIMARY KEY ( "id" )
+                                       CONSTRAINT "passengers_pkey" PRIMARY KEY ( "id" ),
+                                       CONSTRAINT "passengers_name_key" UNIQUE ( "name" )
 );
-ALTER TABLE "public"."passengers" OWNER TO "root
-";
+ALTER TABLE "public"."passengers" OWNER TO "root";
 COMMENT ON COLUMN "public"."passengers"."balance" IS '账户余额';
 COMMENT ON COLUMN "public"."passengers"."pic" IS '用户头像';
 COMMENT ON COLUMN "public"."passengers"."name" IS '用户昵称';
@@ -62,6 +60,7 @@ COMMENT ON COLUMN "public"."passengers"."id_card" IS '身份证';
 COMMENT ON COLUMN "public"."passengers"."role" IS '身份 0-乘客 1-司机 2-场站管理员 3-平台管理员 ';
 COMMENT ON COLUMN "public"."passengers"."level" IS '用户等级';
 COMMENT ON COLUMN "public"."passengers"."score" IS '用户积分';
+COMMENT ON COLUMN "public"."passengers"."password_salt" IS '密码盐';
 
 -- ----------------------------
 -- Table structure for passenger_carts
@@ -69,17 +68,15 @@ COMMENT ON COLUMN "public"."passengers"."score" IS '用户积分';
 DROP TABLE IF EXISTS "public"."passenger_carts";
 CREATE TABLE "public"."passenger_carts" (
                                             "passenger_id" INT8,
-                                            "cart_id" INT8 NOT NULL ,
-                                            "total_count" INT8,
-                                            "total_amount" NUMERIC,
+                                            "cart_id" INT8 NOT NULL,
+                                            "total_count" INT8 NOT NULL DEFAULT 0,
+                                            "total_amount" NUMERIC NOT NULL DEFAULT 0,
                                             CONSTRAINT "passenger_carts_pkey" PRIMARY KEY ( "cart_id" ),
                                             CONSTRAINT "fk_passengers_cart" FOREIGN KEY ( "passenger_id" ) REFERENCES "public"."passengers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."passenger_carts" OWNER TO "root
-";
+ALTER TABLE "public"."passenger_carts" OWNER TO "root";
 COMMENT ON COLUMN "public"."passenger_carts"."total_count" IS '全选金额';
 COMMENT ON COLUMN "public"."passenger_carts"."total_amount" IS '全部商品数量';
-
 -- ----------------------------
 -- Table structure for passenger_order_forms
 -- ----------------------------
@@ -87,17 +84,16 @@ DROP TABLE IF EXISTS "public"."passenger_order_forms";
 CREATE TABLE "public"."passenger_order_forms" (
                                                   "passenger_id" INT8,
                                                   "driver_car_id" TEXT COLLATE "pg_catalog"."default",
-                                                  "order_id" int8,
-                                                  "cost" INT8,
-                                                  "state" INT2,
-                                                  "location" TEXT COLLATE "pg_catalog"."default",
-                                                  "place_time" TIMESTAMPTZ ( 6 ),
+                                                  "order_id" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                                  "cost" NUMERIC NOT NULL DEFAULT 0,
+                                                  "state" INT2 NOT NULL DEFAULT 0,
+                                                  "location" VARCHAR ( 40 ) COLLATE "pg_catalog"."default",
+                                                  "place_time" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
                                                   "pay_time" TIMESTAMPTZ ( 6 ),
                                                   CONSTRAINT "passenger_order_forms_pkey" PRIMARY KEY ( "order_id" ),
                                                   CONSTRAINT "fk_passengers_order_forms" FOREIGN KEY ( "passenger_id" ) REFERENCES "public"."passengers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."passenger_order_forms" OWNER TO "root
-";
+ALTER TABLE "public"."passenger_order_forms" OWNER TO "root";
 COMMENT ON COLUMN "public"."passenger_order_forms"."driver_car_id" IS '支付时存储车主车牌号';
 COMMENT ON COLUMN "public"."passenger_order_forms"."cost" IS '花费';
 COMMENT ON COLUMN "public"."passenger_order_forms"."state" IS '订单状态 2-已完成 1-待取货 0-未支付';
@@ -110,27 +106,26 @@ COMMENT ON COLUMN "public"."passenger_order_forms"."pay_time" IS '支付时间';
 DROP TABLE IF EXISTS "public"."factories";
 CREATE TABLE "public"."factories" (
                                       "id" INT8 NOT NULL,
-                                      "created_at" TIMESTAMPTZ ( 6 ),
+                                      "created_at" TIMESTAMPTZ ( 6 ) DEFAULT now( ),
                                       "updated_at" TIMESTAMPTZ ( 6 ),
                                       "deleted_at" TIMESTAMPTZ ( 6 ),
-                                      "balance" NUMERIC,
-                                      "pic" TEXT COLLATE "pg_catalog"."default",
+                                      "balance" NUMERIC DEFAULT 0,
+                                      "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" DEFAULT ' ' :: CHARACTER VARYING,
                                       "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                      "password" TEXT COLLATE "pg_catalog"."default",
-                                      "mobile" TEXT COLLATE "pg_catalog"."default",
-                                      "id_card" TEXT COLLATE "pg_catalog"."default",
-                                      "role" INT8 NOT NULL,
-                                      "level" INT8 NOT NULL,
-                                      "password_salt" TEXT COLLATE "pg_catalog"."default",
-                                      "address" TEXT COLLATE "pg_catalog"."default",
-                                      "longitude" VARCHAR ( 30 ) COLLATE "pg_catalog"."default",
-                                      "description" VARCHAR ( 255 ) COLLATE "pg_catalog"."default",
-                                      "latitude" VARCHAR ( 30 ) COLLATE "pg_catalog"."default",
+                                      "password" VARCHAR COLLATE "pg_catalog"."default",
+                                      "mobile" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                      "id_card" VARCHAR ( 20 ) COLLATE "pg_catalog"."default",
+                                      "role" INT8 NOT NULL DEFAULT 2,
+                                      "level" INT8 NOT NULL DEFAULT 0,
+                                      "password_salt" VARCHAR ( 20 ) COLLATE "pg_catalog"."default",
+                                      "address" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL,
+                                      "longitude" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                      "latitude" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                      "description" TEXT COLLATE "pg_catalog"."default",
                                       CONSTRAINT "factories_pkey" PRIMARY KEY ( "id" ),
                                       CONSTRAINT "factories_name_key" UNIQUE ( "name" )
 );
-ALTER TABLE "public"."factories" OWNER TO "root
-";
+ALTER TABLE "public"."factories" OWNER TO "root";
 COMMENT ON COLUMN "public"."factories"."balance" IS '账户余额';
 COMMENT ON COLUMN "public"."factories"."pic" IS '用户头像';
 COMMENT ON COLUMN "public"."factories"."name" IS '用户昵称';
@@ -138,37 +133,36 @@ COMMENT ON COLUMN "public"."factories"."mobile" IS '手机号';
 COMMENT ON COLUMN "public"."factories"."id_card" IS '身份证';
 COMMENT ON COLUMN "public"."factories"."role" IS '身份 0-乘客 1-司机 2-场站管理员 3-平台管理员 ';
 COMMENT ON COLUMN "public"."factories"."level" IS '用户等级';
-COMMENT ON COLUMN "public"."factories"."password_salt" IS '年销售量';
+COMMENT ON COLUMN "public"."factories"."password_salt" IS '密码盐';
 COMMENT ON COLUMN "public"."factories"."address" IS '场站位置信息';
 COMMENT ON COLUMN "public"."factories"."longitude" IS '经度';
-COMMENT ON COLUMN "public"."factories"."description" IS '场站描述';
 COMMENT ON COLUMN "public"."factories"."latitude" IS '纬度';
+COMMENT ON COLUMN "public"."factories"."description" IS '场站描述';
 -- ----------------------------
 -- Table structure for factory_products
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."factory_products";
 CREATE TABLE "public"."factory_products" (
                                              "factory_name" TEXT COLLATE "pg_catalog"."default",
-                                             "id" INT8 NOT NULL,
-                                             "factory_id" INT8,
-                                             "sku" TEXT COLLATE "pg_catalog"."default",
-                                             "inventory" INT8,
-                                             "name" TEXT COLLATE "pg_catalog"."default",
-                                             "pic" TEXT COLLATE "pg_catalog"."default",
-                                             "type" TEXT COLLATE "pg_catalog"."default",
-                                             "buy_price" NUMERIC,
-                                             "supply_price" NUMERIC,
-                                             "daily_sales" NUMERIC,
-                                             "weekly_sales" NUMERIC,
-                                             "monthly_sales" NUMERIC,
-                                             "annually_sales" NUMERIC,
-                                             "total_sales" NUMERIC,
-                                             "is_on_shelf" BOOL,
-                                             CONSTRAINT "factory_products_pkey" PRIMARY KEY ("id", "factory_id", "name"),
-                                             CONSTRAINT "fk_factories_products" FOREIGN KEY ("factory_id") REFERENCES "public"."factories" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-                                         );
-ALTER TABLE "public"."factory_products" OWNER TO "root
-";
+                                             "id" INT8 NOT NULL ,
+                                             "factory_id" INT8 NOT NULL,
+                                             "sku" VARCHAR COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                             "inventory" INT8 NOT NULL DEFAULT 0,
+                                             "name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
+                                             "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                             "type" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                             "buy_price" NUMERIC NOT NULL DEFAULT 99999,
+                                             "supply_price" NUMERIC NOT NULL DEFAULT 99999,
+                                             "daily_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                             "weekly_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                             "monthly_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                             "annually_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                             "total_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                             "is_on_shelf" BOOL NOT NULL DEFAULT TRUE,
+                                             CONSTRAINT "factory_products_pkey" PRIMARY KEY ( "id", "factory_id", "name" ),
+                                             CONSTRAINT "fk_factories_products" FOREIGN KEY ( "factory_id" ) REFERENCES "public"."factories" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+ALTER TABLE "public"."factory_products" OWNER TO "root";
 COMMENT ON COLUMN "public"."factory_products"."factory_id" IS '指向场站的编号';
 COMMENT ON COLUMN "public"."factory_products"."sku" IS '库存控制最小可用单位';
 COMMENT ON COLUMN "public"."factory_products"."inventory" IS '存货';
@@ -190,23 +184,22 @@ COMMENT ON COLUMN "public"."factory_products"."total_sales" IS '总销售量';
 DROP TABLE IF EXISTS "public"."platforms";
 CREATE TABLE "public"."platforms" (
                                       "id" INT8 NOT NULL ,
-                                      "created_at" TIMESTAMPTZ ( 6 ),
+                                      "created_at" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
                                       "updated_at" TIMESTAMPTZ ( 6 ),
                                       "deleted_at" TIMESTAMPTZ ( 6 ),
-                                      "balance" NUMERIC,
-                                      "pic" TEXT COLLATE "pg_catalog"."default",
+                                      "balance" NUMERIC NOT NULL DEFAULT 0,
+                                      "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
                                       "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                      "password" TEXT COLLATE "pg_catalog"."default" ,
-                                      "mobile" TEXT COLLATE "pg_catalog"."default",
-                                      "id_card" TEXT COLLATE "pg_catalog"."default",
-                                      "role" INT8 NOT NULL,
+                                      "password" VARCHAR ( 40 ) COLLATE "pg_catalog"."default",
+                                      "mobile" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" DEFAULT ' ' :: CHARACTER VARYING,
+                                      "id_card" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" DEFAULT ' ' :: CHARACTER VARYING,
+                                      "role" INT8 NOT NULL DEFAULT 3,
                                       "level" INT8 NOT NULL,
                                       "password_salt" TEXT COLLATE "pg_catalog"."default",
                                       CONSTRAINT "platforms_pkey" PRIMARY KEY ( "id" ),
-                                      CONSTRAINT "platforms_name_key" UNIQUE ("name")
+                                      CONSTRAINT "platforms_name_key" UNIQUE ( "name" )
 );
-ALTER TABLE "public"."platforms" OWNER TO "root
-";
+ALTER TABLE "public"."platforms" OWNER TO "root";
 COMMENT ON COLUMN "public"."platforms"."balance" IS '账户余额';
 COMMENT ON COLUMN "public"."platforms"."pic" IS '用户头像';
 COMMENT ON COLUMN "public"."platforms"."name" IS '用户昵称';
@@ -221,29 +214,28 @@ COMMENT ON COLUMN "public"."platforms"."password_salt" IS '年销售量';
 DROP TABLE IF EXISTS "public"."drivers";
 CREATE TABLE "public"."drivers" (
                                     "id" INT8 NOT NULL,
-                                    "created_at" TIMESTAMPTZ ( 6 ),
+                                    "created_at" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
                                     "updated_at" TIMESTAMPTZ ( 6 ),
                                     "deleted_at" TIMESTAMPTZ ( 6 ),
                                     "balance" NUMERIC,
-                                    "pic" TEXT COLLATE "pg_catalog"."default",
+                                    "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
                                     "name" VARCHAR ( 32 ) COLLATE "pg_catalog"."default" NOT NULL,
-                                    "password" TEXT COLLATE "pg_catalog"."default",
-                                    "mobile" TEXT COLLATE "pg_catalog"."default",
-                                    "id_card" TEXT COLLATE "pg_catalog"."default",
-                                    "role" INT8 NOT NULL,
-                                    "level" INT8 NOT NULL,
-                                    "car_id" TEXT COLLATE "pg_catalog"."default",
-                                    "platform_id" INT8,
-                                    "is_auth" BOOL,
-                                    "address" TEXT COLLATE "pg_catalog"."default",
-                                    "password_salt" TEXT COLLATE "pg_catalog"."default",
-                                    "longitude" VARCHAR COLLATE "pg_catalog"."default",
-                                    "latitude" VARCHAR COLLATE "pg_catalog"."default",
+                                    "password" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" DEFAULT 123456,
+                                    "mobile" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                    "id_card" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                    "role" INT8 NOT NULL DEFAULT 1,
+                                    "level" INT8 NOT NULL DEFAULT 0,
+                                    "car_id" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                    "platform_id" INT8 NOT NULL DEFAULT 0,
+                                    "is_auth" BOOL NOT NULL DEFAULT FALSE,
+                                    "password_salt" VARCHAR ( 20 ) COLLATE "pg_catalog"."default",
+                                    "address" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                    "longitude" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 120,
+                                    "latitude" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 30,
                                     CONSTRAINT "drivers_pkey" PRIMARY KEY ( "id" ),
-                                    CONSTRAINT "idx_drivers_name" UNIQUE ( "name" )
+                                    CONSTRAINT "drivers_name_key" UNIQUE ( "name" )
 );
-ALTER TABLE "public"."drivers" OWNER TO "root
-";
+ALTER TABLE "public"."drivers" OWNER TO "root";
 COMMENT ON COLUMN "public"."drivers"."balance" IS '账户余额';
 COMMENT ON COLUMN "public"."drivers"."pic" IS '用户头像';
 COMMENT ON COLUMN "public"."drivers"."name" IS '用户昵称';
@@ -253,8 +245,8 @@ COMMENT ON COLUMN "public"."drivers"."role" IS '身份 0-乘客 1-司机 2-场�
 COMMENT ON COLUMN "public"."drivers"."level" IS '用户等级';
 COMMENT ON COLUMN "public"."drivers"."car_id" IS '车牌号';
 COMMENT ON COLUMN "public"."drivers"."is_auth" IS '1为已认证，0为未认证';
-COMMENT ON COLUMN "public"."drivers"."address" IS '地理位置';
 COMMENT ON COLUMN "public"."drivers"."password_salt" IS '密码盐';
+COMMENT ON COLUMN "public"."drivers"."address" IS '车主位置信息';
 COMMENT ON COLUMN "public"."drivers"."longitude" IS '经度';
 COMMENT ON COLUMN "public"."drivers"."latitude" IS '纬度';
 
@@ -265,14 +257,14 @@ DROP TABLE IF EXISTS "public"."order_products";
 CREATE TABLE "public"."order_products" (
                                            "cart_refer" INT8 NOT NULL,
                                            "factory_id" INT8 NOT NULL,
-                                           "order_refer" INT8,
-                                           "is_chosen" BOOL,
-                                           "name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
-                                           "sku" TEXT COLLATE "pg_catalog"."default",
-                                           "pic" TEXT COLLATE "pg_catalog"."default",
-                                           "type" TEXT COLLATE "pg_catalog"."default" NOT NULL,
-                                           "count" INT8 NOT NULL,
-                                           "price" NUMERIC NOT NULL,
+                                           "order_refer" INT8 NOT NULL,
+                                           "is_chosen" BOOL NOT NULL DEFAULT TRUE,
+                                           "name" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "sku" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                           "type" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "count" INT8 NOT NULL DEFAULT 0,
+                                           "price" NUMERIC NOT NULL DEFAULT 99999,
                                            CONSTRAINT "order_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer", "order_refer" )
 );
 ALTER TABLE "public"."order_products" OWNER TO "root";
@@ -294,14 +286,14 @@ DROP TABLE IF EXISTS "public"."cart_products";
 CREATE TABLE "public"."cart_products" (
                                           "cart_refer" INT8 NOT NULL,
                                           "factory_id" INT8 NOT NULL,
-                                          "order_refer" INT8,
-                                          "is_chosen" BOOL,
-                                          "name" TEXT COLLATE "pg_catalog"."default" NOT NULL,
-                                          "sku" TEXT COLLATE "pg_catalog"."default",
-                                          "pic" TEXT COLLATE "pg_catalog"."default",
-                                          "type" TEXT COLLATE "pg_catalog"."default" NOT NULL,
-                                          "count" INT8 NOT NULL,
-                                          "price" NUMERIC NOT NULL,
+                                          "order_refer" INT8 NOT NULL DEFAULT 0,
+                                          "is_chosen" BOOL NOT NULL DEFAULT TRUE,
+                                          "name" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                          "sku" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                          "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                          "type" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                          "count" INT8 NOT NULL DEFAULT 0,
+                                          "price" NUMERIC NOT NULL DEFAULT 99999,
                                           CONSTRAINT "cart_products_pkey" PRIMARY KEY ( "type", "name", "factory_id", "cart_refer", "order_refer" )
 );
 ALTER TABLE "public"."cart_products" OWNER TO "root";
@@ -321,25 +313,24 @@ COMMENT ON COLUMN "public"."cart_products"."price" IS '价格,根据所属购物
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."devices";
 CREATE TABLE "public"."devices" (
-                                    "id" INT8 NOT NULL ,
+                                    "id" INT8 NOT NULL,
                                     "owner_id" INT8,
                                     "platform_id" INT8,
-                                    "is_activated" BOOL,
-                                    "activated_time" TIMESTAMPTZ ( 6 ),
-                                    "updated_time" TIMESTAMPTZ ( 6 ),
-                                    "is_online" BOOL,
-                                    "profit" NUMERIC,
+                                    "is_activated" BOOL NOT NULL DEFAULT FALSE,
+                                    "activated_time" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
+                                    "updated_time" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
+                                    "is_online" BOOL NOT NULL DEFAULT FALSE,
+                                    "profit" NUMERIC NOT NULL DEFAULT 0,
                                     CONSTRAINT "devices_pkey" PRIMARY KEY ( "id" ),
                                     CONSTRAINT "fk_drivers_devices" FOREIGN KEY ( "owner_id" ) REFERENCES "public"."drivers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
                                     CONSTRAINT "fk_platforms_devices" FOREIGN KEY ( "platform_id" ) REFERENCES "public"."platforms" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."devices" OWNER TO "root
-";
+ALTER TABLE "public"."devices" OWNER TO "root";
 COMMENT ON COLUMN "public"."devices"."owner_id" IS '车主ID';
-COMMENT ON COLUMN "public"."devices"."is_activated" IS '1为激活，0为未激活';
+COMMENT ON COLUMN "public"."devices"."is_activated" IS 'true为激活，false为未激活';
 COMMENT ON COLUMN "public"."devices"."activated_time" IS '激活时间';
 COMMENT ON COLUMN "public"."devices"."updated_time" IS '更新时间';
-COMMENT ON COLUMN "public"."devices"."is_online" IS '1为上线，0为未上线';
+COMMENT ON COLUMN "public"."devices"."is_online" IS 'true为上线，false为未上线';
 COMMENT ON COLUMN "public"."devices"."profit" IS '收益额';
 
 -- ----------------------------
@@ -349,13 +340,12 @@ DROP TABLE IF EXISTS "public"."driver_carts";
 CREATE TABLE "public"."driver_carts" (
                                          "driver_id" INT8,
                                          "cart_id" INT8 NOT NULL,
-                                         "total_count" INT8,
-                                         "total_amount" NUMERIC,
+                                         "total_count" INT8 NOT NULL DEFAULT 0,
+                                         "total_amount" NUMERIC NOT NULL DEFAULT 0,
                                          CONSTRAINT "driver_carts_pkey" PRIMARY KEY ( "cart_id" ),
                                          CONSTRAINT "fk_drivers_cart" FOREIGN KEY ( "driver_id" ) REFERENCES "public"."drivers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."driver_carts" OWNER TO "root
-";
+ALTER TABLE "public"."driver_carts" OWNER TO "root";
 COMMENT ON COLUMN "public"."driver_carts"."total_count" IS '全选金额';
 COMMENT ON COLUMN "public"."driver_carts"."total_amount" IS '全部商品数量';
 
@@ -365,23 +355,22 @@ COMMENT ON COLUMN "public"."driver_carts"."total_amount" IS '全部商品数量'
 DROP TABLE IF EXISTS "public"."driver_order_forms";
 CREATE TABLE "public"."driver_order_forms" (
                                                "factory_id" INT8,
-                                               "factory_name" TEXT COLLATE "pg_catalog"."default",
+                                               "factory_name" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
                                                "driver_id" INT8,
-                                               "car_id" TEXT COLLATE "pg_catalog"."default",
-                                               "comment" TEXT COLLATE "pg_catalog"."default",
-                                               "get_time" TIMESTAMPTZ ( 6 ),
-                                               "order_id" int8,
-                                               "cost" INT8,
-                                               "state" INT2,
-                                               "location" TEXT COLLATE "pg_catalog"."default",
-                                               "place_time" TIMESTAMPTZ ( 6 ),
-                                               "pay_time" TIMESTAMPTZ ( 6 ),
+                                               "car_id" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                               "comment" TEXT COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: TEXT,
+                                               "get_time" TIMESTAMPTZ ( 6 ) NOT NULL,
+                                               "order_id" INT8 NOT NULL,
+                                               "cost" NUMERIC ( 64, 0 ) NOT NULL DEFAULT 0,
+                                               "state" INT2 NOT NULL DEFAULT 0,
+                                               "location" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                               "place_time" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
+                                               "pay_time" TIMESTAMPTZ ( 6 ) NOT NULL DEFAULT now( ),
                                                CONSTRAINT "driver_order_forms_pkey" PRIMARY KEY ( "order_id" ),
                                                CONSTRAINT "fk_drivers_driver_order_forms" FOREIGN KEY ( "driver_id" ) REFERENCES "public"."drivers" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
                                                CONSTRAINT "fk_factories_order_forms" FOREIGN KEY ( "factory_id" ) REFERENCES "public"."factories" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."driver_order_forms" OWNER TO "root
-";
+ALTER TABLE "public"."driver_order_forms" OWNER TO "root";
 COMMENT ON COLUMN "public"."driver_order_forms"."factory_id" IS '指向factory.id';
 COMMENT ON COLUMN "public"."driver_order_forms"."factory_name" IS '订单发货场站名';
 COMMENT ON COLUMN "public"."driver_order_forms"."comment" IS '备注';
@@ -389,35 +378,34 @@ COMMENT ON COLUMN "public"."driver_order_forms"."get_time" IS '自取时间';
 COMMENT ON COLUMN "public"."driver_order_forms"."cost" IS '花费';
 COMMENT ON COLUMN "public"."driver_order_forms"."state" IS '订单状态 2-已完成 1-待取货 0-未支付';
 COMMENT ON COLUMN "public"."driver_order_forms"."location" IS '支付时存储位置(购物时获取车主位置）';
-COMMENT ON COLUMN "public"."driver_order_forms"."placetime" IS '下单时间';
-COMMENT ON COLUMN "public"."driver_order_forms"."paytime" IS '支付时间';
+COMMENT ON COLUMN "public"."driver_order_forms"."place_time" IS '下单时间';
+COMMENT ON COLUMN "public"."driver_order_forms"."pay_time" IS '支付时间';
 
 -- ----------------------------
 -- Table structure for device_products
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."device_products";
 CREATE TABLE "public"."device_products" (
+                                            "device_id" INT8,
                                             "id" INT8 NOT NULL,
                                             "factory_id" INT8,
-                                            "driver_id" int8,
-                                            "device_id" INT8,
-                                            "sku" TEXT COLLATE "pg_catalog"."default",
-                                            "inventory" INT8,
-                                            "name" TEXT COLLATE "pg_catalog"."default",
-                                            "pic" TEXT COLLATE "pg_catalog"."default",
-                                            "type" TEXT COLLATE "pg_catalog"."default",
-                                            "buy_price" NUMERIC,
-                                            "supply_price" NUMERIC,
-                                            "daily_sales" NUMERIC,
-                                            "weekly_sales" NUMERIC,
-                                            "monthly_sales" NUMERIC,
-                                            "annually_sales" NUMERIC,
-                                            "total_sales" NUMERIC,
+                                            "sku" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                            "inventory" INT8 NOT NULL DEFAULT 0,
+                                            "name" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                            "pic" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                            "type" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                            "buy_price" NUMERIC NOT NULL DEFAULT 99999,
+                                            "supply_price" NUMERIC NOT NULL DEFAULT 99999,
+                                            "daily_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                            "weekly_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                            "monthly_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                            "annually_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                            "total_sales" VARCHAR ( 40 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 0,
+                                            "driver_id" INT8,
                                             CONSTRAINT "device_products_pkey" PRIMARY KEY ( "id" ),
                                             CONSTRAINT "fk_devices_products" FOREIGN KEY ( "device_id" ) REFERENCES "public"."devices" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."device_products" OWNER TO "root
-";
+ALTER TABLE "public"."device_products" OWNER TO "root";
 COMMENT ON COLUMN "public"."device_products"."device_id" IS '售货机编号';
 COMMENT ON COLUMN "public"."device_products"."factory_id" IS '指向场站的编号';
 COMMENT ON COLUMN "public"."device_products"."sku" IS '库存控制最小可用单位';
@@ -432,33 +420,34 @@ COMMENT ON COLUMN "public"."device_products"."weekly_sales" IS '周销量';
 COMMENT ON COLUMN "public"."device_products"."monthly_sales" IS '月销量';
 COMMENT ON COLUMN "public"."device_products"."annually_sales" IS '年销售量';
 COMMENT ON COLUMN "public"."device_products"."total_sales" IS '总销售量';
-
+COMMENT ON COLUMN "public"."device_products"."driver_id" IS '指向车主的编号';
 -- ----------------------------
 -- Table structure for advertisements
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."advertisements";
 CREATE TABLE "public"."advertisements" (
-                                           "id" INT8 NOT NULL ,
-                                           "description" TEXT COLLATE "pg_catalog"."default",
+                                           "id" INT8 NOT NULL,
+                                           "description" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
                                            "platform_id" INT8,
-                                           "expected_play_times" INT8,
-                                           "play_times" INT8,
-                                           "invest_fund" NUMERIC,
-                                           "profit" NUMERIC,
-                                           "ad_owner" TEXT COLLATE "pg_catalog"."default",
-                                           "play_url" TEXT COLLATE "pg_catalog"."default",
+                                           "expected_play_times" INT8 NOT NULL DEFAULT 0,
+                                           "play_times" INT8 NOT NULL DEFAULT 0,
+                                           "invest_fund" NUMERIC NOT NULL DEFAULT 0,
+                                           "profit" NUMERIC NOT NULL DEFAULT 0,
+                                           "video_cover" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                           "ad_owner" VARCHAR ( 20 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
+                                           "play_url" VARCHAR ( 255 ) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ' ' :: CHARACTER VARYING,
                                            "expire_at" TIMESTAMPTZ ( 6 ),
                                            "ad_state" INT8,
                                            CONSTRAINT "advertisements_pkey" PRIMARY KEY ( "id" ),
                                            CONSTRAINT "fk_platforms_advertisements" FOREIGN KEY ( "platform_id" ) REFERENCES "public"."platforms" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE "public"."advertisements" OWNER TO "root
-";
+ALTER TABLE "public"."advertisements" OWNER TO "root";
 COMMENT ON COLUMN "public"."advertisements"."description" IS '广告描述';
 COMMENT ON COLUMN "public"."advertisements"."expected_play_times" IS '预期播放次数';
 COMMENT ON COLUMN "public"."advertisements"."play_times" IS '已经播放金额';
 COMMENT ON COLUMN "public"."advertisements"."invest_fund" IS '投资金额';
 COMMENT ON COLUMN "public"."advertisements"."profit" IS '产生收入';
+COMMENT ON COLUMN "public"."advertisements"."video_cover" IS '广告封面地址';
 COMMENT ON COLUMN "public"."advertisements"."ad_owner" IS '广告商';
 COMMENT ON COLUMN "public"."advertisements"."play_url" IS '广告播放地址';
 COMMENT ON COLUMN "public"."advertisements"."expire_at" IS '截止日期';
@@ -470,7 +459,7 @@ COMMENT ON COLUMN "public"."advertisements"."ad_state" IS '广告状态 1上线 
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."fund_infos";
 CREATE TABLE "public"."fund_infos" (
-                                       "user_id" INT8 NOT NULL DEFAULT nextval( 'bank_card_infos_id_seq' :: REGCLASS ),
+                                       "user_id" INT8 NOT NULL,
                                        "card_id" INT8,
                                        "bank_name" TEXT COLLATE "pg_catalog"."default",
                                        "cash" NUMERIC,
@@ -489,11 +478,8 @@ DROP TABLE IF EXISTS "public"."ad_devices";
 CREATE TABLE "public"."ad_devices" (
                                        "advertisement_id" INT8 NOT NULL,
                                        "device_id" INT8 NOT NULL,
-                                       "play_times" INT8 NOT NULL,
-                                       "profit" NUMERIC NOT NULL,
-                                       CONSTRAINT "ad_devices_pkey" PRIMARY KEY ( "advertisement_id", "device_id" ),
-                                       CONSTRAINT "fk_ad_devices_advertisement" FOREIGN KEY ( "advertisement_id" ) REFERENCES "public"."advertisements" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION,
-                                       CONSTRAINT "fk_ad_devices_device" FOREIGN KEY ( "device_id" ) REFERENCES "public"."devices" ( "id" ) ON DELETE NO ACTION ON UPDATE NO ACTION
+                                       "play_times" INT8 NOT NULL DEFAULT 0,
+                                       "profit" NUMERIC NOT NULL DEFAULT 0,
+                                       CONSTRAINT "ad_devices_pkey" PRIMARY KEY ( "advertisement_id", "device_id" )
 );
-ALTER TABLE "public"."ad_devices" OWNER TO "root
-";
+ALTER TABLE "public"."ad_devices" OWNER TO "root";

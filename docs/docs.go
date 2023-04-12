@@ -330,7 +330,7 @@ const docTemplate = `{
         },
         "/dr/infos/orderform/{mode}": {
             "get": {
-                "description": "根据输入mode查看全部，代付款，待取货订单",
+                "description": "根据输入mode查看全部，待付款，待取货订单",
                 "consumes": [
                     "application/json"
                 ],
@@ -344,7 +344,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "mode=0查看未支付订单，mode=1查看待付款订单，mode=2查看待取货订单",
+                        "description": "mode=0查看未支付订单，mode=1查看待取货订单，mode=2查看已完成订单，mode=else 返回全部订单",
                         "name": "mode",
                         "in": "path",
                         "required": true

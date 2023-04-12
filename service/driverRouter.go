@@ -34,7 +34,7 @@ func Driverrouter() {
 	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	DriverSrv = http.Server{
-		Addr:    ":9001",
+		Addr:    ":9004",
 		Handler: r,
 	}
 	go func() {
@@ -58,14 +58,13 @@ func Driverrouter() {
 		dr.POST("/userinfo", auth.DriverUserInfo)
 
 	}
-	dr.Use(middleware.AuthJwt())
-	{
-		dr.GET("/home", ht.GetStatic)
-		dr.POST("/ping", ht.Ping)
-		dr.GET("/inventory", it.GetInventory)
-		dr.GET("/inventory/:device_id", it.GetDeviceByScan)
 
-	}
+	dr.GET("/inventory/:device_id", it.GetDeviceByScan)
+
+	dr.Use(middleware.AuthJwt())
+	dr.GET("/home", ht.GetStatic)
+	dr.POST("/ping", ht.Ping)
+	dr.GET("/inventory", it.GetInventory)
 	fa := dr.Group("/factory")
 	{
 		fa.POST("", ft.FactoryOverview)
