@@ -58,14 +58,13 @@ func Driverrouter() {
 		dr.POST("/userinfo", auth.DriverUserInfo)
 
 	}
-
 	dr.GET("/inventory/:device_id", it.GetDeviceByScan)
 
 	dr.Use(middleware.AuthJwt())
 	dr.GET("/home", ht.GetStatic)
 	dr.POST("/ping", ht.Ping)
 	dr.GET("/inventory", it.GetInventory)
-	fa := dr.Group("/factory")
+	fa := dr.Group("/factory", middleware.AuthJwt())
 	{
 		fa.POST("", ft.FactoryOverview)
 		fa.GET("/cart", cat.OpenCart)
@@ -92,7 +91,8 @@ func Driverrouter() {
 		pr.GET("/devices", dft.Getdevice)
 		pr.GET("/orderform/:mode", dft.GetOrders)
 		pr.GET("/orderdetail/:id", dft.GetOrder)
-		//pr.GET("/balance")
+		pr.GET("/balance", dft.GetBalance)
+		pr.GET("/withdraw", dft.Withdraw)
 
 	}
 	QuitDriverChan = make(chan os.Signal)

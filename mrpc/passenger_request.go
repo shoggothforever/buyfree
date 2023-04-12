@@ -71,7 +71,7 @@ func (p *PassengerPayReq) Handle() {
 	var dp model.DeviceProduct
 	err := db.Model(&model.DeviceProduct{}).Where("device_id = ? and name = ? and inventory >0", p.DeviceID, p.Name).UpdateColumn("inventory", gorm.Expr("inventory - ?", 1)).First(&dp).Error
 	if err != nil {
-		logrus.Info("购买商品失败")
+		logrus.Info("购买商品失败", err)
 		p.Send(false)
 		return
 	} else {
@@ -79,16 +79,16 @@ func (p *PassengerPayReq) Handle() {
 		ctx := rdb.Context()
 		var oid int64
 		var name string
-		err = db.Model(&model.Device{}).Select("owner_id").Where("id = ?", p.DeviceID).UpdateColumn("inventory", gorm.Expr("inventory - ?", 1)).First(&oid).Error
+		err = db.Model(&model.Device{}).Select("owner_id").Where("id = ?", p.DeviceID).UpdateColumn("profit", gorm.Expr("profit + ?", p.BuyPrice)).First(&oid).Error
 		if err != nil {
-			logrus.Info("购买商品失败")
+			logrus.Info("更新设备销量信息失败", err)
 			p.Send(false)
 			return
 		}
 		var driver model.Driver
 		err = db.Model(&model.Driver{}).Where("id = ?", oid).First(&driver).Error
 		if err != nil {
-			logrus.Info("获取车主信息失败")
+			logrus.Info("获取车主信息失败", err)
 			p.Send(false)
 			return
 		}

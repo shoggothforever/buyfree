@@ -164,7 +164,7 @@ func (s *ScanRequest) Handle() {
 	}
 }
 func (d *DeviceAuthRequest) Handle() {
-	err := dal.Getdb().Model(&model.Device{}).Where("id=?", d.DeviceID).UpdateColumns(map[string]interface{}{"is_activated": true, "owner_id": d.DriverID}).Error
+	err := dal.Getdb().Model(&model.Device{}).Where("id=?", d.DeviceID).UpdateColumns(map[string]interface{}{"is_activated": true, "is_online": true, "owner_id": d.DriverID}).Error
 	if err != nil {
 		logrus.Info("设备激活失败", err)
 		d.Send(false)

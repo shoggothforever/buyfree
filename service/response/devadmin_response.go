@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//设备以及设备拥有者的部分信息
+// 设备以及设备拥有者的部分信息
 type DevQueryInfo struct {
 	//顺序编号
 	Seq        int64  `json:"seq"`
@@ -21,7 +21,7 @@ type DevQueryInfo struct {
 	State string `json:"state"`
 }
 
-//设备商品部分信息
+// 设备商品部分信息
 type DevProductPartInfo struct {
 	Sku  string `json:"sku"`
 	Name string `json:"name"`
@@ -33,7 +33,7 @@ type DevProductPartInfo struct {
 	Inventory    int64   `json:"inventory"`
 }
 
-//设备信息
+// 设备信息
 type DevInfo struct {
 	DevID int64 `json:"devID"`
 	//设备激活时间
@@ -51,8 +51,9 @@ type DevResponse struct {
 }
 
 type AddDevResponse struct {
-	Response
-	Devices *model.Device
+	Response `json:"response"`
+	DeviceQR string        `json:"device_QR,omitempty"`
+	Devices  *model.Device `json:"devices,omitempty"`
 }
 
 type DevInfoResponse struct {

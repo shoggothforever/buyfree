@@ -39,8 +39,11 @@ func (d *DeviceController) Scan(c *gin.Context) {
 		d.Error(c, 400, "验签失败")
 		return
 	}
-	c.JSON(200, response.ScanResponse{response.Response{200, "扫码成功"}, id})
-
+	if id != 0 {
+		c.JSON(200, response.ScanResponse{response.Response{200, "扫码成功"}, id})
+	} else {
+		c.JSON(200, response.ScanResponse{response.Response{400, "请联系平台更新设备信息"}, 0})
+	}
 }
 
 // @Summary 输入认证信息绑定设备
@@ -102,7 +105,11 @@ func (d *DeviceController) QR(c *gin.Context) {
 	rdb := dal.Getrdb()
 	for i := 0; i < n; i++ {
 		urlinfos[i].DeviceID = ids[i]
-		urlinfos[i].QRUrl, err = rdb.Get(c, strconv.FormatInt(ids[i], 10)).Result()
+		iurl, err := rdb.Do(rdb.Context(), "get", "QR:"+strconv.FormatInt(ids[i], 10)).Result()
+		if err != nil {
+			continue
+		}
+		urlinfos[i].QRUrl = iurl.(string)
 	}
 	c.JSON(200, response.QRCodeResponse{response.Response{200, "扫码成功"}, urlinfos})
 

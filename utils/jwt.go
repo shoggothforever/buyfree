@@ -10,7 +10,7 @@ import (
 
 // three month
 const (
-	EXPIRE       time.Duration = 720 * time.Hour
+	EXPIRE       time.Duration = 72 * time.Hour
 	WechatExpire               = 24 * time.Hour
 	issuer       string        = "Platform"
 )

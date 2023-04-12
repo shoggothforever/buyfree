@@ -8,7 +8,7 @@ import (
 
 var dsn string
 
-//需要注意如果传递的参数不止一个且其中包含了uuid，那么需要将uuid变成string
+// 需要注意如果传递的参数不止一个且其中包含了uuid，那么需要将uuid变成string
 type Query interface {
 	// SELECT * FROM @@table WHERE id=@id
 	GetByID(id int64) (gen.T, error)
@@ -113,7 +113,7 @@ func main() {
 	g.ApplyInterface(func(Query) {}, &model.Passenger{},
 		&model.Driver{}, &model.Factory{},
 		&model.User{}, &model.DeviceProduct{}, &model.FactoryProduct{},
-		&model.Device{}, &model.Advertisement{}, &model.BankCardInfo{})
+		&model.Device{}, &model.Advertisement{}, &model.FundInfo{})
 	g.ApplyInterface(func(LoginQuery) {}, &model.LoginInfo{})
 	g.ApplyInterface(func(CartQuery) {}, &model.PassengerCart{}, &model.DriverCart{})
 	g.ApplyInterface(func(ProductQuery) {}, &model.OrderProduct{}, &model.DeviceProduct{}, &model.FactoryProduct{})

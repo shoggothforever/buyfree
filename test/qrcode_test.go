@@ -6,6 +6,6 @@ import (
 )
 
 func TestGenerateQRCode(t *testing.T) {
-	t.Log(utils.GenerateSourceUrl(233))
-
+	//t.Log(utils.GenerateSourceUrl(233))
+	t.Log(utils.GenerateScanUrl())
 }
