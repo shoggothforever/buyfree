@@ -125,6 +125,7 @@ func (a *DevinfoController) Launch(c *gin.Context) {
 	err = db.Transaction(func(tx *gorm.DB) error {
 		for _, ad_id := range ad_ids {
 			var id int64
+			db.Model(&model.Advertisement{}).Where("id = ?", ad_id).Update("ad_state", 1)
 			ferr := db.Model(&model.Device{}).Select("owner_id").Where("id = ?", dev_id).First(&id).Error
 			if ferr != nil {
 				logger.Loger.Info(ferr)

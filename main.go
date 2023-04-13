@@ -86,6 +86,7 @@ func main() {
 	mrpc.PlatFormService.Run()
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()
+	go service.Factoryrouter()
 	go service.Driverrouter()
 	SalesCounter()
 	service.PlatFormrouter()

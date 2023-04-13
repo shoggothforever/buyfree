@@ -16,7 +16,7 @@ var upToken string
 var cfg storage.Config
 
 func init() {
-	mac = qbox.NewMac(config.QINIU_AK, config.QINIU_SK)
+	mac = qbox.NewMac(config.Mcfg.QINIU_AK, config.Mcfg.QINIU_SK)
 	//putPolicy = storage.PutPolicy{Scope: config.QINIU_BK, Expires: 7200}
 	//upToken = putPolicy.UploadToken(mac)
 	cfg.Region = &storage.ZoneHuanan
@@ -24,7 +24,7 @@ func init() {
 }
 
 func UpLoad(filepath, key string) storage.PutRet {
-	putPolicy = storage.PutPolicy{Scope: config.QINIU_BK,
+	putPolicy = storage.PutPolicy{Scope: config.Mcfg.QINIU_BK,
 		CallbackURL:      "bf.shoggothy.xyz/",
 		CallbackBody:     `{key:$(key),hash:$(etcd),fsize:$(fsize),bucket:$(bucket),name:$(x:name),notify:$(x:notify)`,
 		CallbackBodyType: "application/json",

@@ -41,7 +41,7 @@ func (w *WeiXinAuthController) Login(c *gin.Context) {
 
 	ret, err := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetQueryString(fmt.Sprintf(loginurl, config.APPID, config.APPSECRET, code)).
+		SetQueryString(fmt.Sprintf(loginurl, config.Mcfg.APPID, config.Mcfg.APPSECRET, code)).
 		//SetResult(&res).
 		Get("https://api.weixin.qq.com/sns/jscode2session")
 	if err != nil {

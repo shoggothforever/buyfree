@@ -1,6 +1,7 @@
 package service
 
 import (
+	"buyfree/config"
 	_ "buyfree/docs"
 	"buyfree/middleware"
 	"buyfree/service/auth"
@@ -24,13 +25,13 @@ var QuitPlatformChan chan os.Signal
 var PlatFormSrv http.Server
 
 func PlatFormrouter() {
-	flag.Parse()
-	if *b == false {
+	var r *gin.Engine
+	if *config.D == false {
 		gin.SetMode(gin.ReleaseMode)
+		r = gin.New()
 	} else {
-		gin.SetMode(gin.DebugMode)
+		r = gin.Default()
 	}
-	r := gin.New()
 	//r := gin.Default()
 	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
