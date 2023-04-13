@@ -579,12 +579,14 @@ definitions:
     type: object
   response.AddDevResponse:
     properties:
+      code:
+        type: integer
       device_QR:
         type: string
       devices:
         $ref: '#/definitions/model.Device'
-      response:
-        $ref: '#/definitions/response.Response'
+      msg:
+        type: string
     type: object
   response.BalanceResponse:
     properties:
@@ -2223,8 +2225,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             $ref: '#/definitions/response.ADResponse'
         "400":
@@ -2326,8 +2328,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             $ref: '#/definitions/response.Response'
         "400":

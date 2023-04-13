@@ -1,7 +1,9 @@
 package config
 
 import (
+	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -40,22 +42,35 @@ type Config struct {
 }
 
 var (
-	Reader    *viper.Viper
-	QINIU_AK  string
-	QINIU_SK  string
-	QINIU_BK  string
-	APPID     string
-	APPSECRET string
-	GRANTTYPE = "authorization_code"
+	Reader *viper.Viper
 )
 
+type MConfigs struct {
+	QINIU_AK         string `json:"QINIU_AK,omitempty"`
+	QINIU_SK         string `json:"QINIU_SK,omitempty"`
+	QINIU_BK         string `json:"QINIU_BK,omitempty"`
+	APPID            string `json:"APPID,omitempty"`
+	APPSECRET        string `json:"APPSECRET,omitempty"`
+	GRANTTYPE        string `json:"GRANTTYPE,omitempty"`
+	Mendpoint        string `json:"mendpoint,omitempty"`
+	MAccessKeyID     string `json:"MAccessKeyID,omitempty"`
+	MSecretAccessKey string `json:"MSecretAccessKey,omitempty"`
+}
+
+var Mcfg MConfigs
+var D = flag.Bool("D", false, "默认为release，true为debug")
+
 func init() {
+	flag.Parse()
+
+	gin.SetMode(gin.ReleaseMode)
+	Mcfg.GRANTTYPE = "authorization_code"
 	Reader = viper.New()
 	//path, _ := os.Getwd()
-	path := "d:/desktop/pr/buyfree"
-	//path := "/www/wwwroot/bf.shoggothy.xyz/buyfree"
+	//path := "d:/desktop/pr/buyfree"
+	path := "/www/wwwroot/bf.shoggothy.xyz/buyfree"
 	fmt.Println("config文件读取路径", path)
-	Reader.AddConfigPath(path + "./config")
+	Reader.AddConfigPath(path + "/config")
 	Reader.SetConfigName("config")
 	Reader.SetConfigType("yaml")
 	err := Reader.ReadInConfig() // 查找并读取配置文件
@@ -68,25 +83,30 @@ func init() {
 		}
 	}
 	info := Reader.GetStringMapString("qiniu")
-	QINIU_AK = info["ak"]
-	if QINIU_AK == "" {
-		QINIU_AK = "krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_-"
-	}
-	QINIU_SK = info["sk"]
-	if QINIU_SK == "" {
-		QINIU_SK = "XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4"
-	}
-	QINIU_BK = info["bk"]
-	if QINIU_BK == "" {
-		QINIU_BK = "bfcloud"
-	}
+	Mcfg.QINIU_AK = info["ak"]
+	//if Mcfg.QINIU_AK == "" {
+	//	Mcfg.QINIU_AK = "krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_-"
+	//}
+	Mcfg.QINIU_SK = info["sk"]
+	//if Mcfg.QINIU_SK == "" {
+	//	Mcfg.QINIU_SK = "XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4"
+	//}
+	Mcfg.QINIU_BK = info["bk"]
+	//if Mcfg.QINIU_BK == "" {
+	//	Mcfg.QINIU_BK = "bfcloud"
+	//}
 	winfo := Reader.GetStringMapString("weixinapp")
-	APPID = winfo["appid"]
-	if APPID == "" {
-		APPID = "wxd776834423fadf04"
-	}
-	APPSECRET = winfo["appsecret"]
-	if APPSECRET == "" {
-		APPSECRET = "00a3239022c4146ec4c3209792539c0b"
-	}
+	Mcfg.APPID = winfo["appid"]
+	//if Mcfg.APPID == "" {
+	//	Mcfg.APPID = "wxd776834423fadf04"
+	//}
+	Mcfg.APPSECRET = winfo["appsecret"]
+	//if Mcfg.APPSECRET == "" {
+	//	Mcfg.APPSECRET = "00a3239022c4146ec4c3209792539c0b"
+	//}
+	minioinfo := Reader.GetStringMapString("minio")
+	Mcfg.Mendpoint = minioinfo["endpoint"]
+	Mcfg.MAccessKeyID = minioinfo["accessKeyID"]
+	Mcfg.MSecretAccessKey = minioinfo["secreatAccessKey"]
+	//logger.Loger.Info(Mcfg)
 }

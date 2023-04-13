@@ -1,6 +1,7 @@
 package service
 
 import (
+	"buyfree/config"
 	"buyfree/middleware"
 	"buyfree/service/passenger"
 	"context"
@@ -16,8 +17,13 @@ import (
 )
 
 func Passengerrouter() {
-	//r := gin.Default()
-	r := gin.New()
+	var r *gin.Engine
+	if *config.D == false {
+		gin.SetMode(gin.ReleaseMode)
+		r = gin.New()
+	} else {
+		r = gin.Default()
+	}
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{

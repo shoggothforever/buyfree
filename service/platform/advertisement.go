@@ -12,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strconv"
-	"time"
 )
 
 type ADController struct {
@@ -64,7 +63,7 @@ func (a *ADController) GetADList(c *gin.Context) {
 // @Accept mpfd
 // @Produce json
 // @Param ADInfo body model.Advertisement true "传入广告描述，投放资金，广告主，预期播放次数，广告视频地址"
-// @Success 201 {object} response.ADResponse
+// @Success 200 {object} response.ADResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/ads [post]
 func (a *ADController) AddAD(c *gin.Context) {
@@ -81,14 +80,14 @@ func (a *ADController) AddAD(c *gin.Context) {
 	utils.ModifySales(ctx, rdb, utils.Ranktype2, utils.PTNAME, strconv.FormatFloat(ad.InvestFund, 'f', 2, 64))
 
 	ad.PlatformID = admin.ID
-	ad.ExpireAt = time.Now().AddDate(1, 0, 0)
+	//ad.ExpireAt = time.Now().AddDate(1, 0, 0)
 	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
 	ad.Profit = 0
 	ad.PlayTimes = 0
 	if err == nil {
 		ad.ID = utils.IDWorker.NextId()
 		c.JSON(200, response.ADResponse{
-			response.Response{201,
+			response.Response{200,
 				"添加广告信息成功"},
 			[]model.Advertisement{ad},
 		})
@@ -190,7 +189,7 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 // @Accept mpfd
 // @Produce json
 // @Param ad_id path int true "广告ID"
-// @Success 201 {object} response.Response
+// @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /pt/ads/modify/{ad_id} [patch]
 func (a *ADController) Shelf(c *gin.Context) {
@@ -239,7 +238,7 @@ func (a *ADController) Shelf(c *gin.Context) {
 		}
 	}
 	c.JSON(200,
-		response.Response{201,
+		response.Response{200,
 			msg},
 	)
 

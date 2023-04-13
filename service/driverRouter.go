@@ -1,6 +1,7 @@
 package service
 
 import (
+	"buyfree/config"
 	"buyfree/middleware"
 	"buyfree/service/auth"
 	"buyfree/service/driverapp"
@@ -17,14 +18,13 @@ import (
 	"time"
 )
 
-var d = flag.Bool("d", false, "默认为release，true为debug")
 var QuitDriverChan chan os.Signal
 var DriverSrv http.Server
 
 func Driverrouter() {
 	flag.Parse()
 	var r *gin.Engine
-	if *d == true {
+	if *config.D == false {
 		gin.SetMode(gin.ReleaseMode)
 		r = gin.New()
 	} else {

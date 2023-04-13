@@ -7,6 +7,7 @@ import (
 	"buyfree/service/response"
 	"buyfree/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type RegisterInfo struct {
@@ -90,6 +91,7 @@ func PlatformLogin(c *gin.Context) {
 		dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ?", linfo.UserID).UpdateColumn("jwt", jwt).First(&l)
 	}
 	if len(l) != 0 {
+		logger.Loger.WithFields(logrus.Fields{"Name": l[0].UserName, "ID": l[0].UserID, "Role": "平台"})
 		c.JSON(200, response.LoginResponse{
 			response.Response{
 				200,
@@ -220,6 +222,7 @@ func DriverLogin(c *gin.Context) {
 		dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ?", linfo.UserID).UpdateColumn("jwt", jwt).First(&l)
 	}
 	if len(l) != 0 {
+		logger.Loger.WithFields(logrus.Fields{"Name": l[0].UserName, "ID": l[0].UserID, "Role": "车主"})
 		c.JSON(200, response.LoginResponse{
 			response.Response{
 				200,
@@ -257,7 +260,6 @@ func DriverUserInfo(c *gin.Context) {
 	//	jwt = jwt[7:]
 	//}
 	jwt := c.PostForm("jwt")
-	logger.Loger.Info(jwt)
 	db := dal.Getdb()
 	var admin model.Driver
 	var info model.LoginInfo
@@ -353,6 +355,7 @@ func FactoryLogin(c *gin.Context) {
 		dal.Getdb().Model(&model.LoginInfo{}).Where("user_id = ?", linfo.UserID).UpdateColumn("jwt", jwt).First(&l)
 	}
 	if len(l) != 0 {
+		logger.Loger.WithFields(logrus.Fields{"Name": l[0].UserName, "ID": l[0].UserID, "Role": "场站"})
 		c.JSON(200, response.LoginResponse{
 			response.Response{
 				200,

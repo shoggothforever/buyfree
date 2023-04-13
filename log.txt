@@ -1,8 +1,5 @@
-{"level":"info","msg":"错误: 字段 \"v\" 不存在 (SQLSTATE 42703)","time":"2023-04-12T22:19:06+08:00"}
-\u003e","time":"2023-04-12T21:58:07+08:00"}
-{"level":"info","msg":"\u003cnil\u003e","time":"2023-04-12T21:58:07+08:00"}
-}
-{"level":"info","msg":"\u003cnil\u003e","time":"2023-04-12T21:55:35+08:00"}
+{"level":"info","msg":"{krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_- XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4 bfcloud wxd776834423fadf04 00a3239022c4146ec4c3209792539c0b authorization_code minio.shoggothy.xyz  }","time":"2023-04-13T18:55:08+08:00"}
+,"msg":"\u003cnil\u003e","time":"2023-04-12T21:55:35+08:00"}
 {"level":"info","msg":"record not found","time":"2023-04-12T21:55:35+08:00"}
 {"level":"info","msg":"\u003cnil\u003e","time":"2023-04-12T21:55:35+08:00"}
 l":"info","msg":"验证平台信息","time":"2023-04-12T21:31:52+08:00"}

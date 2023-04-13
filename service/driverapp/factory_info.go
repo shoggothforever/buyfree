@@ -60,7 +60,7 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 		v := iv.([]interface{})
 		views[k].FactoryName = v[0].(string)
 		views[k].Distance = v[1].(string)
-		err := db.Raw("select pic,name from factory_products where factory_name = ?", views[k].FactoryName).Limit(5).Find(&views[k].ProductViews).Error
+		err := db.Raw("select pic,name from factory_products where factory_name = ? and is_on_shelf = true", views[k].FactoryName).Limit(5).Find(&views[k].ProductViews).Error
 		if err != gorm.ErrRecordNotFound && err != nil {
 			logrus.Info("获取"+views[k].FactoryName+"的商品信息失败", err)
 			continue

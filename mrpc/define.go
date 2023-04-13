@@ -2,7 +2,6 @@ package mrpc
 
 import (
 	"fmt"
-	"sync/atomic"
 	"time"
 )
 
@@ -32,7 +31,40 @@ type Req interface {
 	//Refund()
 	Do(exitChan ReplyQueue, handle Handler)
 	Handle()
+	Done()
+	Result() bool
 }
+
+type Communicator struct {
+	//客户端验证结果
+	Res bool
+	//通知worker工作处理结果
+	ReplyChan ReplyQueue
+	//客户端通信管道，告知任务完成
+	DoneChan chan struct{}
+}
+
+func NewCommunicator() Communicator {
+	return Communicator{
+		Res:       *new(bool),
+		ReplyChan: make(ReplyQueue, 1),
+		DoneChan:  make(chan struct{}, 1),
+	}
+}
+
+func (c *Communicator) Send(sig bool) {
+	c.ReplyChan <- sig
+	c.Res = sig
+	c.DoneChan <- struct{}{}
+}
+func (c *Communicator) Done() {
+	<-c.DoneChan
+}
+func (c *Communicator) Result() bool {
+	return c.Res
+}
+
+// 定义worker，用于处理请求
 type ReqQueue chan Req
 type Worker struct {
 	ReqChan   ReqQueue
@@ -72,7 +104,7 @@ func (w *Worker) Run() {
 						return
 					}
 					//fmt.Println(ok)
-					atomic.AddInt64(&GlobalCnt, 1)
+					//atomic.AddInt64(&GlobalCnt, 1)
 					//fmt.Println("第", GloabalCnt, "号任务开始执行")
 					req.Do(w.ReplyChan, req.Handle)
 				}
@@ -82,7 +114,9 @@ func (w *Worker) Run() {
 
 	}()
 }
-
+func (p *WorkerPool) PutReq(r *Req) {
+	p.ReqChan <- *r
+}
 func (p *WorkerPool) Run() {
 	fmt.Println("WorkerPool 初始化")
 	for i := 0; i < p.PoolSize; i++ {
@@ -121,4 +155,11 @@ func (p *WorkerPool) Run() {
 			}
 		}
 	}()
+}
+
+func PutDriverReq(r *Req) {
+	PlatFormService.PutReq(r)
+}
+func PutPassengerReq(r *Req) {
+	DriverService.PutReq(r)
 }

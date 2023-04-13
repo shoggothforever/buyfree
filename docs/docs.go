@@ -1418,8 +1418,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.ADResponse"
                         }
@@ -1573,8 +1573,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -3116,14 +3116,17 @@ const docTemplate = `{
         "response.AddDevResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "device_QR": {
                     "type": "string"
                 },
                 "devices": {
                     "$ref": "#/definitions/model.Device"
                 },
-                "response": {
-                    "$ref": "#/definitions/response.Response"
+                "msg": {
+                    "type": "string"
                 }
             }
         },

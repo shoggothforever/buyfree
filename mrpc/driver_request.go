@@ -53,29 +53,6 @@ func practice() {
 	}()
 }
 
-type Communicator struct {
-	//客户端验证结果
-	Res bool
-	//通知worker工作处理结果
-	ReplyChan ReplyQueue
-	//客户端通信管道，告知任务完成
-	DoneChan chan struct{}
-}
-
-func NewCommunicator() Communicator {
-	return Communicator{
-		Res:       *new(bool),
-		ReplyChan: make(ReplyQueue, 1),
-		DoneChan:  make(chan struct{}, 1),
-	}
-}
-
-func (c *Communicator) Send(sig bool) {
-	c.ReplyChan <- sig
-	c.Res = sig
-	c.DoneChan <- struct{}{}
-}
-
 type CountRequest struct {
 	Iterator int64 `json:"iterator"`
 	Communicator

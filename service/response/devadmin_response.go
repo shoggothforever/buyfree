@@ -51,7 +51,7 @@ type DevResponse struct {
 }
 
 type AddDevResponse struct {
-	Response `json:"response"`
+	Response
 	DeviceQR string        `json:"device_QR,omitempty"`
 	Devices  *model.Device `json:"devices,omitempty"`
 }
