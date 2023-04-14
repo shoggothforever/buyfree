@@ -127,7 +127,7 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 	}
 	var odinfos []model.DriverOrderForm
 	var faddress string
-	var distance float64
+	var distance string
 	rdb := dal.Getrdb()
 
 	err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("order_id = ?", id).First(&odinfos).Error
@@ -143,7 +143,7 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 	} else {
 		idistance, _ := utils.LocDist(c, rdb, utils.LOCATION, admin.Name, odinfos[0].FactoryName, "m")
 		if idistance != nil {
-			distance = idistance.(float64)
+			distance = idistance.(string)
 		}
 		c.JSON(200, response.DriverOrderDetailResponse{
 			Response:       response.Response{200, "成功获取订单信息"},
@@ -155,40 +155,40 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 	}
 }
 
-// @Summary 获取余额信息
-// @Description 余额组成:未结算广告收入+未体现设备收入
-// @Tags Driver/balance
-// @Accept json
-// @Produce json
-// @Success 200 {object} response.BalanceResponse
-// @Failure 400 {object} response.Response
-// @Router /dr/infos/balance [get]
-func (i *InfoController) GetBalance(c *gin.Context) {
-	admin, ok := utils.GetDriveInfo(c)
-	if ok != true {
-		i.Error(c, 400, "获取车主信息失败")
-		return
-	}
-	var ids []int64
-	err := dal.Getdb().Raw("select id from devices where owner_id = ?", admin.ID).Find(&ids).Error
-	if err != nil {
-		i.Error(c, 400, "获取设备信息失败")
-		return
-	}
-	var sum1, sum2, sum float64
-	err = dal.Getdb().Raw("select sum(profit) from devices where owner_id = ?", admin.ID).First(&sum1).Error
-	if err != nil {
-		i.Error(c, 400, "获取设备收益信息失败")
-		return
-	}
-	err = dal.Getdb().Raw("select sum(profit) from ad_devices where device_id in ?", ids).First(&sum2).Error
-	if err != nil {
-		i.Error(c, 400, "获取广告收益信息失败")
-		return
-	}
-	sum = sum1 + sum2
-	c.JSON(200, response.BalanceResponse{response.Response{200, "获取账户余额成功"}, sum})
-}
+//// @Summary 获取余额信息
+//// @Description 余额组成:未结算广告收入+未体现设备收入
+//// @Tags Driver/balance
+//// @Accept json
+//// @Produce json
+//// @Success 200 {object} response.BalanceResponse
+//// @Failure 400 {object} response.Response
+//// @Router /dr/infos/balance [get]
+//func (i *InfoController) GetBalance(c *gin.Context) {
+//	admin, ok := utils.GetDriveInfo(c)
+//	if ok != true {
+//		i.Error(c, 400, "获取车主信息失败")
+//		return
+//	}
+//	var ids []int64
+//	err := dal.Getdb().Raw("select id from devices where owner_id = ?", admin.ID).Find(&ids).Error
+//	if err != nil {
+//		i.Error(c, 400, "获取设备信息失败")
+//		return
+//	}
+//	var sum1, sum2, sum float64
+//	err = dal.Getdb().Raw("select sum(profit) from devices where owner_id = ?", admin.ID).First(&sum1).Error
+//	if err != nil {
+//		i.Error(c, 400, "获取设备收益信息失败")
+//		return
+//	}
+//	err = dal.Getdb().Raw("select sum(profit) from ad_devices where device_id in ?", ids).First(&sum2).Error
+//	if err != nil {
+//		i.Error(c, 400, "获取广告收益信息失败")
+//		return
+//	}
+//	sum = sum1 + sum2
+//	c.JSON(200, response.BalanceResponse{response.Response{200, "获取账户余额成功"}, sum})
+//}
 
 // @Summary 提取余额信息（只支持全部提现)
 // @Description 余额组成:未结算广告收入+未体现设备收入

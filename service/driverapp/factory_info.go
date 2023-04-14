@@ -205,7 +205,7 @@ func (i *FactoryController) Modify(c *gin.Context) {
 				return terr
 			}
 		} else if terr != nil {
-			logger.Loger.Info(err)
+			logger.Loger.Info(terr)
 			i.Error(c, 400, "操作数据库失败")
 			return terr
 		} else {
@@ -231,7 +231,7 @@ func (i *FactoryController) Modify(c *gin.Context) {
 				return nil
 			})
 			if terr != nil {
-				logrus.Info(err)
+				logrus.Info(terr)
 				i.Error(c, 400, "更新订单货品信息失败失败")
 				return terr
 			}
@@ -247,12 +247,12 @@ func (i *FactoryController) Modify(c *gin.Context) {
 			cp.Set(0, cr, info.FactoryID, info.Count, info.Price, true, info.ProductName, info.ProductName, info.Pic, info.Type)
 			terr = tx.Model(&model.CartProduct{}).Create(&cp).Error
 			if terr != nil {
-				logger.Loger.Info(err)
+				logger.Loger.Info(terr)
 				i.Error(c, 403, "添加商品信息失败")
 				return terr
 			}
 		} else if terr != nil {
-			logger.Loger.Info(err)
+			logger.Loger.Info(terr)
 			i.Error(c, 400, "操作数据库失败")
 			return terr
 		} else {
@@ -446,7 +446,7 @@ func (i *FactoryController) Submit(c *gin.Context) {
 				{Name: "order_id"}},
 			DoNothing: true},
 		).Omit("ProductInfos").Create(&om).Error; cerr != nil {
-			fmt.Println(cerr)
+			logger.Loger.Info(cerr)
 			dal.Getdb().Model(&model.DriverOrderForm{}).Delete(&om)
 			i.Error(c, 400, "创建订单表失败")
 			return
@@ -653,12 +653,6 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	go func(ok *bool, group *sync.WaitGroup) {
 		wg.Add(1)
 		defer group.Done()
-		var cash float64
-		for _, v := range forms.OrderInfos {
-			if v.State == 1 {
-				cash += v.Cost
-			}
-		}
 		payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
 		mrpc.PlatFormService.ReqChan <- payreq
 		<-payreq.DoneChan
@@ -685,7 +679,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	if err == nil {
 		if cnt != 0 {
 			c.JSON(200, response.PayResponse{
-				response.Response{201, "支付成功,更新订单状态成功，更新商品排行信息成功"},
+				response.Response{201, fmt.Sprintf("支付成功,扣除%.2f元,更新订单状态成功，更新商品排行信息成功", forms.Cash)},
 			})
 		} else {
 			c.JSON(500, response.PayResponse{

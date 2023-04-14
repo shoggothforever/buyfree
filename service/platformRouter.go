@@ -66,6 +66,8 @@ func PlatFormrouter() {
 		fa.PATCH("/inventory/:product_name/:inv", middleware.AuthJwt(), fat.AddInv)
 		fa.GET("/infos/all/:mode", middleware.AuthJwt(), fat.GetAllProducts)
 		fa.GET("/infos/detail/:product_name", middleware.AuthJwt(), fat.GetGoodsInfo)
+		fa.GET("/infos/orders/:mode/:page", fat.GetDriverOrders)
+		fa.GET("/infos/orders/detail/", fat.GetDriverOrders)
 	}
 	//鉴权
 	pt.Use(middleware.AuthJwt())
@@ -86,13 +88,14 @@ func PlatFormrouter() {
 		fdr.POST("/register", fat.PRegister)
 		fdr.POST("/:factory_name/products", fat.PAdd)
 		fdr.PATCH("/:factory_name/products/:product_name/:inv", fat.PAddInv)
+		//fdr.GET("/:factory_name/orders/:mode", fat.PGetDriverOrders)
 	}
 
 	//设备管理
 	var devct platform.DevadminController
 	rdv := pt.Group("/dev-admin")
 	{
-		rdv.GET("/list/:mode", devct.GetdevBystate)
+		rdv.GET("/list/:mode/:page", devct.GetdevBystate)
 		rdv.POST("/devs", devct.AddDev)
 		//rdv.GET("/owner/:id")
 		var devinfoct platform.DevinfoController
@@ -105,7 +108,7 @@ func PlatFormrouter() {
 	{
 
 		//默认展示全部
-		ord.GET("/:mode/factory/:factory_name/", gdc.PGetAllProducts)
+		ord.GET("/:mode/factory/:factory_name", gdc.PGetAllProducts)
 		ord.GET("/infos/:factory_name/:product_name", gdc.PGetGoodsInfo)
 		ord.PATCH("/turn", gdc.TurnOver)
 	}

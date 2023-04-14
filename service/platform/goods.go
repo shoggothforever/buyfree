@@ -23,7 +23,7 @@ type GoodsController struct {
 // @Param mode path int true "按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}"
 // @Success 200 {object} response.FactoryProductsResponse
 // @Failure 400 {object} response.Response
-// @Router /pt/products/{mode}/factory/{factory_name}/ [get]
+// @Router /pt/products/{mode}/factory/{factory_name} [get]
 func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 	fname := c.Param("factory_name")
 	mode := c.Param("mode")

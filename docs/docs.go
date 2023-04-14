@@ -261,35 +261,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/dr/infos/balance": {
-            "get": {
-                "description": "余额组成:未结算广告收入+未体现设备收入",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Driver/balance"
-                ],
-                "summary": "获取余额信息",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.BalanceResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/dr/infos/devices": {
             "get": {
                 "description": "获取激活设备信息",
@@ -894,7 +865,7 @@ const docTemplate = `{
         },
         "/fa/infos/all/:mode": {
             "get": {
-                "description": "传入场站名，获取该场站所有商品信息",
+                "description": "获取本场站所有商品信息",
                 "consumes": [
                     "application/json",
                     "multipart/form-data"
@@ -958,6 +929,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.FactoryGoodsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/fa/infos/orders/{mode}/{page}": {
+            "get": {
+                "description": "传入字段mode，获取对应订单信息",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Factory"
+                ],
+                "summary": "获取车主订单信息(车主在该场站下的订单)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}",
+                        "name": "mode",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "默认第一页，一页20个数据",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.OrderResponse"
                         }
                     },
                     "400": {
@@ -1708,7 +1725,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/dev-admin/list/{mode}": {
+        "/pt/dev-admin/list/{mode}/{page}": {
             "get": {
                 "description": "传入字段名:mode;mode=0:获取全部设备信息,mode=1，2,3,4分别对应获取在线，离线,激活，未激活的设备信息",
                 "consumes": [
@@ -1725,8 +1742,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "group mode",
+                        "description": "1：在线，2：离线，3：激活，4：未激活",
                         "name": "mode",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "默认第一页，一页20条数据",
+                        "name": "page",
                         "in": "path",
                         "required": true
                     }
@@ -1924,45 +1948,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/orders/factory/{mode}": {
-            "get": {
-                "description": "传入字段mode，获取对应订单信息",
-                "consumes": [
-                    "application/json",
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Orderform"
-                ],
-                "summary": "获取车主订单信息(车主在该场站下的订单)",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}",
-                        "name": "mode",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.OrderResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/pt/products/infos/{factory_name}/{product_name}": {
             "get": {
                 "description": "传如对应场站名以及商品名",
@@ -2050,7 +2035,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/pt/products/{mode}/factory/{factory_name}/": {
+        "/pt/products/{mode}/factory/{factory_name}": {
             "get": {
                 "description": "传入场站名，获取该场站所有商品信息",
                 "consumes": [
@@ -2442,6 +2427,10 @@ const docTemplate = `{
                 "buy_price": {
                     "description": "销售价",
                     "type": "number"
+                },
+                "inventory": {
+                    "description": "库存",
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -3178,6 +3167,9 @@ const docTemplate = `{
                 "count": {
                     "type": "integer"
                 },
+                "is_chosen": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -3387,6 +3379,23 @@ const docTemplate = `{
                 }
             }
         },
+        "response.DriverInfo": {
+            "type": "object",
+            "properties": {
+                "car_id": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "response.DriverOrderDetailResponse": {
             "type": "object",
             "properties": {
@@ -3394,7 +3403,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "distance": {
-                    "type": "number"
+                    "type": "string"
                 },
                 "factory_address": {
                     "type": "string"
@@ -3624,6 +3633,35 @@ const docTemplate = `{
                 }
             }
         },
+        "response.FactoryOrderInfo": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "description": "订单付款",
+                    "type": "number"
+                },
+                "driverInfo": {
+                    "$ref": "#/definitions/response.DriverInfo"
+                },
+                "get_time": {
+                    "description": "司机取货时间,只有已完成的订单会有该属性",
+                    "type": "string"
+                },
+                "orderProductInfo": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.OrderProductInfo"
+                    }
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "description": "订单状态 0：待付款，1：待取货，2：已完成（已关闭）",
+                    "type": "integer"
+                }
+            }
+        },
         "response.FactoryProductDetail": {
             "type": "object",
             "properties": {
@@ -3674,6 +3712,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "name": {
+                    "description": "商品名称",
                     "type": "string"
                 },
                 "pic": {
@@ -3865,6 +3904,29 @@ const docTemplate = `{
                 }
             }
         },
+        "response.OrderProductInfo": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pic": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "response.OrderResponse": {
             "type": "object",
             "properties": {
@@ -3874,10 +3936,10 @@ const docTemplate = `{
                 "msg": {
                     "type": "string"
                 },
-                "orderForm": {
+                "orderForms": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/response.FactoryProductsInfo"
+                        "$ref": "#/definitions/response.FactoryOrderInfo"
                     }
                 }
             }

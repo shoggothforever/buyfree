@@ -42,13 +42,15 @@ func (d *DeviceProduct) Set(id, devid, drid, fid, inv int64, bprice, sprice floa
 }
 
 type DeviceProductPartInfo struct {
-	Name string `gorm:"notnull;comment:产品名称" json:"name" form:"name"`
+	Name string `json:"name" form:"name"`
 	//图片
-	Pic string `gorm:"comment:图片" json:"pic" form:"pic"`
+	Pic string `json:"pic" form:"pic"`
 	//型号
-	Type string `gorm:"notnull;comment:型号" json:"type" form:"type"`
+	Type string `json:"type" form:"type"`
+	//库存
+	Inventory int64 `json:"inventory"`
 	//销售价
-	BuyPrice float64 `gorm:"notnull;comment:销售价" json:"buy_price" form:"buy_price"`
+	BuyPrice float64 `json:"buy_price" form:"buy_price"`
 }
 
 type FactoryProducts []FactoryProduct

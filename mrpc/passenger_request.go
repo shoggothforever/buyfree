@@ -45,7 +45,7 @@ func (h *HomeScanReq) Handle() {
 		h.Send(false)
 		return
 	}
-	err = db.Raw("select name,pic,type,buy_price from device_products where device_id = ?", h.DeviceID).Find(&h.DeviceProducts).Error
+	err = db.Raw("select name,pic,type,buy_price,inventory from device_products where device_id = ?", h.DeviceID).Find(&h.DeviceProducts).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		logrus.Info(err)
 		h.Send(false)

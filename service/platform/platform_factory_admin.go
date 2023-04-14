@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type FactoryadminController struct {
@@ -288,7 +290,7 @@ func (f *FactoryadminController) AddInv(c *gin.Context) {
 }
 
 // @Summary 获取所有商品
-// @Description	传入场站名，获取该场站所有商品信息
+// @Description	获取本场站所有商品信息
 // @Tags	Factory
 // @Accept json
 // @Accept mpfd
@@ -389,4 +391,176 @@ func (f *FactoryadminController) GetGoodsInfo(c *gin.Context) {
 		response.Response{200, "成功获取对应信息"},
 		product,
 	})
+}
+
+//// @Summary 获取车主订单信息(车主在该场站下的订单)
+//// @Description	传入字段mode，获取对应订单信息
+//// @Tags	Orderform
+//// @Accept json
+//// @Accept mpfd
+//// @Produce json
+//// @Param factory_name path string true "场站名"
+//// @Param mode path int true "按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}"
+//// @Param page path int true "默认第一页，一页20个数据"
+//// @Success 200 {object} response.OrderResponse
+//// @Failure 400 {object} response.Response
+//// @Router /pt/fa-admin/{factory_name}/orders/{mode}/{page} [get]
+//func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
+//	page := c.Param("page")
+//	factory_name := c.Param("factory_name")
+//	//mode =2-已完成 1-待取货 0-未支付 else 全部
+//	mode := c.Param("mode")
+//	var dofs []*model.DriverOrderForm
+//	if mode == "0" || mode == "1" || mode == "2" {
+//		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("state = ?", mode).Find(&dofs).Error
+//		if err != nil {
+//			o.Error(c, 400, "获取订单信息失败 1")
+//			return
+//		}
+//	} else {
+//		err := dal.Getdb().Model(&model.DriverOrderForm{}).Find(&dofs).Error
+//		if err != nil {
+//			o.Error(c, 400, "获取订单信息失败 1")
+//			return
+//		}
+//	}
+//	n := len(dofs)
+//	fmt.Printf("获取到%d条订单信息\n", n)
+//	ords := []response.FactoryProductsInfo{}
+//	for i := 0; i < n; i++ {
+//		var products []model.OrderProduct
+//		//products, err := gen.OrderProduct.GetAllOrderProductReferDOrder(dofs[i].OrderID)
+//		err := dal.Getdb().Raw("select * from order_products where order_refer =? limit 3", dofs[i].OrderID).Find(&products).Error
+//		if err != nil {
+//			o.Error(c, 400, "获取订单信息失败 2")
+//			return
+//		}
+//		k := len(products)
+//		fmt.Printf("获取到%d条货品信息\n", k)
+//		factoryname := dofs[i].FactoryName
+//		infos := make([]response.FactoryProductsInfo, k)
+//		for j := 0; j < k; j++ {
+//			var info response.FactoryProductsInfo
+//			infos[j].FactoryName = factoryname
+//			infos[j].Name = products[j].Name
+//			infos[j].Sku = products[j].Sku
+//			infos[j].Pic = products[j].Pic
+//			infos[j].Type = products[j].Type
+//			//TODO:展示在首页和上架就交给前端吧,获取订单中的商品在场站的上下架状态，根据factoryID 和 商品SKU在场站的商品表中查询对应的状态信息
+//			infos[j].IsOnShelf = products[j].IsChosen
+//			//saleinfo, _ := gen.FactoryProduct.GetBySkuAndFName(info.Sku, info.FactoryName)
+//			var saleinfo model.FactoryProduct
+//			err := dal.Getdb().Model(&model.FactoryProduct{}).Select("total_sales").Where("sku = ? and factory_name = ?", info.Sku, info.FactoryName).First(&saleinfo.TotalSales).Error
+//			if err != gorm.ErrRecordNotFound && err != nil {
+//				o.Error(c, 400, "获取订单信息失败 2")
+//				return
+//			}
+//			infos[j].TotalSales = saleinfo.TotalSales
+//			infos[j].Inventory = saleinfo.Inventory
+//		}
+//		ords = append(ords, infos...)
+//	}
+//	if len(ords) != 0 {
+//		c.JSON(200, response.OrderResponse{
+//			response.Response{
+//				200,
+//				"成功获取所有订单信息",
+//			},
+//			ords,
+//		})
+//	} else {
+//		c.JSON(200, response.OrderResponse{
+//			response.Response{
+//				200,
+//				"暂无相关订单信息",
+//			},
+//			ords,
+//		})
+//	}
+//	c.Set("Orders", ords)
+//	c.Next()
+//}
+
+// @Summary 获取车主订单信息(车主在该场站下的订单)
+// @Description	传入字段mode，获取对应订单信息
+// @Tags	Factory
+// @Accept json
+// @Accept mpfd
+// @Produce json
+// @Param mode path int true "按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}"
+// @Param page path int true "默认第一页，一页20个数据"
+// @Success 200 {object} response.OrderResponse
+// @Failure 400 {object} response.Response
+// @Router /fa/infos/orders/{mode}/{page} [get]
+func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
+	spage := c.Param("page")
+	page, err := strconv.Atoi(spage)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	//mode =2-已完成 1-待取货 0-未支付 else 全部
+	mode := c.Param("mode")
+	admin, ok := utils.GetFactoryInfo(c)
+	if !ok {
+		o.Error(c, 400, "获取场站信息失败")
+		return
+	}
+	fid := admin.ID
+	var dofs []*model.DriverOrderForm
+	if mode == "0" || mode == "1" || mode == "2" {
+		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("factory_id = ? and state = ?", fid, mode).Offset((page - 1) * 20).Limit(20).Find(&dofs).Error
+		if err != nil {
+			o.Error(c, 400, "获取订单信息失败 1")
+			return
+		}
+	} else {
+		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("factory_id = ?", fid).Offset((page - 1) * 20).Limit(20).Find(&dofs).Error
+		if err != nil {
+			o.Error(c, 400, "获取订单信息失败 1")
+			return
+		}
+	}
+	n := len(dofs)
+	fmt.Printf("获取到%d条订单信息\n", n)
+	ords := make([]response.FactoryOrderInfo, n)
+	for i := 0; i < n; i++ {
+		//products, err := gen.OrderProduct.GetAllOrderProductReferDOrder(dofs[i].OrderID)
+		var dr model.Driver
+		err = dal.Getdb().Raw("select name,mobile,car_id from drivers where id = ?", dofs[i].DriverID).Find(&dr).Error
+		if err != nil {
+			logger.Loger.Info("获取车主信息失败", err)
+			o.Error(c, 400, "获取车主信息失败")
+			return
+		}
+		err := dal.Getdb().Raw("select name,type,sku,pic,count,price from order_products where order_refer = ?", dofs[i].OrderID).Find(&ords[i].OrderProductInfo).Error
+		if err != nil {
+			logger.Loger.Info("获取订单商品失败", err)
+			o.Error(c, 400, "获取订单商品信息失败 2")
+			return
+		}
+		ords[i].OrderID = dofs[i].OrderID
+		ords[i].Cost = dofs[i].Cost
+		ords[i].DriverInfo.Name = dr.Name
+		ords[i].DriverInfo.Mobile = dr.Mobile
+		ords[i].DriverInfo.CarID = dr.CarID
+		ords[i].GetTime = dofs[i].GetTime
+		ords[i].State = int64(dofs[i].State)
+	}
+	if len(ords) != 0 {
+		c.JSON(200, response.OrderResponse{
+			response.Response{
+				200,
+				"成功获取所有订单信息",
+			},
+			ords,
+		})
+	} else {
+		c.JSON(200, response.OrderResponse{
+			response.Response{
+				400,
+				"暂无相关订单信息",
+			},
+			ords,
+		})
+	}
 }
