@@ -35,10 +35,16 @@ func GetOnlineState(state bool) string {
 // @Produce json
 // @Success 200 {object} response.DevResponse "获取的设备信息"
 // @Failuer 400 {object} response.Response "对应mode的失败信息“
-// @Param mode path int true "group mode"
-// @Router /pt/dev-admin/list/{mode} [get]
+// @Param mode path int true "1：在线，2：离线，3：激活，4：未激活"
+// @Param page path int true "默认第一页，一页20条数据"
+// @Router /pt/dev-admin/list/{mode}/{page} [get]
 func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	//mode =0 全部 1 在线 2离线 3已激活 4 未激活
+	spage := c.Param("page")
+	page, _ := strconv.Atoi(spage)
+	if page < 1 {
+		page = 1
+	}
 	mode := c.Param("mode")
 	_, ok := c.Get(middleware.PTADMIN)
 	if ok != true {
@@ -75,41 +81,41 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	//	}
 	//}
 	if mode == "1" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", true).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", true).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取在线设备信息失败")
 			return
 		}
 	} else if mode == "2" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", false).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", false).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取离线设备信息失败")
 			return
 		}
 	} else if mode == "3" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取激活设备信息失败")
 			return
 		}
 	} else if mode == "4" {
-		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取未激活设备信息失败")
 			return
 		}
 	} else {
-		err = dal.Getdb().Model(&model.Device{}).Find(&devs).Error
+		err = dal.Getdb().Model(&model.Device{}).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取设备信息失败")
 			return
 		}
 	}
-	var size int = len(devs)
+	var size = len(devs)
 	devres := make([]response.DevQueryInfo, size)
 	for k := 0; k < size; k++ {
 		fmt.Println(devs[k])

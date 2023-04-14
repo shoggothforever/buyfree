@@ -255,10 +255,6 @@ func DriverLogin(c *gin.Context) {
 // @Failure			400 {object} response.Response
 // @Router			/dr/userinfo [post]
 func DriverUserInfo(c *gin.Context) {
-	//jwt := c.GetHeader("Authorization")
-	//if len(jwt) > 7 {
-	//	jwt = jwt[7:]
-	//}
 	jwt := c.PostForm("jwt")
 	db := dal.Getdb()
 	var admin model.Driver
@@ -273,6 +269,26 @@ func DriverUserInfo(c *gin.Context) {
 		c.JSON(200, response.Response{400, "查找车主信息失败"})
 		return
 	}
+	var ids []int64
+	err = dal.Getdb().Raw("select id from devices where owner_id = ?", admin.ID).Find(&ids).Error
+	if err != nil {
+		c.JSON(400, "获取设备信息失败")
+		return
+	}
+	var sum1, sum2, sum float64
+	err = dal.Getdb().Raw("select sum(profit) from devices where owner_id = ?", admin.ID).First(&sum1).Error
+	if err != nil {
+		c.JSON(400, "获取设备收益信息失败")
+		return
+	}
+	err = dal.Getdb().Raw("select sum(profit) from ad_devices where device_id in ?", ids).First(&sum2).Error
+	if err != nil {
+		c.JSON(400, "获取广告收益信息失败")
+		return
+	}
+	sum = sum1 + sum2
+	admin.Balance = sum
+	dal.Getdb().Model(&model.Driver{}).Where("id = ?", admin.ID).Update("balance", sum)
 	c.JSON(200, response.DrInfoResponse{response.Response{200, "获取车主信息成功"}, admin})
 
 }

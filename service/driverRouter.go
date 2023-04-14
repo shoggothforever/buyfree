@@ -91,7 +91,7 @@ func Driverrouter() {
 		pr.GET("/devices", dft.Getdevice)
 		pr.GET("/orderform/:mode", dft.GetOrders)
 		pr.GET("/orderdetail/:id", dft.GetOrder)
-		pr.GET("/balance", dft.GetBalance)
+		//pr.GET("/balance", dft.GetBalance)
 		pr.GET("/withdraw", dft.Withdraw)
 
 	}

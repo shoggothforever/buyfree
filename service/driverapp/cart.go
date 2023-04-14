@@ -56,7 +56,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 		var g response.CartGroup
 		g.DistanceInfo.FactoryName = v.Name
 		g.DistanceInfo.FactoryID = v.ID
-		err = tx.Raw("select name,pic,type,count,price from cart_products where cart_refer = ? and factory_id = ?", cart.CartID, v.ID).Find(&g.ProductDetails).Error
+		err = tx.Raw("select name,pic,type,price,count,is_chosen from cart_products where cart_refer = ? and factory_id = ?", cart.CartID, v.ID).Find(&g.ProductDetails).Error
 		if err == nil {
 			gs = append(gs, &g)
 			for _, gv := range g.ProductDetails {

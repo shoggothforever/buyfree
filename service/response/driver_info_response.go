@@ -19,9 +19,9 @@ type SubmitOrderForms struct {
 }
 type DriverOrderDetailResponse struct {
 	Response
-	FactoryAddress string  `json:"factory_address" form:"factory_address"`
-	ReserveMobile  string  `json:"reserve_mobile" form:"reserve_mobile"`
-	Distance       float64 `json:"distance" form:"distance"`
+	FactoryAddress string `json:"factory_address" form:"factory_address"`
+	ReserveMobile  string `json:"reserve_mobile" form:"reserve_mobile"`
+	Distance       string `json:"distance" form:"distance"`
 	OrderInfos     model.DriverOrderForm
 }
 type DriverDeviceResponse struct {

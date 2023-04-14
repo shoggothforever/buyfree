@@ -27,11 +27,12 @@ type CartGroup struct {
 	ProductDetails []*CartProductDetail `json:"product_details"`
 }
 type CartProductDetail struct {
-	Name  string  `json:"name,omitempty"`
-	Pic   string  `json:"pic"`
-	Type  string  `json:"type,omitempty"`
-	Price float64 `json:"price,omitempty"`
-	Count int64   `json:"count"`
+	Name     string  `json:"name,omitempty"`
+	Pic      string  `json:"pic"`
+	Type     string  `json:"type,omitempty"`
+	Price    float64 `json:"price,omitempty"`
+	Count    int64   `json:"count"`
+	IsChosen bool    `json:"is_chosen"`
 }
 type CartResponse struct {
 	Response

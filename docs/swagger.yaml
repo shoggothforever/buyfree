@@ -115,6 +115,9 @@ definitions:
       buy_price:
         description: 销售价
         type: number
+      inventory:
+        description: 库存
+        type: integer
       name:
         type: string
       pic:
@@ -619,6 +622,8 @@ definitions:
     properties:
       count:
         type: integer
+      is_chosen:
+        type: boolean
       name:
         type: string
       pic:
@@ -759,12 +764,23 @@ definitions:
       msg:
         type: string
     type: object
+  response.DriverInfo:
+    properties:
+      car_id:
+        type: string
+      comment:
+        type: string
+      mobile:
+        type: string
+      name:
+        type: string
+    type: object
   response.DriverOrderDetailResponse:
     properties:
       code:
         type: integer
       distance:
-        type: number
+        type: string
       factory_address:
         type: string
       msg:
@@ -921,6 +937,26 @@ definitions:
       msg:
         type: string
     type: object
+  response.FactoryOrderInfo:
+    properties:
+      cost:
+        description: 订单付款
+        type: number
+      driverInfo:
+        $ref: '#/definitions/response.DriverInfo'
+      get_time:
+        description: 司机取货时间,只有已完成的订单会有该属性
+        type: string
+      order_id:
+        type: integer
+      orderProductInfo:
+        items:
+          $ref: '#/definitions/response.OrderProductInfo'
+        type: array
+      state:
+        description: 订单状态 0：待付款，1：待取货，2：已完成（已关闭）
+        type: integer
+    type: object
   response.FactoryProductDetail:
     properties:
       inventory:
@@ -954,6 +990,7 @@ definitions:
       is_on_shelf:
         type: boolean
       name:
+        description: 商品名称
         type: string
       pic:
         type: string
@@ -1080,15 +1117,30 @@ definitions:
       user_id:
         type: integer
     type: object
+  response.OrderProductInfo:
+    properties:
+      count:
+        type: integer
+      name:
+        type: string
+      pic:
+        type: string
+      price:
+        type: number
+      sku:
+        type: string
+      type:
+        type: string
+    type: object
   response.OrderResponse:
     properties:
       code:
         type: integer
       msg:
         type: string
-      orderForm:
+      orderForms:
         items:
-          $ref: '#/definitions/response.FactoryProductsInfo'
+          $ref: '#/definitions/response.FactoryOrderInfo'
         type: array
     type: object
   response.PAIR_DEV_AD:
@@ -1468,25 +1520,6 @@ paths:
       summary: 车主端首页
       tags:
       - Driver
-  /dr/infos/balance:
-    get:
-      consumes:
-      - application/json
-      description: 余额组成:未结算广告收入+未体现设备收入
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.BalanceResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: 获取余额信息
-      tags:
-      - Driver/balance
   /dr/infos/devices:
     get:
       consumes:
@@ -1885,7 +1918,7 @@ paths:
       consumes:
       - application/json
       - multipart/form-data
-      description: 传入场站名，获取该场站所有商品信息
+      description: 获取本场站所有商品信息
       parameters:
       - description: 按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}
         in: path
@@ -1929,6 +1962,37 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
       summary: 获取商品信息
+      tags:
+      - Factory
+  /fa/infos/orders/{mode}/{page}:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: 传入字段mode，获取对应订单信息
+      parameters:
+      - description: 按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}
+        in: path
+        name: mode
+        required: true
+        type: integer
+      - description: 默认第一页，一页20个数据
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取车主订单信息(车主在该场站下的订单)
       tags:
       - Factory
   /fa/inventory:
@@ -2419,16 +2483,21 @@ paths:
       summary: 投放广告
       tags:
       - Platform/Advertisement
-  /pt/dev-admin/list/{mode}:
+  /pt/dev-admin/list/{mode}/{page}:
     get:
       consumes:
       - application/json
       - multipart/form-data
       description: 传入字段名:mode;mode=0:获取全部设备信息,mode=1，2,3,4分别对应获取在线，离线,激活，未激活的设备信息
       parameters:
-      - description: group mode
+      - description: 1：在线，2：离线，3：激活，4：未激活
         in: path
         name: mode
+        required: true
+        type: integer
+      - description: 默认第一页，一页20条数据
+        in: path
+        name: page
         required: true
         type: integer
       produces:
@@ -2562,33 +2631,7 @@ paths:
       summary: 平台用户登录
       tags:
       - User
-  /pt/orders/factory/{mode}:
-    get:
-      consumes:
-      - application/json
-      - multipart/form-data
-      description: 传入字段mode，获取对应订单信息
-      parameters:
-      - description: 按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}
-        in: path
-        name: mode
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.OrderResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: 获取车主订单信息(车主在该场站下的订单)
-      tags:
-      - Orderform
-  /pt/products/{mode}/factory/{factory_name}/:
+  /pt/products/{mode}/factory/{factory_name}:
     get:
       consumes:
       - application/json
