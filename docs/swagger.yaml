@@ -332,7 +332,6 @@ definitions:
         description: 存货
         type: integer
       is_on_shelf:
-        description: 上架状态
         type: boolean
       monthly_sales:
         type: string
@@ -884,7 +883,6 @@ definitions:
         description: 存货
         type: integer
       is_on_shelf:
-        description: 上架状态
         type: boolean
       monthly_sales:
         type: string
@@ -939,23 +937,16 @@ definitions:
     type: object
   response.FactoryOrderInfo:
     properties:
-      cost:
-        description: 订单付款
-        type: number
       driverInfo:
         $ref: '#/definitions/response.DriverInfo'
-      get_time:
-        description: 司机取货时间,只有已完成的订单会有该属性
-        type: string
       order_id:
         type: integer
       orderProductInfo:
         items:
           $ref: '#/definitions/response.OrderProductInfo'
         type: array
-      state:
-        description: 订单状态 0：待付款，1：待取货，2：已完成（已关闭）
-        type: integer
+      payInfo:
+        $ref: '#/definitions/response.PayInfo'
     type: object
   response.FactoryProductDetail:
     properties:
@@ -1184,6 +1175,24 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  response.PayInfo:
+    properties:
+      cost:
+        description: 订单付款
+        type: number
+      get_time:
+        description: 司机取货时间,只有已完成的订单会有该属性
+        type: string
+      pay_time:
+        description: 实际支付时间
+        type: string
+      place_time:
+        description: 订单生成时间
+        type: string
+      state:
+        description: 订单状态 0：待付款，1：待取货，2：已完成（已关闭）
+        type: integer
     type: object
   response.PayResponse:
     properties:
@@ -1913,7 +1922,7 @@ paths:
       summary: 获取车主用户信息
       tags:
       - User
-  /fa/infos/all/:mode:
+  /fa/infos/all/{mode}:
     get:
       consumes:
       - application/json
@@ -1939,7 +1948,7 @@ paths:
       summary: 获取所有商品
       tags:
       - Factory
-  /fa/infos/detail/:product_name:
+  /fa/infos/detail/{product_name}:
     get:
       consumes:
       - application/json
@@ -2006,9 +2015,7 @@ paths:
         name: factoryInfo
         required: true
         schema:
-          items:
-            $ref: '#/definitions/model.FactoryProduct'
-          type: array
+          $ref: '#/definitions/model.FactoryProduct'
       produces:
       - application/json
       responses:

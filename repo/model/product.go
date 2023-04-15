@@ -57,9 +57,10 @@ type FactoryProducts []FactoryProduct
 type FactoryProduct struct {
 	//场站名字
 	FactoryName string `json:"factory_name" form:"factory_name"`
+
+	IsOnShelf bool `json:"is_on_shelf" form:"is_on_shelf"`
 	Product
 	//上架状态
-	IsOnShelf bool `json:"is_on_shelf" form:"is_on_shelf"`
 }
 
 func (f *FactoryProduct) Set(id, fid int64, fname string, v *FactoryProduct) {

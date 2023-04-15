@@ -199,13 +199,13 @@ func (f *FactoryadminController) PAddInv(c *gin.Context) {
 // @Tags Factory
 // @Accept json
 // @Produce json
-// @Param factoryInfo body model.FactoryProducts true "sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price"
+// @Param factoryInfo body model.FactoryProduct true "sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price"
 // @Success 200 {object} response.FactoryProductsModifyResponse
 // @Failure	400 {object} response.Response
 // @Router /fa/inventory [post]
 func (f *FactoryadminController) Add(c *gin.Context) {
-	var products []model.FactoryProduct
-	err := c.ShouldBind(&products)
+	var product model.FactoryProduct
+	err := c.ShouldBind(&product)
 	if err != nil {
 		f.Error(c, 400, "传入数据格式错误")
 		return
@@ -213,43 +213,72 @@ func (f *FactoryadminController) Add(c *gin.Context) {
 	admin, ok := utils.GetFactoryInfo(c)
 	if !ok {
 		f.Error(c, 400, "获取场站信息失败")
+		return
 	}
 	fname := admin.Name
 	fid := admin.ID
-	n := len(products)
-	fpros := make([]model.FactoryProduct, n)
-	for k, v := range products {
-		fpros[k].Set(utils.GetSnowFlake(), fid, fname, &v)
-	}
+	//n := len(products)
+	//fpros := make([]model.FactoryProduct, n)
+	//for k, v := range products {
+	//	fpros[k].Set(utils.GetSnowFlake(), fid, fname, &v)
+	//}
+	//err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
+	//	var id int64
+	//	for k, v := range fpros {
+	//		terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, v.Name).First(&id).Error
+	//		if terr != nil && terr != gorm.ErrRecordNotFound {
+	//			logrus.Info(terr)
+	//			f.Error(c, 400, "查找商品信息失败")
+	//			return terr
+	//		} else if terr == gorm.ErrRecordNotFound {
+	//			cerr := tx.Model(&model.FactoryProducts{}).Create(&v).Error
+	//			if cerr != nil {
+	//				logrus.Info(cerr)
+	//				f.Error(c, 400, "添加商品信息失败")
+	//				return cerr
+	//			}
+	//		} else {
+	//			fpros[k].Product.ID = id
+	//			uerr := tx.Model(&model.FactoryProducts{}).Select("inventory").Where("id = ?", id).UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).First(&fpros[k].Product.Inventory).Error
+	//			if uerr != nil {
+	//				logrus.Info(uerr)
+	//				f.Error(c, 400, "更新商品信息失败")
+	//				return uerr
+	//			}
+	//		}
+	//	}
+	//	return nil
+	//})
+	product.Set(utils.GetSnowFlake(), fid, fname, &product)
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		var id int64
-		for _, v := range fpros {
-			terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, v.Name).First(&id).Error
-			if terr != nil && terr != gorm.ErrRecordNotFound {
-				logrus.Info(terr)
-				f.Error(c, 400, "查找商品信息失败")
-				return terr
-			} else if terr == gorm.ErrRecordNotFound {
-				cerr := tx.Model(&model.FactoryProducts{}).Create(&v).Error
-				if cerr != nil {
-					logrus.Info(cerr)
-					f.Error(c, 400, "添加商品信息失败")
-					return cerr
-				}
-			} else {
-				uerr := tx.Model(&model.FactoryProducts{}).Where("id = ?", id).UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).Error
-				if uerr != nil {
-					logrus.Info(uerr)
-					f.Error(c, 400, "更新商品信息失败")
-					return uerr
-				}
+
+		terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, product.Name).First(&id).Error
+		if terr != nil && terr != gorm.ErrRecordNotFound {
+			logrus.Info(terr)
+			f.Error(c, 400, "查找商品信息失败")
+			return terr
+		} else if terr == gorm.ErrRecordNotFound {
+			cerr := tx.Model(&model.FactoryProducts{}).Create(&product).Error
+			if cerr != nil {
+				logrus.Info(cerr)
+				f.Error(c, 400, "添加商品信息失败")
+				return cerr
+			}
+		} else {
+			product.ID = id
+			uerr := tx.Model(&model.FactoryProducts{}).Select("inventory").Where("id = ?", id).UpdateColumn("inventory", gorm.Expr("inventory + ?", product.Inventory)).First(&product.Inventory).Error
+			if uerr != nil {
+				logrus.Info(uerr)
+				f.Error(c, 400, "更新商品信息失败")
+				return uerr
 			}
 		}
 		return nil
 	})
 	if err == nil {
 		c.JSON(200, response.FactoryProductsModifyResponse{
-			response.Response{200, "添加商品信息成功"}, fpros,
+			response.Response{200, "添加商品信息成功"}, []model.FactoryProduct{product},
 		})
 	} else {
 		logrus.Info(err)
@@ -298,7 +327,7 @@ func (f *FactoryadminController) AddInv(c *gin.Context) {
 // @Param mode path int true "按照不同模式获取库存商品信息，mode={0:未上架,1:上架,传入其他数据获取所有商品信息}"
 // @Success 200 {object} response.FactoryProductsResponse
 // @Failure 400 {object} response.Response
-// @Router /fa/infos/all/:mode [get]
+// @Router /fa/infos/all/{mode} [get]
 func (f *FactoryadminController) GetAllProducts(c *gin.Context) {
 	admin, ok := utils.GetFactoryInfo(c)
 	if !ok {
@@ -367,7 +396,7 @@ func (f *FactoryadminController) GetAllProducts(c *gin.Context) {
 // @Param product_name path string true "商品名"
 // @Success 200 {object} response.FactoryGoodsResponse
 // @Failure 400 {object} response.Response
-// @Router /fa/infos/detail/:product_name [get]
+// @Router /fa/infos/detail/{product_name} [get]
 func (f *FactoryadminController) GetGoodsInfo(c *gin.Context) {
 	admin, ok := utils.GetFactoryInfo(c)
 	if !ok {
@@ -539,12 +568,15 @@ func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
 			return
 		}
 		ords[i].OrderID = dofs[i].OrderID
-		ords[i].Cost = dofs[i].Cost
+
 		ords[i].DriverInfo.Name = dr.Name
 		ords[i].DriverInfo.Mobile = dr.Mobile
 		ords[i].DriverInfo.CarID = dr.CarID
-		ords[i].GetTime = dofs[i].GetTime
-		ords[i].State = int64(dofs[i].State)
+		ords[i].PayInfo.PlaceTime = dofs[i].PlaceTime
+		ords[i].PayInfo.PayTime = dofs[i].PlaceTime
+		ords[i].PayInfo.GetTime = dofs[i].GetTime
+		ords[i].PayInfo.Cost = dofs[i].Cost
+		ords[i].PayInfo.State = int64(dofs[i].State)
 	}
 	if len(ords) != 0 {
 		c.JSON(200, response.OrderResponse{
