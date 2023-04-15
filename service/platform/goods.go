@@ -2,6 +2,7 @@ package platform
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"github.com/gin-gonic/gin"
@@ -37,24 +38,28 @@ func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 	if len(fname) != 0 && (mode == "0" || mode == "1") {
 		err := dal.Getdb().Raw("select * from factory_products where factory_name = ? and is_on_shelf = ?", fname, sf).Find(&infos).Error
 		if err != nil {
+			logger.Loger.Info("获取指定场站指定上架状态商品信息失败:", err)
 			o.Error(c, 400, "获取商品信息失败")
 			return
 		}
 	} else if len(fname) != 0 {
 		err := dal.Getdb().Raw("select * from factory_products where factory_name = ?", fname).Find(&infos).Error
 		if err != nil {
+			logger.Loger.Info("获取指定场站商品信息失败:", err)
 			o.Error(c, 400, "获取商品信息失败")
 			return
 		}
 	} else if mode == "0" || mode == "1" {
 		err := dal.Getdb().Raw("select * from factory_products where is_on_shelf = ?", sf).Find(&infos).Error
 		if err != nil {
+			logger.Loger.Info("获取指定上架状态商品信息失败:", err)
 			o.Error(c, 400, "获取商品信息失败")
 			return
 		}
 	} else {
 		err := dal.Getdb().Model(&model.FactoryProduct{}).Find(&infos).Error
 		if err != nil {
+			logger.Loger.Info("获取所有商品信息失败:", err)
 			o.Error(c, 200, "获取商品信息失败")
 		}
 	}
@@ -75,8 +80,6 @@ func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 			infos,
 		})
 	}
-	c.Set("Orders", infos)
-	c.Next()
 }
 
 // @Summary  平台获取场站获取商品信息

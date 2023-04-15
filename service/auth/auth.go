@@ -404,10 +404,6 @@ func FactoryLogin(c *gin.Context) {
 // @Router			/fa/userinfo [post]
 func FactoryUserInfo(c *gin.Context) {
 	jwt := c.PostForm("jwt")
-	//jwt := c.GetHeader("Authorization")
-	//if len(jwt) > 7 {
-	//	jwt = jwt[7:]
-	//}
 	logger.Loger.Info(jwt)
 	db := dal.Getdb()
 	var admin model.Factory

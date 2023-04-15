@@ -21,16 +21,23 @@ type OrderProductInfo struct {
 	Count int64   `json:"count"`
 	Price float64 `json:"price"`
 }
-type FactoryOrderInfo struct {
-	OrderID          int64 `json:"order_id"`
-	DriverInfo       DriverInfo
-	OrderProductInfo []OrderProductInfo
+type PayInfo struct {
+	//订单生成时间
+	PlaceTime time.Time `json:"place_time"`
+	//实际支付时间
+	PayTime time.Time `json:"pay_time"`
 	//司机取货时间,只有已完成的订单会有该属性
 	GetTime time.Time `json:"get_time"`
 	//订单状态 0：待付款，1：待取货，2：已完成（已关闭）
 	State int64 `json:"state"`
 	//订单付款
 	Cost float64 `json:"cost"`
+}
+type FactoryOrderInfo struct {
+	OrderID          int64 `json:"order_id"`
+	DriverInfo       DriverInfo
+	OrderProductInfo []OrderProductInfo
+	PayInfo          PayInfo
 }
 type OrderResponse struct {
 	Response

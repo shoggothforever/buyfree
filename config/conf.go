@@ -84,26 +84,13 @@ func init() {
 	}
 	info := Reader.GetStringMapString("qiniu")
 	Mcfg.QINIU_AK = info["ak"]
-	//if Mcfg.QINIU_AK == "" {
-	//	Mcfg.QINIU_AK = "krCw1c0mo4uyEbHNArbXQR6xpdz6QLamc99iAu_-"
-	//}
 	Mcfg.QINIU_SK = info["sk"]
-	//if Mcfg.QINIU_SK == "" {
-	//	Mcfg.QINIU_SK = "XHY438HM9qjh3c1uIOVmzdO-bjlLTSYUZzKEY7_4"
-	//}
 	Mcfg.QINIU_BK = info["bk"]
-	//if Mcfg.QINIU_BK == "" {
-	//	Mcfg.QINIU_BK = "bfcloud"
-	//}
+
 	winfo := Reader.GetStringMapString("weixinapp")
 	Mcfg.APPID = winfo["appid"]
-	//if Mcfg.APPID == "" {
-	//	Mcfg.APPID = "wxd776834423fadf04"
-	//}
 	Mcfg.APPSECRET = winfo["appsecret"]
-	//if Mcfg.APPSECRET == "" {
-	//	Mcfg.APPSECRET = "00a3239022c4146ec4c3209792539c0b"
-	//}
+
 	minioinfo := Reader.GetStringMapString("minio")
 	Mcfg.Mendpoint = minioinfo["endpoint"]
 	Mcfg.MAccessKeyID = minioinfo["accessKeyID"]

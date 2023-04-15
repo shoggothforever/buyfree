@@ -863,7 +863,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fa/infos/all/:mode": {
+        "/fa/infos/all/{mode}": {
             "get": {
                 "description": "获取本场站所有商品信息",
                 "consumes": [
@@ -902,7 +902,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fa/infos/detail/:product_name": {
+        "/fa/infos/detail/{product_name}": {
             "get": {
                 "consumes": [
                     "application/json",
@@ -1006,10 +1006,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.FactoryProduct"
-                            }
+                            "$ref": "#/definitions/model.FactoryProduct"
                         }
                     }
                 ],
@@ -2743,7 +2740,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "is_on_shelf": {
-                    "description": "上架状态",
                     "type": "boolean"
                 },
                 "monthly_sales": {
@@ -3561,7 +3557,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "is_on_shelf": {
-                    "description": "上架状态",
                     "type": "boolean"
                 },
                 "monthly_sales": {
@@ -3636,16 +3631,8 @@ const docTemplate = `{
         "response.FactoryOrderInfo": {
             "type": "object",
             "properties": {
-                "cost": {
-                    "description": "订单付款",
-                    "type": "number"
-                },
                 "driverInfo": {
                     "$ref": "#/definitions/response.DriverInfo"
-                },
-                "get_time": {
-                    "description": "司机取货时间,只有已完成的订单会有该属性",
-                    "type": "string"
                 },
                 "orderProductInfo": {
                     "type": "array",
@@ -3656,9 +3643,8 @@ const docTemplate = `{
                 "order_id": {
                     "type": "integer"
                 },
-                "state": {
-                    "description": "订单状态 0：待付款，1：待取货，2：已完成（已关闭）",
-                    "type": "integer"
+                "payInfo": {
+                    "$ref": "#/definitions/response.PayInfo"
                 }
             }
         },
@@ -4006,6 +3992,31 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "response.PayInfo": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "description": "订单付款",
+                    "type": "number"
+                },
+                "get_time": {
+                    "description": "司机取货时间,只有已完成的订单会有该属性",
+                    "type": "string"
+                },
+                "pay_time": {
+                    "description": "实际支付时间",
+                    "type": "string"
+                },
+                "place_time": {
+                    "description": "订单生成时间",
+                    "type": "string"
+                },
+                "state": {
+                    "description": "订单状态 0：待付款，1：待取货，2：已完成（已关闭）",
+                    "type": "integer"
                 }
             }
         },
