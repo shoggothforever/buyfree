@@ -78,8 +78,9 @@ func (a *ADController) AddAD(c *gin.Context) {
 	rdb := dal.Getrdb()
 	ctx := rdb.Context()
 	utils.ModifySales(ctx, rdb, utils.Ranktype2, utils.PTNAME, strconv.FormatFloat(ad.InvestFund, 'f', 2, 64))
-
+	ad.ID = utils.GetSnowFlake()
 	ad.PlatformID = admin.ID
+	ad.PlayUrl = "minio.shoggothy.xyz/buyfree/l" + ad.PlayUrl
 	//ad.ExpireAt = time.Now().AddDate(1, 0, 0)
 	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
 	ad.Profit = 0
