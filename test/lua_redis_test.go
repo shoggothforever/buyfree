@@ -5,7 +5,6 @@ import (
 	"buyfree/utils"
 	"context"
 	"github.com/go-redis/redis/v8"
-	"strconv"
 	"testing"
 )
 
@@ -19,13 +18,13 @@ func TestLua(t *testing.T) {
 		DB:       10,
 	})
 	ctx := context.TODO()
-	var uname string = "dsm"
+	var uname string = utils.PTNAME
 	sales, err := rdb.Get(ctx, utils.GetSalesKeyByMode(utils.Ranktype1, uname, 0)).Result()
 	if sales == "" {
 		logger.Loger.Info(sales)
 		logger.Loger.Info(err)
 	}
-	t.Log(strconv.ParseFloat(sales, 64))
+	//t.Log(strconv.ParseFloat(sales, 64))
 	//t.Log(utils.GetSalesKeyByMode(utils.Ranktype1, uname, 0))
 	//utils.Lualock(ctx, rdb, []string{"mylock"}, val, "30")
 	//utils.Luaunlock(ctx, rdb, key, val)
@@ -43,7 +42,7 @@ func TestLua(t *testing.T) {
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "3s", 1234)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "4b", 12345)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "yith", 123)
-		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "9a", 12)
+		utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "9a", 12)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "2e", 123)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "3s", 1234)
 		//utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "4b", 12345)
@@ -55,7 +54,7 @@ func TestLua(t *testing.T) {
 	}
 
 	//测试根据ranktype获得的KEYS,返回值为{[]{username:score}}
-	//t.Log(utils.GetRankList(ctx, rdb, utils.Ranktype1, uname, 0))
+	t.Log(utils.GetRankList(ctx, rdb, utils.Ranktype1, uname, 0))
 	//测试根据Ranktype和用户名获得七日销售数据
 	//t.Log(utils.SalesOf7Days(ctx, rdb, utils.Ranktype1, uname))
 	//t.Log(utils.GetSalesInfo(ctx, rdb, utils.Ranktype1, uname))

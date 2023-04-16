@@ -181,8 +181,7 @@ func (o *OrderRequest) Handle() {
 	//查询场站商品库存信息，有一个商品库存不满足就直接判定为结算失败
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for k, _ := range *o.ProductInfos {
-			v := *(*o.ProductInfos)[k]
-			fmt.Println(v)
+			v := (*o.ProductInfos)[k]
 			var fp model.FactoryProduct
 			terr := tx.Model(&model.FactoryProduct{}).Where(
 				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).First(&fp).UpdateColumn(
@@ -214,14 +213,17 @@ func (o *OrderRequest) Handle() {
 		rdb := dal.Getrdb()
 		ctx := rdb.Context()
 		for k, _ := range *o.ProductInfos {
-			v := *(*o.ProductInfos)[k]
+			v := (*o.ProductInfos)[k]
 			//var inv int64
 			//terr := tx.Model(&model.FactoryProduct{}).Select("inventory").Where("factory_id = ? and name = ? and is_on_shelf =true ", v.FactoryID, v.Name).UpdateColumn("inventory", gorm.Expr("inventory - ?", v.Count)).First(&inv).Error
 			cost := float64(v.Count) * v.Price
-			fmt.Println(fmt.Sprintf("%d订单：%s商品营销额:%f", v.OrderRefer, v.Name, float64(v.Count)*v.Price))
+			logger.Loger.WithFields(logrus.Fields{"TIME": time.Now()}).Info(fmt.Sprintf("%d订单：%s商品营销额:%f", v.OrderRefer, v.Name, float64(v.Count)*v.Price))
 
 			utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, o.FactoryName, v.Name, cost)
+			logger.Loger.WithFields(logrus.Fields{"TIME": time.Now()}).Info("场站商品排行榜更新成功")
+
 			utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, utils.PTNAME, v.Name, cost)
+			logger.Loger.WithFields(logrus.Fields{"TIME": time.Now()}).Info("平台商品排行榜更新成功")
 		}
 		return nil
 	})

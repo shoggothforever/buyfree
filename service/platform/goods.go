@@ -5,6 +5,7 @@ import (
 	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/service/response"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -27,6 +28,9 @@ type GoodsController struct {
 // @Router /pt/products/{mode}/factory/{factory_name} [get]
 func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 	fname := c.Param("factory_name")
+	if fname == "" {
+		fname = "all"
+	}
 	mode := c.Param("mode")
 	var sf bool
 	if mode == "1" {
@@ -35,32 +39,37 @@ func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 		sf = false
 	}
 	var infos []response.FactoryProductsInfo
-	if len(fname) != 0 && (mode == "0" || mode == "1") {
-		err := dal.Getdb().Raw("select * from factory_products where factory_name = ? and is_on_shelf = ?", fname, sf).Find(&infos).Error
-		if err != nil {
-			logger.Loger.Info("获取指定场站指定上架状态商品信息失败:", err)
-			o.Error(c, 400, "获取商品信息失败")
-			return
-		}
-	} else if len(fname) != 0 {
-		err := dal.Getdb().Raw("select * from factory_products where factory_name = ?", fname).Find(&infos).Error
-		if err != nil {
-			logger.Loger.Info("获取指定场站商品信息失败:", err)
-			o.Error(c, 400, "获取商品信息失败")
-			return
-		}
-	} else if mode == "0" || mode == "1" {
-		err := dal.Getdb().Raw("select * from factory_products where is_on_shelf = ?", sf).Find(&infos).Error
-		if err != nil {
-			logger.Loger.Info("获取指定上架状态商品信息失败:", err)
-			o.Error(c, 400, "获取商品信息失败")
-			return
+	if fname != "all" {
+		if mode == "0" || mode == "1" {
+			err := dal.Getdb().Raw("select * from factory_products where factory_name = ? and is_on_shelf = ?", fname, sf).Find(&infos).Error
+			if err != nil {
+				logger.Loger.Info(fmt.Sprintf("获取%s场站指定上架状态商品信息失败", fname), err)
+				o.Error(c, 400, fmt.Sprintf("获取%s场站指定上架状态商品信息失败", fname))
+				return
+			}
+		} else {
+			err := dal.Getdb().Raw("select * from factory_products where factory_name = ?", fname).Find(&infos).Error
+			if err != nil {
+				logger.Loger.Info(fmt.Sprintf("获取%s场站商品信息失败", fname), err)
+				o.Error(c, 400, fmt.Sprintf("获取%s场站商品信息失败", fname))
+				return
+			}
 		}
 	} else {
-		err := dal.Getdb().Model(&model.FactoryProduct{}).Find(&infos).Error
-		if err != nil {
-			logger.Loger.Info("获取所有商品信息失败:", err)
-			o.Error(c, 200, "获取商品信息失败")
+		if mode == "0" || mode == "1" {
+			err := dal.Getdb().Raw("select * from factory_products where is_on_shelf = ?", sf).Find(&infos).Error
+			if err != nil {
+				logger.Loger.Info("获取所有场站指定状态商品信息失败:", err)
+				o.Error(c, 400, "获取所有场站指定状态商品信息失败")
+				return
+			}
+		} else {
+			err := dal.Getdb().Model(&model.FactoryProduct{}).Find(&infos).Error
+			if err != nil {
+				logger.Loger.Info("获取所有场站商品信息失败:", err)
+				o.Error(c, 200, "获取所有场站商品信息失败")
+				return
+			}
 		}
 	}
 	if len(infos) != 0 {

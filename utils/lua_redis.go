@@ -72,12 +72,10 @@ func listPopPush() *redis.Script {
 	return redis.NewScript(`
 		local key =KEYS[1]
 		local val =tonumber(ARGV[1])
-		print(tonumber(val))
 		local lval =tonumber(redis.call("lpop",key))
 		if lval ==nil then 
 		return 0
 		end
-		print(tonumber(lval))
 		local ll =tonumber(redis.call("lpush",key,lval+val))
 		if ll ==nil then
 		return 0
@@ -148,7 +146,6 @@ func modifyRanks() *redis.Script {
 	end
 	local field =tostring(ARGV[1])
 	local sales =tonumber(ARGV[2])
-	print(field,sales)
 	for i=1,10,1 do
 		redis.call("zincrby",keys[i],sales,field)
 	end
@@ -257,7 +254,9 @@ func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mo
 	if mode < 0 || mode > 5 {
 		mode = 0
 	}
-	ret := rdb.ZRevRangeWithScores(c, GetRankKeyByMode(adp, queryname, mode), 0, 9)
+	s := GetRankKeyByMode(adp, queryname, mode)
+	fmt.Println(s)
+	ret := rdb.ZRevRangeWithScores(c, s, 0, 9)
 	res, err := ret.Result()
 	if err != nil {
 		logrus.Info("get rank list error while getting rank list", err)

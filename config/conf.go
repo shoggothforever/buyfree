@@ -58,6 +58,7 @@ type MConfigs struct {
 }
 
 var Mcfg MConfigs
+
 var D = flag.Bool("D", false, "默认为release，true为debug")
 
 func init() {
@@ -95,5 +96,8 @@ func init() {
 	Mcfg.Mendpoint = minioinfo["endpoint"]
 	Mcfg.MAccessKeyID = minioinfo["accessKeyID"]
 	Mcfg.MSecretAccessKey = minioinfo["secreatAccessKey"]
+
+	//dsminfo := Reader.GetStringMapString("minio_user")
+
 	//logger.Loger.Info(Mcfg)
 }

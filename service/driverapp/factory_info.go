@@ -628,6 +628,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				defer group.Done()
 				disinfo := forms.FactoriesDistance[j]
 				oinfo := forms.OrderInfos[j]
+				dal.Getdb().Model(&model.OrderProduct{}).Where("order_refer = ?", oinfo.OrderID).Find(&oinfo.ProductInfos)
 				ordreq[j] = *mrpc.NewOrderRequest(disinfo.FactoryID, oinfo.OrderID, disinfo.FactoryName, &oinfo.ProductInfos)
 				mrpc.PlatFormService.ReqChan <- &ordreq[j]
 				<-ordreq[j].DoneChan

@@ -77,12 +77,6 @@ func main() {
 	go func() {
 		logger.Loger.Info(http.ListenAndServe(":6060", nil))
 	}()
-	go func() {
-		logger.Loger.Info(http.ListenAndServe(":9090", nil))
-	}()
-	go func() {
-		logger.Loger.Info(http.ListenAndServe(":9000", nil))
-	}()
 	mrpc.PlatFormService.Run()
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()
