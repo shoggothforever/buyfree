@@ -127,6 +127,7 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 	}
 	var odinfos []model.DriverOrderForm
 	var faddress string
+	var mobile string
 	var distance string
 	rdb := dal.Getrdb()
 
@@ -136,6 +137,12 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 		i.Error(c, 400, "获取订单信息失败")
 		return
 	}
+	dal.Getdb().Raw("select mobile,address from factories where id = ?", odinfos[0].FactoryID).Row().Scan(&mobile, &faddress)
+	//if err != nil {
+	//	logger.Loger.Info(err)
+	//	i.Error(c, 400, "获取场站信息失败")
+	//	return
+	//}
 	err = dal.Getdb().Model(&model.OrderProduct{}).Where("order_refer = ?", id).Find(&odinfos[0].ProductInfos).Error
 	if err != nil {
 		logger.Loger.Info(err)
@@ -149,7 +156,7 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 			Response:       response.Response{200, "成功获取订单信息"},
 			FactoryAddress: faddress,
 			Distance:       distance,
-			ReserveMobile:  admin.Mobile,
+			ReserveMobile:  mobile,
 			OrderInfos:     odinfos[0],
 		})
 	}
