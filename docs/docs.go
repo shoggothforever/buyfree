@@ -988,7 +988,7 @@ const docTemplate = `{
         },
         "/fa/inventory": {
             "post": {
-                "description": "添加一个或多个的商品",
+                "description": "添加一个商品",
                 "consumes": [
                     "application/json"
                 ],
@@ -1001,7 +1001,7 @@ const docTemplate = `{
                 "summary": "场站添加商品信息",
                 "parameters": [
                     {
-                        "description": "sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price",
+                        "description": "sku 可以和name值相同 必填项:name,pic(直接传入文件名即可),type,sku,inventory,buy_price,supply_price",
                         "name": "factoryInfo",
                         "in": "body",
                         "required": true,
@@ -1026,7 +1026,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/fa/inventory/{product_name}/{inv}": {
+        "/fa/inventory/add/{product_name}/{inv}": {
             "patch": {
                 "description": "传入增加的库存量",
                 "consumes": [
@@ -1804,7 +1804,7 @@ const docTemplate = `{
         },
         "/pt/factory-admin/{factory_name}/prdoucts": {
             "post": {
-                "description": "添加一个或多个的商品",
+                "description": "添加一个商品",
                 "consumes": [
                     "application/json"
                 ],
@@ -1829,10 +1829,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.FactoryProduct"
-                            }
+                            "$ref": "#/definitions/model.FactoryProduct"
                         }
                     }
                 ],

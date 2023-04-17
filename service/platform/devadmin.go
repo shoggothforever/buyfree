@@ -118,7 +118,6 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	var size = len(devs)
 	devres := make([]response.DevQueryInfo, size)
 	for k := 0; k < size; k++ {
-		fmt.Println(devs[k])
 		devres[k].Seq = int64(k) + 1
 		devres[k].DevID = devs[k].ID
 		devres[k].State = GetOnlineState(devs[k].IsOnline)

@@ -1,5 +1,7 @@
 package model
 
+var MinioPublicPrefix = "https://minio.shoggothy.xyz/buyfree/l"
+
 type Product struct {
 	ID        int64  `gorm:"primaryKey;" json:"id" form:"id"`
 	FactoryID int64  `gorm:"comment:指向场站的编号" json:"factory_id" form:"factory_id"`
@@ -66,7 +68,7 @@ type FactoryProduct struct {
 func (f *FactoryProduct) Set(id, fid int64, fname string, v *FactoryProduct) {
 	f.FactoryName = fname
 	f.Name = v.Name
-	f.Pic = v.Pic
+	f.Pic = MinioPublicPrefix + v.Pic
 	f.Type = v.Type
 	f.Sku = v.Sku
 	f.FactoryID = fid

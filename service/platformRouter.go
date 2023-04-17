@@ -63,7 +63,7 @@ func PlatFormrouter() {
 		fa.POST("/login", auth.FactoryLogin)
 		fa.POST("/userinfo", auth.FactoryUserInfo)
 		fa.POST("/inventory", middleware.AuthJwt(), fat.Add)
-		fa.PATCH("/inventory/:product_name/:inv", middleware.AuthJwt(), fat.AddInv)
+		fa.PATCH("/inventory/add/:product_name/:inv", middleware.AuthJwt(), fat.AddInv)
 		fa.GET("/infos/all/:mode", middleware.AuthJwt(), fat.GetAllProducts)
 		fa.GET("/infos/detail/:product_name", middleware.AuthJwt(), fat.GetGoodsInfo)
 		fa.GET("/infos/orders/:mode/:page", middleware.AuthJwt(), fat.GetDriverOrders)

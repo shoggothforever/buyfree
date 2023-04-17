@@ -2008,9 +2008,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: 添加一个或多个的商品
+      description: 添加一个商品
       parameters:
-      - description: sku 可以和name值相同 必填项:name,pic,type,sku,inventory,buy_price,supply_price
+      - description: sku 可以和name值相同 必填项:name,pic(直接传入文件名即可),type,sku,inventory,buy_price,supply_price
         in: body
         name: factoryInfo
         required: true
@@ -2030,7 +2030,7 @@ paths:
       summary: 场站添加商品信息
       tags:
       - Factory
-  /fa/inventory/{product_name}/{inv}:
+  /fa/inventory/add/{product_name}/{inv}:
     patch:
       consumes:
       - application/json
@@ -2521,7 +2521,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 添加一个或多个的商品
+      description: 添加一个商品
       parameters:
       - description: 场站名字
         in: path
@@ -2533,9 +2533,7 @@ paths:
         name: factoryInfo
         required: true
         schema:
-          items:
-            $ref: '#/definitions/model.FactoryProduct'
-          type: array
+          $ref: '#/definitions/model.FactoryProduct'
       produces:
       - application/json
       responses:
