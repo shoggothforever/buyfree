@@ -82,7 +82,7 @@ func main() {
 	go service.Passengerrouter()
 	//go service.Factoryrouter()
 	go service.Driverrouter()
-	SalesCounter()
+	//SalesCounter()
 	service.PlatFormrouter()
 
 }
