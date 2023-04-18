@@ -98,10 +98,9 @@ func PlatFormrouter() {
 		rdv.GET("/list/:mode/:page", devct.GetdevBystate)
 		rdv.POST("/devs", devct.AddDev)
 		//rdv.GET("/owner/:id")
-		var devinfoct platform.DevinfoController
 		//设备详情
-		rdv.GET("/infos/:id", devinfoct.LsInfo)
-		rdv.POST("/launch/:dev_id", devinfoct.Launch)
+		rdv.GET("/infos/:id", devct.LsInfo)
+		rdv.POST("/launch/:dev_id", devct.Launch)
 	}
 
 	ord := pt.Group("/products")
