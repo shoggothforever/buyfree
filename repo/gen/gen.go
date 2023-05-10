@@ -53,8 +53,8 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                 db,
-		Advertisement:      newAdvertisement(db, opts...),
+		db:            db,
+		Advertisement: newAdvertisement(db, opts...),
 
 		Device:             newDevice(db, opts...),
 		DeviceProduct:      newDeviceProduct(db, opts...),
@@ -75,7 +75,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
-	Advertisement      advertisement
+	Advertisement advertisement
 
 	Device             device
 	DeviceProduct      deviceProduct

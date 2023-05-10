@@ -1,22 +1,11 @@
-{"level":"info","msg":"record not found","time":"2023-04-15T13:43:29+08:00"}
-{"level":"info","msg":"record not found","time":"2023-04-15T13:43:51+08:00"}
-{"level":"info","msg":"record not found","time":"2023-04-15T13:43:58+08:00"}
-{"level":"info","msg":"record not found","time":"2023-04-15T13:44:01+08:00"}
-{"level":"info","msg":"record not found","time":"2023-04-15T13:44:04+08:00"}
-ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-14T20:12:40+08:00"}
-{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-14T20:12:45+08:00"}
-{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-14T20:13:03+08:00"}
-:30+08:00"}
-{"level":"info","msg":"redis操作返回err\u003cnil\u003e","time":"2023-04-12T21:21:30+08:00"}
-{"level":"info","msg":"验证车主信息","time":"2023-04-12T21:21:30+08:00"}
-{"level":"info","msg":"从redis中获取用户信息1","time":"2023-04-12T21:21:30+08:00"}
-{"level":"info","msg":"redis操作返回err\u003cnil\u003e","time":"2023-04-12T21:21:30+08:00"}
-{"level":"info","msg":"验证车主信息","time":"2023-04-12T21:21:30+08:00"}
-2958965510508544","time":"2023-04-11T01:57:32+08:00"}
-{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:58:48+08:00"}
-{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:58:49+08:00"}
-{"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:58:49+08:00"}
-{"level":"info","msg":"错误: 重复键违反唯一约束\"order_products_pkey\" (SQLSTATE 23505)","time":"2023-04-11T01:59:23+08:00"}
+{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-05-07T20:38:04+08:00"}
+{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-25T09:20:05+08:00"}
+{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-25T09:20:10+08:00"}
+{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-25T09:20:20+08:00"}
+{"level":"info","msg":"创建用户信息失败failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-25T09:20:28+08:00"}
+{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-25T09:20:28+08:00"}
+{"level":"info","msg":"failed to connect to `host=localhost user=root database=root`: server error (\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd: \ufffd\ufffdɫ \"root\" \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd (SQLSTATE 28000))","time":"2023-04-25T09:20:37+08:00"}
+�复键违反唯一约束\"order_products_pkey\" (SQLSTATE 23505)","time":"2023-04-11T01:59:23+08:00"}
 ":"2023-04-11T01:36:15+08:00"}
 {"level":"info","msg":"传入的商品信息是{213 cat silk toy silk.jpg 5 -1}","time":"2023-04-11T01:36:17+08:00"}
 {"level":"info","msg":"购物车编号242958965510508544","time":"2023-04-11T01:36:17+08:00"}

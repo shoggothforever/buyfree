@@ -1,0 +1,6 @@
+Dockerfile
+docker-compose.yml
+*.exe
+.dockerignore
+.gitignore
+log.txtgo

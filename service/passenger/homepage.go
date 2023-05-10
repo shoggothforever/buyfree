@@ -29,8 +29,9 @@ type HomePageController struct {
 func (h *HomePageController) GetStatic(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	homereq := mrpc.NewHomeScanReq(id)
-	mrpc.DriverService.ReqChan <- homereq
-	<-homereq.DoneChan
+	//mrpc.DriverService.ReqChan <- homereq
+	//<-homereq.DoneChan
+	mrpc.PutPassengerReq(homereq)
 	if !homereq.Res {
 		h.Error(c, 400, "获取信息失败")
 	} else {
@@ -66,8 +67,9 @@ func (h *HomePageController) Pay(c *gin.Context) {
 		return
 	}
 	payreq := mrpc.NewPassengerPayReq(info.DeviceID, info.Name, info.BuyPrice)
-	mrpc.DriverService.ReqChan <- payreq
-	<-payreq.DoneChan
+	//mrpc.DriverService.ReqChan <- payreq
+	//<-payreq.DoneChan
+	mrpc.PutPassengerReq(payreq)
 	if !payreq.Res {
 		h.Error(c, 500, "处理支付信息失败")
 		return

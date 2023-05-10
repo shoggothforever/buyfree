@@ -49,6 +49,7 @@ func Driverrouter() {
 	var cat driverapp.CartController
 	var det driverapp.DeviceController
 	r.GET("/", base.Ping)
+	r.GET("/shorten/*any", middleware.RedirectShort())
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	dr := r.Group("/dr")
 	{

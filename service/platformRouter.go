@@ -32,7 +32,7 @@ func PlatFormrouter() {
 	} else {
 		r = gin.Default()
 	}
-	//r := gin.Default()
+	//r = gin.Default()
 	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	PlatFormSrv = http.Server{
@@ -45,6 +45,7 @@ func PlatFormrouter() {
 		}
 	}()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	r.GET("/shorten/*any", middleware.RedirectShort())
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, response.PingResponse{"welecome to platform.buy-free.com"})
 	})
