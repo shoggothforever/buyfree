@@ -2,12 +2,11 @@ package model
 
 import "github.com/google/uuid"
 
-//type Subject interface {
-//	register(o *design.Observer)
-//	deregister(o *design.Observer)
-//	notifyAll()
-//}
-//
+//	type Subject interface {
+//		register(o *design.Observer)
+//		deregister(o *design.Observer)
+//		notifyAll()
+//	}
 type Geo struct {
 	//场站地址
 	Address string `gorm:"comment:场站位置信息" json:"address" form:"address"`

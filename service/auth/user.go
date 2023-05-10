@@ -6,7 +6,9 @@ import (
 	"buyfree/repo/model"
 	"buyfree/utils"
 	"context"
+	"errors"
 	"github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // 注册 后续可以增加修改密码功能
@@ -60,7 +62,6 @@ func SaveFUser(admin *model.Factory) (model.LoginInfo, error) {
 		logger.Loger.Info("创建用户登录表失败", err)
 		return model.LoginInfo{}, err
 	}
-	//TODO:对密码加密再存储，现在为了方便就先不管了
 	return logininfo, err
 
 }
@@ -114,5 +115,36 @@ func SaveFLoginInfo(admin *model.Factory) (model.LoginInfo, error) {
 	}
 	c := context.TODO()
 	dal.Getrdb().Set(c, loginInfo.Jwt, model.FACTORYADMIN, utils.EXPIRE)
+	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
+}
+
+func SaveLoginInfo[T *model.Passenger | *model.Driver | *model.Factory | *model.Platform](admin T) (model.LoginInfo, error) {
+	var loginInfo model.LoginInfo
+	var err error
+	adminvalue := reflect.ValueOf(admin).Elem()
+	loginInfo.UserID = adminvalue.FieldByName("ID").Interface().(int64)
+	loginInfo.Salt = adminvalue.FieldByName("PasswordSale").Interface().(string)
+	loginInfo.UserName = adminvalue.FieldByName("Name").Interface().(string)
+	password := adminvalue.FieldByName("Password").Interface().(string)
+	loginInfo.Password = utils.Messagedigest5(password, loginInfo.Salt)
+	loginInfo.Jwt, err = utils.GeneraterJwt(loginInfo.UserID, loginInfo.UserName, loginInfo.Salt)
+	if err != nil {
+		logrus.Info("JWT created fail")
+		return model.LoginInfo{}, err
+	}
+	switch adminvalue.Type().String() {
+	case "model.Platform":
+		loginInfo.ROLE = model.PLATFORMADMIN
+	case "model.Driver":
+		loginInfo.ROLE = model.DRIVER
+	case "model.Passenger":
+		loginInfo.ROLE = model.PASSENGER
+	case "model.Factory":
+		loginInfo.ROLE = model.FACTORYADMIN
+	default:
+		return model.LoginInfo{}, errors.New("传入数据类型错误")
+	}
+	c := context.TODO()
+	dal.Getrdb().Set(c, loginInfo.Jwt, loginInfo.ROLE, utils.EXPIRE)
 	return loginInfo, dal.Getdb().Model(&model.LoginInfo{}).Create(&loginInfo).Error
 }

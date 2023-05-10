@@ -9,7 +9,7 @@ type Chosen struct {
 	Ischosen bool
 }
 
-//创建此表时还会创建DeviceProduct
+// 创建此表时还会创建DeviceProduct
 type Device struct {
 	ID             int64            `gorm:"primaryKey" json:"id" form:"id"`
 	OwnerID        int64            `gorm:"comment:车主ID" json:"owner_id" form:"owner_id"`

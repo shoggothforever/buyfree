@@ -29,12 +29,15 @@ var GlobalCnt int64 = 0
 type Handler func()
 type Req interface {
 	//Refund()
+	//exitChan 向Worker传递工作处理结束的信息,handle传递工作的处理方法
 	Do(exitChan ReplyQueue, handle Handler)
+	//Handle() 由decorator实现
 	Handle()
 	Done()
 	Result() bool
 }
 
+// 装饰着模式中的 Component
 type Communicator struct {
 	//客户端验证结果
 	Res bool
@@ -114,8 +117,8 @@ func (w *Worker) Run() {
 
 	}()
 }
-func (p *WorkerPool) PutReq(r *Req) {
-	p.ReqChan <- *r
+func (p *WorkerPool) PutReq(r Req) {
+	p.ReqChan <- r
 }
 func (p *WorkerPool) Run() {
 	fmt.Println("WorkerPool 初始化")
@@ -157,9 +160,11 @@ func (p *WorkerPool) Run() {
 	}()
 }
 
-func PutDriverReq(r *Req) {
+func PutDriverReq(r Req) {
 	PlatFormService.PutReq(r)
+	r.Done()
 }
-func PutPassengerReq(r *Req) {
+func PutPassengerReq(r Req) {
 	DriverService.PutReq(r)
+	r.Done()
 }

@@ -1,7 +1,7 @@
 package model
 
-//广告管理
-//想要存redis里的
+// 广告管理
+// 想要存redis里的
 type SalesData struct {
 	DailySales    string `gorm:"comment:日销量" json:"daily_sales" form:"daily_sales"`
 	WeeklySales   string `gorm:"comment:周销量" json:"weekly_sales" form:"weekly_sales"`

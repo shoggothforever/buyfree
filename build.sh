@@ -1,4 +1,5 @@
+#!/bin/bash
 
-go env -w GOOS=linux
+go mod tidy
 swag init
 go build main.go

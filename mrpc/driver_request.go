@@ -241,6 +241,7 @@ func (o *OrderRequest) Handle() {
 func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 	ticker := time.NewTicker(TimeOut)
 	defer ticker.Stop()
+	//实现运行时多态
 	handle()
 	select {
 	case val := <-c.ReplyChan:

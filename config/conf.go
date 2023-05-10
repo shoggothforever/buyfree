@@ -68,8 +68,8 @@ func init() {
 	Mcfg.GRANTTYPE = "authorization_code"
 	Reader = viper.New()
 	//path, _ := os.Getwd()
-	//path := "d:/desktop/pr/buyfree"
-	path := "/www/wwwroot/bf.shoggothy.xyz/buyfree"
+	path := "."
+	//path := "/www/wwwroot/bf.shoggothy.xyz/buyfree"
 	fmt.Println("config文件读取路径", path)
 	Reader.AddConfigPath(path + "/config")
 	Reader.SetConfigName("config")

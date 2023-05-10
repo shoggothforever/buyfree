@@ -13,6 +13,7 @@ import (
 type DeviceProductInfo struct {
 }
 
+// 装饰者模式
 type HomeScanReq struct {
 	DeviceID       int64
 	ADUrls         []model.ADurl

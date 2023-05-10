@@ -35,6 +35,7 @@ func Passengerrouter() {
 			logrus.Fatalf("listen: %s\n", err)
 		}
 	}()
+	r.GET("/shorten/*any", middleware.RedirectShort())
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.GET("/", func(c *gin.Context) {
 		w := c.Writer

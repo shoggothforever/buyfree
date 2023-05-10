@@ -56,6 +56,7 @@ func init() {
 	{
 		dB.AutoMigrate(
 			&model.FundInfo{},
+			&model.Platform{},
 			&model.LoginInfo{},
 			&model.Passenger{},
 			&model.PassengerCart{},

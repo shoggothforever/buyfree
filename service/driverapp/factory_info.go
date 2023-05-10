@@ -630,8 +630,10 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				oinfo := forms.OrderInfos[j]
 				dal.Getdb().Model(&model.OrderProduct{}).Where("order_refer = ?", oinfo.OrderID).Find(&oinfo.ProductInfos)
 				ordreq[j] = *mrpc.NewOrderRequest(disinfo.FactoryID, oinfo.OrderID, disinfo.FactoryName, &oinfo.ProductInfos)
-				mrpc.PlatFormService.ReqChan <- &ordreq[j]
-				<-ordreq[j].DoneChan
+				//TODO:待测试
+				//mrpc.PlatFormService.PutReq(&ordreq[j])
+				//ordreq[j].Done()
+				mrpc.PutDriverReq(&ordreq[j])
 				//fmt.Println(j)
 			}(j, &wg)
 		}
@@ -655,9 +657,11 @@ func (i *FactoryController) Pay(c *gin.Context) {
 		wg.Add(1)
 		defer group.Done()
 		payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
-		mrpc.PlatFormService.ReqChan <- payreq
-		<-payreq.DoneChan
-		*ok = payreq.Res
+		//TODO:待测试
+		//mrpc.PlatFormService.ReqChan <- payreq
+		//<-payreq.DoneChan
+		mrpc.PutDriverReq(payreq)
+		*ok = payreq.Result()
 	}(&ok, &wg)
 	wg.Wait()
 	if !ok {

@@ -115,3 +115,9 @@ type FundInfo struct {
 	Cash     float64 `gorm:"comment:账户余额" json:"cash" form:"cash"`
 	BankFund float64 `gorm:"comment:银行资金" json:"bank_fund" form:"bank_fund"`
 }
+type UrlInfo struct {
+	Origin     string    `gorm:"type:varchar(200)" form:"origin" json:"origin"`
+	Short      string    `gorm:"type:varchar(40)" form:"short" json:"short"`
+	StartTime  time.Time `gorm:"type:datetime"`
+	ExpireTime time.Time `gorm:"type:datetime"`
+}
