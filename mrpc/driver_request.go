@@ -5,6 +5,7 @@ import (
 	"buyfree/logger"
 	"buyfree/repo/model"
 	"buyfree/utils"
+	"context"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -156,7 +157,7 @@ func (p *PayRequest) Handle() {
 	}
 	//fmt.Println("pay handle begin")
 	rdb := dal.Getrdb()
-	ctx := rdb.Context()
+	ctx := context.Background()
 	var name string
 	err := dal.Getdb().Model(&model.Platform{}).Select("name").Where("id= ?", p.PlatFormID).First(&name).Error
 	if err != nil {
@@ -211,7 +212,7 @@ func (o *OrderRequest) Handle() {
 		//fmt.Println("订单编号：", o.OrderID)
 		//TODO更新榜单信息
 		rdb := dal.Getrdb()
-		ctx := rdb.Context()
+		ctx := context.Background()
 		for k, _ := range *o.ProductInfos {
 			v := (*o.ProductInfos)[k]
 			//var inv int64

@@ -4,7 +4,7 @@
  Source Host           : localhost:5432
  Source Schema         : carshop
 */
-create user bf with password 'bf123'
+create user bf with password 'bf123';
 create database bfdb owner bf;
 grant all privileges on database bfdb to bf;
 

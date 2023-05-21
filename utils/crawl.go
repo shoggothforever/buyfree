@@ -2,6 +2,7 @@ package utils
 
 import (
 	"buyfree/dal"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/antchfx/htmlquery"
@@ -141,7 +142,7 @@ func GenerateSourceUrl(id int64) string {
 	short := GenShort("")
 	key := GetShortenKey(short)
 	rdb := dal.Getrdb()
-	rdb.Do(rdb.Context(), "set", key, origin)
+	rdb.Do(context.TODO(), "set", key, origin)
 	return short
 }
 func GenerateSourceUrl1(id int64) string {

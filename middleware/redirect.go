@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"buyfree/dal"
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +21,7 @@ func RedirectShort() gin.HandlerFunc {
 		short := c.Request.URL.String()[1:]
 		fmt.Println(short)
 		rdb := dal.Getrdb()
-		ctx := rdb.Context()
+		ctx := context.Background()
 		key := GetShortenKey(remote + short)
 		s, err := rdb.Get(ctx, key).Result()
 		if err != nil {

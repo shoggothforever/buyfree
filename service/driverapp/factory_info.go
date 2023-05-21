@@ -45,10 +45,9 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 	}
 	rdb := dal.Getrdb()
 	db := dal.Getdb()
-	ctx := rdb.Context()
 	//更新车主位置信息
-	rdb.Do(ctx, "geoadd", utils.DRIVERLOCATION, locinfo.Longitude, locinfo.Latitude, admin.CarID)
-	ires, err := utils.LocRadiusWithDist(ctx, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "1000", "km")
+	rdb.Do(c, "geoadd", utils.DRIVERLOCATION, locinfo.Longitude, locinfo.Latitude, admin.CarID)
+	ires, err := utils.LocRadiusWithDist(c, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "1000", "km")
 	if err != nil {
 		i.Error(c, 400, "附近场站信息获取失败,请传入正确的地理信息")
 		return

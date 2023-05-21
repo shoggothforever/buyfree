@@ -192,7 +192,7 @@ func (d *DevadminController) AddDev(c *gin.Context) {
 	if err == nil {
 		var qrcode = utils.GenerateSourceUrl(dev.ID)
 		rdb := dal.Getrdb()
-		rdb.Do(rdb.Context(), "set", "QR:"+strconv.FormatInt(dev.ID, 10), qrcode)
+		rdb.Do(c, "set", "QR:"+strconv.FormatInt(dev.ID, 10), qrcode)
 		c.JSON(200, response.AddDevResponse{
 			response.Response{201,
 				"添加设备成功",

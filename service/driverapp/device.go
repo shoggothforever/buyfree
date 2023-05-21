@@ -106,7 +106,7 @@ func (d *DeviceController) QR(c *gin.Context) {
 	rdb := dal.Getrdb()
 	for i := 0; i < n; i++ {
 		urlinfos[i].DeviceID = ids[i]
-		iurl, err := rdb.Do(rdb.Context(), "get", "QR:"+strconv.FormatInt(ids[i], 10)).Result()
+		iurl, err := rdb.Do(c, "get", "QR:"+strconv.FormatInt(ids[i], 10)).Result()
 		if err != nil {
 			continue
 		}

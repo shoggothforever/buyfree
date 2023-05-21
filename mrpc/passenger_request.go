@@ -4,6 +4,7 @@ import (
 	"buyfree/dal"
 	"buyfree/repo/model"
 	"buyfree/utils"
+	"context"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -77,7 +78,7 @@ func (p *PassengerPayReq) Handle() {
 		return
 	} else {
 		rdb := dal.Getrdb()
-		ctx := rdb.Context()
+		ctx := context.Background()
 		var oid int64
 		var name string
 		err = db.Model(&model.Device{}).Select("owner_id").Where("id = ?", p.DeviceID).UpdateColumn("profit", gorm.Expr("profit + ?", p.BuyPrice)).First(&oid).Error

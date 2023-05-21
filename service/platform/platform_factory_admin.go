@@ -64,9 +64,8 @@ func (f *FactoryadminController) PRegister(c *gin.Context) {
 		return
 	}
 	rdb := dal.Getrdb()
-	ctx := rdb.Context()
 	//向redis中写入场站的地理位置信息
-	utils.LocAdd(ctx, rdb, utils.LOCATION, admin.Longitude, admin.Latitude, admin.Name)
+	utils.LocAdd(c, rdb, utils.LOCATION, admin.Longitude, admin.Latitude, admin.Name)
 	var logininfo model.LoginInfo
 	err = dal.Getdb().Model(&model.LoginInfo{}).Where("role =2 and user_name = ? ", admin.Name).First(&logininfo).Error
 	if err != nil && err != gorm.ErrRecordNotFound {

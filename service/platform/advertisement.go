@@ -7,6 +7,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -76,7 +77,7 @@ func (a *ADController) AddAD(c *gin.Context) {
 	}
 	admin := iadmin.(model.Platform)
 	rdb := dal.Getrdb()
-	ctx := rdb.Context()
+	ctx := context.Background()
 	utils.ModifySales(ctx, rdb, utils.Ranktype2, utils.PTNAME, strconv.FormatFloat(ad.InvestFund, 'f', 2, 64))
 	ad.ID = utils.GetSnowFlake()
 	ad.PlatformID = admin.ID
