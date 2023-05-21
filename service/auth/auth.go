@@ -310,9 +310,8 @@ func FactoryRegister(c *gin.Context) {
 	dal.Getdb().Model(&model.Factory{}).Where("name = ? and role = ?", admin.Name, model.FACTORYADMIN).First(&detectors)
 	if len(detectors) == 0 {
 		rdb := dal.Getrdb()
-		ctx := rdb.Context()
 		//向redis中写入场站的地理位置信息
-		utils.LocAdd(ctx, rdb, utils.LOCATION, admin.Longitude, admin.Latitude, admin.Name)
+		utils.LocAdd(c, rdb, utils.LOCATION, admin.Longitude, admin.Latitude, admin.Name)
 		logininfo, err := SaveFUser(&admin)
 		if err == nil {
 			c.JSON(200, response.LoginResponse{

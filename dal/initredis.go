@@ -3,17 +3,17 @@ package dal
 import (
 	"buyfree/config"
 	"context"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
 
 var Ctx = context.Background()
-var rdb *redis.Client
+var rdb *redis.ClusterClient
 var addr, password string
 
-func Getrdb() *redis.Client {
+func Getrdb() *redis.ClusterClient {
 	return rdb
 }
 func readRedisInfo() {
@@ -30,23 +30,30 @@ var Ptimers sync.Pool
 
 func init() {
 	readRedisInfo()
-	rdb = redis.NewClient(&redis.Options{
-		Addr:         addr,
-		Password:     password,
-		DB:           10,
-		ReadTimeout:  time.Millisecond * time.Duration(500),
-		WriteTimeout: time.Millisecond * time.Duration(500),
-		IdleTimeout:  time.Second * time.Duration(60),
-		PoolSize:     64,
-		MinIdleConns: 16,
-		PoolFIFO:     true,
-		//MaxRetries:   3,
+	//rdb = redis.NewClient(&redis.Options{
+	//	Addr:         addr,
+	//	Password:     password,
+	//	DB:           10,
+	//	ReadTimeout:  time.Millisecond * time.Duration(500),
+	//	WriteTimeout: time.Millisecond * time.Duration(500),
+	//	IdleTimeout:  time.Second * time.Duration(60),
+	//	PoolSize:     64,
+	//	MinIdleConns: 16,
+	//	PoolFIFO:     true,
+	//	//MaxRetries:   3,
+	//})
+	rdb = redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:           []string{":7006", ":7001", ":7002", ":7003", ":7004", ":7005"},
+		MaxIdleConns:    16,
+		PoolSize:        64,
+		ReadTimeout:     time.Millisecond * time.Duration(500),
+		WriteTimeout:    time.Millisecond * time.Duration(500),
+		ConnMaxIdleTime: time.Second * time.Duration(60),
+		PoolFIFO:        true,
 	})
-
 	_, err := rdb.Ping(Ctx).Result()
 	if err != nil {
 		logrus.Info(err)
-
 	} else {
 		logrus.Info("成功连接redis")
 	}

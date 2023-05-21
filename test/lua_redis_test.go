@@ -1,10 +1,10 @@
 package test
 
 import (
+	"buyfree/dal"
 	"buyfree/logger"
 	"buyfree/utils"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"testing"
 )
 
@@ -12,13 +12,9 @@ var key = []string{"mlock"}
 var val = "42"
 
 func TestLua(t *testing.T) {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "",
-		DB:       10,
-	})
 	ctx := context.TODO()
 	var uname string = utils.PTNAME
+	rdb := dal.Getrdb()
 	sales, err := rdb.Get(ctx, utils.GetSalesKeyByMode(utils.Ranktype1, uname, 0)).Result()
 	if sales == "" {
 		logger.Loger.Info(sales)

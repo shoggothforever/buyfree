@@ -3,6 +3,7 @@ package middleware
 import (
 	"buyfree/dal"
 	"buyfree/repo/model"
+	"context"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -28,7 +29,7 @@ func AuthJwt() gin.HandlerFunc {
 			return
 		} //如果在PostMan中使用 Bearer Token 会在jwt前加上bearer: 前缀
 		rdb := dal.Getrdb()
-		ctx := rdb.Context()
+		ctx := context.Background()
 		s, err := rdb.Get(ctx, jwt).Result()
 		authjwt, _ := strconv.ParseInt(s, 10, 64)
 		//logger.Loger.Info("从redis中获取用户信息", authjwt)

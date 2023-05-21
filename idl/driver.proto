@@ -2,17 +2,18 @@ syntax="proto3";
 package grpc_gen.product;
 option go_package="grpc_gen/driver";
 import "user.proto";
+
+message Driver{
+  user.User u=1;
+  string licensePlate=2;
+}
+
 message DriverRequest{
 
 }
 
 message DriverResponse{
 
-}
-
-message Driver{
-  user.User u=1;
-  string licensePlate=2;
 }
 
 service DriverService{

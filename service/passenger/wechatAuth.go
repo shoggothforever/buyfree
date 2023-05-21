@@ -65,7 +65,7 @@ func (w *WeiXinAuthController) Login(c *gin.Context) {
 		} else {
 
 			rdb := dal.Getrdb()
-			if _, rerr := rdb.SetEX(rdb.Context(), token, 1, utils.WechatExpire).Result(); rerr != nil {
+			if _, rerr := rdb.Set(c, token, 1, utils.WechatExpire).Result(); rerr != nil {
 				logrus.Info("存储用户登录状态失败")
 				w.Error(c, 500, "服务器处理错误")
 			}
