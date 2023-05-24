@@ -3,10 +3,8 @@ package utils
 import (
 	"buyfree/dal"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/antchfx/htmlquery"
-	"github.com/go-resty/resty/v2"
 	"golang.org/x/net/html"
 	"math"
 	"net/http"
@@ -109,17 +107,17 @@ func GenShort(shortUrl string) string {
 	}
 }
 
-func shortenUrl(url string) string {
-	r := resty.New()
-	encodeurl := base64.StdEncoding.EncodeToString([]byte(url))
-	var path = "url=%s&app_id=%s&app_secret=%s"
-	var data shortres
-	resp, _ := r.R().SetHeader("Content-Type", "application/json").
-		SetQueryString(fmt.Sprintf(path, encodeurl, "urveqjgajrithmkd", "SEl2aHp5UTkySkFQWW5RdmJwNGRiZz09")).
-		Get(shortenurl)
-	Json.Unmarshal(resp.Body(), &data)
-	return data.Data.ShortUrl
-}
+//func shortenUrl(url string) string {
+//	r := resty.New()
+//	encodeurl := base64.StdEncoding.EncodeToString([]byte(url))
+//	var path = "url=%s&app_id=%s&app_secret=%s"
+//	var data shortres
+//	resp, _ := r.R().SetHeader("Content-Type", "application/json").
+//		SetQueryString(fmt.Sprintf(path, encodeurl, "urveqjgajrithmkd", "SEl2aHp5UTkySkFQWW5RdmJwNGRiZz09")).
+//		Get(shortenurl)
+//	Json.Unmarshal(resp.Body(), &data)
+//	return data.Data.ShortUrl
+//}
 
 //func shortenUrl(url string) string {
 //	r := resty.New()
@@ -145,11 +143,12 @@ func GenerateSourceUrl(id int64) string {
 	rdb.Do(context.TODO(), "set", key, origin)
 	return short
 }
-func GenerateSourceUrl1(id int64) string {
-	url := fmt.Sprintf(drinvurl, id)
-	//return parseUrls(url)
-	return shortenUrl(parseUrls(url))
-}
+
+//	func GenerateSourceUrl1(id int64) string {
+//		url := fmt.Sprintf(drinvurl, id)
+//		//return parseUrls(url)
+//		return shortenUrl(parseUrls(url))
+//	}
 func GenerateScanUrl() string {
 	url := fmt.Sprintf(drscanurl)
 	//return shortenUrl(parseUrls(url))

@@ -8,7 +8,6 @@ import (
 	"buyfree/service/platform"
 	"buyfree/service/response"
 	"context"
-	"flag"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	swaggerfiles "github.com/swaggo/files"
@@ -20,7 +19,7 @@ import (
 	"time"
 )
 
-var b = flag.Bool("b", false, "默认为release，true为debug")
+// var b = flag.Bool("b", false, "默认为release，true为debug")
 var QuitPlatformChan chan os.Signal
 var PlatFormSrv http.Server
 
@@ -88,7 +87,7 @@ func PlatFormrouter() {
 	{
 		fdr.POST("/register", fat.PRegister)
 		fdr.POST("/:factory_name/products", fat.PAdd)
-		fdr.PATCH("/:factory_name/products/:product_name/:inv", fat.PAddInv)
+		fdr.GET("/:factory_name/products/:product_name/:inv", fat.PAddInv)
 		//fdr.GET("/:factory_name/orders/:mode", fat.PGetDriverOrders)
 	}
 

@@ -28,6 +28,7 @@ func newDeviceProduct(db *gorm.DB, opts ...gen.DOOption) deviceProduct {
 	tableName := _deviceProduct.deviceProductDo.TableName()
 	_deviceProduct.ALL = field.NewAsterisk(tableName)
 	_deviceProduct.DeviceID = field.NewInt64(tableName, "device_id")
+	_deviceProduct.DriverID = field.NewInt64(tableName, "driver_id")
 	_deviceProduct.ID = field.NewInt64(tableName, "id")
 	_deviceProduct.FactoryID = field.NewInt64(tableName, "factory_id")
 	_deviceProduct.Sku = field.NewString(tableName, "sku")
@@ -37,11 +38,11 @@ func newDeviceProduct(db *gorm.DB, opts ...gen.DOOption) deviceProduct {
 	_deviceProduct.Type = field.NewString(tableName, "type")
 	_deviceProduct.BuyPrice = field.NewFloat64(tableName, "buy_price")
 	_deviceProduct.SupplyPrice = field.NewFloat64(tableName, "supply_price")
-	_deviceProduct.DailySales = field.NewFloat64(tableName, "daily_sales")
-	_deviceProduct.WeeklySales = field.NewFloat64(tableName, "weekly_sales")
-	_deviceProduct.MonthlySales = field.NewFloat64(tableName, "monthly_sales")
-	_deviceProduct.AnnuallySales = field.NewFloat64(tableName, "annually_sales")
-	_deviceProduct.TotalSales = field.NewFloat64(tableName, "total_sales")
+	_deviceProduct.DailySales = field.NewString(tableName, "daily_sales")
+	_deviceProduct.WeeklySales = field.NewString(tableName, "weekly_sales")
+	_deviceProduct.MonthlySales = field.NewString(tableName, "monthly_sales")
+	_deviceProduct.AnnuallySales = field.NewString(tableName, "annually_sales")
+	_deviceProduct.TotalSales = field.NewString(tableName, "total_sales")
 
 	_deviceProduct.fillFieldMap()
 
@@ -53,6 +54,7 @@ type deviceProduct struct {
 
 	ALL           field.Asterisk
 	DeviceID      field.Int64
+	DriverID      field.Int64
 	ID            field.Int64
 	FactoryID     field.Int64
 	Sku           field.String
@@ -62,11 +64,11 @@ type deviceProduct struct {
 	Type          field.String
 	BuyPrice      field.Float64
 	SupplyPrice   field.Float64
-	DailySales    field.Float64
-	WeeklySales   field.Float64
-	MonthlySales  field.Float64
-	AnnuallySales field.Float64
-	TotalSales    field.Float64
+	DailySales    field.String
+	WeeklySales   field.String
+	MonthlySales  field.String
+	AnnuallySales field.String
+	TotalSales    field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -84,6 +86,7 @@ func (d deviceProduct) As(alias string) *deviceProduct {
 func (d *deviceProduct) updateTableName(table string) *deviceProduct {
 	d.ALL = field.NewAsterisk(table)
 	d.DeviceID = field.NewInt64(table, "device_id")
+	d.DriverID = field.NewInt64(table, "driver_id")
 	d.ID = field.NewInt64(table, "id")
 	d.FactoryID = field.NewInt64(table, "factory_id")
 	d.Sku = field.NewString(table, "sku")
@@ -93,11 +96,11 @@ func (d *deviceProduct) updateTableName(table string) *deviceProduct {
 	d.Type = field.NewString(table, "type")
 	d.BuyPrice = field.NewFloat64(table, "buy_price")
 	d.SupplyPrice = field.NewFloat64(table, "supply_price")
-	d.DailySales = field.NewFloat64(table, "daily_sales")
-	d.WeeklySales = field.NewFloat64(table, "weekly_sales")
-	d.MonthlySales = field.NewFloat64(table, "monthly_sales")
-	d.AnnuallySales = field.NewFloat64(table, "annually_sales")
-	d.TotalSales = field.NewFloat64(table, "total_sales")
+	d.DailySales = field.NewString(table, "daily_sales")
+	d.WeeklySales = field.NewString(table, "weekly_sales")
+	d.MonthlySales = field.NewString(table, "monthly_sales")
+	d.AnnuallySales = field.NewString(table, "annually_sales")
+	d.TotalSales = field.NewString(table, "total_sales")
 
 	d.fillFieldMap()
 
@@ -114,8 +117,9 @@ func (d *deviceProduct) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (d *deviceProduct) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 15)
+	d.fieldMap = make(map[string]field.Expr, 16)
 	d.fieldMap["device_id"] = d.DeviceID
+	d.fieldMap["driver_id"] = d.DriverID
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["factory_id"] = d.FactoryID
 	d.fieldMap["sku"] = d.Sku

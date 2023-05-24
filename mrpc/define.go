@@ -55,6 +55,25 @@ func NewCommunicator() Communicator {
 	}
 }
 
+// 实现每个Req的接口定义
+func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
+	ticker := time.NewTicker(TimeOut)
+	defer ticker.Stop()
+	//实现运行时多态
+	handle()
+	select {
+	case val := <-c.ReplyChan:
+		fmt.Println("HandleReq res:", val)
+		close(c.ReplyChan)
+		exitchan <- val
+		return
+	case <-ticker.C:
+		fmt.Println("time out")
+		close(c.ReplyChan)
+		exitchan <- false
+		return
+	}
+}
 func (c *Communicator) Send(sig bool) {
 	c.ReplyChan <- sig
 	c.Res = sig
@@ -74,6 +93,7 @@ type Worker struct {
 	ReplyChan ReplyQueue
 }
 
+// 定义worker的Reqchan缓冲为1
 func NewWorker() *Worker {
 	return &Worker{ReqChan: make(ReqQueue, 1), ReplyChan: make(ReplyQueue, 1)}
 }
@@ -86,6 +106,7 @@ type WorkerPool struct {
 	ReplyChan  ReplyQueue
 }
 
+// 定义WorkerPool 的Reqchan 的缓冲为Worker的数量
 func NewWorkerPool(size int) *WorkerPool {
 	return &WorkerPool{
 		PoolSize:   size,
@@ -135,25 +156,24 @@ func (p *WorkerPool) Run() {
 				{
 					//fmt.Println("消费者接收到的任务编号", req.(*CountRequest).OrderInfo.Cost)
 					worker := <-p.WorkerChan
-					//atomic.AddInt64(&cnt, 1)
-					//fmt.Println("获取到", cnt, worker)
 					worker.ReqChan <- req
-					//<-worker.ReplyChan
-					res := <-worker.ReplyChan
-					if res == true {
-						//p.ReplyChan <- true
-						p.WorkerChan <- worker
-					} else {
-						//工人系统异常关闭工人的发送管道,工人的线程也会随之关闭,将执行失败的任务再次送回管道（可以设定重试次数）
-						close(worker.ReqChan)
-						<-worker.ReplyChan
-						//p.ReplyChan <- false
-						//p.ReqChan <- req
-						worker = nil
-						newworker := NewWorker()
-						p.WorkerChan <- newworker
-						newworker.Run()
-					}
+					go func(worker *Worker, p *WorkerPool) {
+						res := <-worker.ReplyChan
+						if res == true {
+							//p.ReplyChan <- true
+							p.WorkerChan <- worker
+						} else {
+							//工人系统异常关闭工人的发送管道,工人的线程也会随之关闭,将执行失败的任务再次送回管道（可以设定重试次数）
+							close(worker.ReqChan)
+							<-worker.ReplyChan
+							//p.ReplyChan <- false
+							//p.ReqChan <- req
+							worker = nil
+							newworker := NewWorker()
+							p.WorkerChan <- newworker
+							newworker.Run()
+						}
+					}(worker, p)
 				}
 			}
 		}

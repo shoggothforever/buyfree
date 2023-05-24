@@ -2,12 +2,10 @@ package main
 
 import (
 	"buyfree/dal"
-	"buyfree/logger"
 	"buyfree/mrpc"
 	"buyfree/service"
 	"buyfree/utils"
 	"context"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"sync"
@@ -74,9 +72,9 @@ func SalesCounter() {
 func main() {
 	//defer Exit()
 	//go service.Factoryrouter()
-	go func() {
-		logger.Loger.Info(http.ListenAndServe(":6060", nil))
-	}()
+	//go func() {
+	//	logger.Loger.Info(http.ListenAndServe(":6060", nil))
+	//}()
 	mrpc.PlatFormService.Run()
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()

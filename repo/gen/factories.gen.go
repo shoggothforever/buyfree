@@ -30,17 +30,20 @@ func newFactory(db *gorm.DB, opts ...gen.DOOption) factory {
 	_factory.ID = field.NewInt64(tableName, "id")
 	_factory.CreatedAt = field.NewTime(tableName, "created_at")
 	_factory.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_factory.DeletedAt = field.NewField(tableName, "deleted_at")
+	_factory.DeletedAt = field.NewTime(tableName, "deleted_at")
 	_factory.Balance = field.NewFloat64(tableName, "balance")
 	_factory.Pic = field.NewString(tableName, "pic")
 	_factory.Name = field.NewString(tableName, "name")
 	_factory.Password = field.NewString(tableName, "password")
+	_factory.PasswordSalt = field.NewString(tableName, "password_salt")
 	_factory.Mobile = field.NewString(tableName, "mobile")
 	_factory.IDCard = field.NewString(tableName, "id_card")
 	_factory.Role = field.NewInt(tableName, "role")
 	_factory.Level = field.NewInt(tableName, "level")
-	_factory.PasswordSalt = field.NewString(tableName, "password_salt")
 	_factory.Address = field.NewString(tableName, "address")
+	_factory.Longitude = field.NewString(tableName, "longitude")
+	_factory.Latitude = field.NewString(tableName, "latitude")
+	_factory.Description = field.NewString(tableName, "description")
 	_factory.Products = factoryHasManyProducts{
 		db: db.Session(&gorm.Session{}),
 
@@ -51,10 +54,10 @@ func newFactory(db *gorm.DB, opts ...gen.DOOption) factory {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("OrderForms", "model.DriverOrderForm"),
-		ProductInfo: struct {
+		ProductInfos: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("OrderForms.ProductInfo", "model.OrderProduct"),
+			RelationField: field.NewRelation("OrderForms.ProductInfos", "model.OrderProduct"),
 		},
 	}
 
@@ -70,17 +73,20 @@ type factory struct {
 	ID           field.Int64
 	CreatedAt    field.Time
 	UpdatedAt    field.Time
-	DeletedAt    field.Field
+	DeletedAt    field.Time
 	Balance      field.Float64
 	Pic          field.String
 	Name         field.String
 	Password     field.String
+	PasswordSalt field.String
 	Mobile       field.String
 	IDCard       field.String
 	Role         field.Int
 	Level        field.Int
-	PasswordSalt field.String
 	Address      field.String
+	Longitude    field.String
+	Latitude     field.String
+	Description  field.String
 	Products     factoryHasManyProducts
 
 	OrderForms factoryHasManyOrderForms
@@ -103,17 +109,20 @@ func (f *factory) updateTableName(table string) *factory {
 	f.ID = field.NewInt64(table, "id")
 	f.CreatedAt = field.NewTime(table, "created_at")
 	f.UpdatedAt = field.NewTime(table, "updated_at")
-	f.DeletedAt = field.NewField(table, "deleted_at")
+	f.DeletedAt = field.NewTime(table, "deleted_at")
 	f.Balance = field.NewFloat64(table, "balance")
 	f.Pic = field.NewString(table, "pic")
 	f.Name = field.NewString(table, "name")
 	f.Password = field.NewString(table, "password")
+	f.PasswordSalt = field.NewString(table, "password_salt")
 	f.Mobile = field.NewString(table, "mobile")
 	f.IDCard = field.NewString(table, "id_card")
 	f.Role = field.NewInt(table, "role")
 	f.Level = field.NewInt(table, "level")
-	f.PasswordSalt = field.NewString(table, "password_salt")
 	f.Address = field.NewString(table, "address")
+	f.Longitude = field.NewString(table, "longitude")
+	f.Latitude = field.NewString(table, "latitude")
+	f.Description = field.NewString(table, "description")
 
 	f.fillFieldMap()
 
@@ -130,7 +139,7 @@ func (f *factory) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (f *factory) fillFieldMap() {
-	f.fieldMap = make(map[string]field.Expr, 16)
+	f.fieldMap = make(map[string]field.Expr, 19)
 	f.fieldMap["id"] = f.ID
 	f.fieldMap["created_at"] = f.CreatedAt
 	f.fieldMap["updated_at"] = f.UpdatedAt
@@ -139,12 +148,15 @@ func (f *factory) fillFieldMap() {
 	f.fieldMap["pic"] = f.Pic
 	f.fieldMap["name"] = f.Name
 	f.fieldMap["password"] = f.Password
+	f.fieldMap["password_salt"] = f.PasswordSalt
 	f.fieldMap["mobile"] = f.Mobile
 	f.fieldMap["id_card"] = f.IDCard
 	f.fieldMap["role"] = f.Role
 	f.fieldMap["level"] = f.Level
-	f.fieldMap["password_salt"] = f.PasswordSalt
 	f.fieldMap["address"] = f.Address
+	f.fieldMap["longitude"] = f.Longitude
+	f.fieldMap["latitude"] = f.Latitude
+	f.fieldMap["description"] = f.Description
 
 }
 
@@ -229,7 +241,7 @@ type factoryHasManyOrderForms struct {
 
 	field.RelationField
 
-	ProductInfo struct {
+	ProductInfos struct {
 		field.RelationField
 	}
 }

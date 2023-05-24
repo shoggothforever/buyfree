@@ -30,11 +30,12 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 	_driver.ID = field.NewInt64(tableName, "id")
 	_driver.CreatedAt = field.NewTime(tableName, "created_at")
 	_driver.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_driver.DeletedAt = field.NewField(tableName, "deleted_at")
+	_driver.DeletedAt = field.NewTime(tableName, "deleted_at")
 	_driver.Balance = field.NewFloat64(tableName, "balance")
 	_driver.Pic = field.NewString(tableName, "pic")
 	_driver.Name = field.NewString(tableName, "name")
 	_driver.Password = field.NewString(tableName, "password")
+	_driver.PasswordSalt = field.NewString(tableName, "password_salt")
 	_driver.Mobile = field.NewString(tableName, "mobile")
 	_driver.IDCard = field.NewString(tableName, "id_card")
 	_driver.Role = field.NewInt(tableName, "role")
@@ -42,7 +43,9 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 	_driver.CarID = field.NewString(tableName, "car_id")
 	_driver.PlatformID = field.NewInt64(tableName, "platform_id")
 	_driver.IsAuth = field.NewBool(tableName, "is_auth")
-	_driver.Location = field.NewString(tableName, "location")
+	_driver.Address = field.NewString(tableName, "address")
+	_driver.Longitude = field.NewString(tableName, "longitude")
+	_driver.Latitude = field.NewString(tableName, "latitude")
 	_driver.Cart = driverHasOneCart{
 		db: db.Session(&gorm.Session{}),
 
@@ -82,10 +85,10 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("DriverOrderForms", "model.DriverOrderForm"),
-		ProductInfo: struct {
+		ProductInfos: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("DriverOrderForms.ProductInfo", "model.OrderProduct"),
+			RelationField: field.NewRelation("DriverOrderForms.ProductInfos", "model.OrderProduct"),
 		},
 	}
 
@@ -97,24 +100,27 @@ func newDriver(db *gorm.DB, opts ...gen.DOOption) driver {
 type driver struct {
 	driverDo
 
-	ALL        field.Asterisk
-	ID         field.Int64
-	CreatedAt  field.Time
-	UpdatedAt  field.Time
-	DeletedAt  field.Field
-	Balance    field.Float64
-	Pic        field.String
-	Name       field.String
-	Password   field.String
-	Mobile     field.String
-	IDCard     field.String
-	Role       field.Int
-	Level      field.Int
-	CarID      field.String
-	PlatformID field.Int64
-	IsAuth     field.Bool
-	Location   field.String
-	Cart       driverHasOneCart
+	ALL          field.Asterisk
+	ID           field.Int64
+	CreatedAt    field.Time
+	UpdatedAt    field.Time
+	DeletedAt    field.Time
+	Balance      field.Float64
+	Pic          field.String
+	Name         field.String
+	Password     field.String
+	PasswordSalt field.String
+	Mobile       field.String
+	IDCard       field.String
+	Role         field.Int
+	Level        field.Int
+	CarID        field.String
+	PlatformID   field.Int64
+	IsAuth       field.Bool
+	Address      field.String
+	Longitude    field.String
+	Latitude     field.String
+	Cart         driverHasOneCart
 
 	Devices driverHasManyDevices
 
@@ -138,11 +144,12 @@ func (d *driver) updateTableName(table string) *driver {
 	d.ID = field.NewInt64(table, "id")
 	d.CreatedAt = field.NewTime(table, "created_at")
 	d.UpdatedAt = field.NewTime(table, "updated_at")
-	d.DeletedAt = field.NewField(table, "deleted_at")
+	d.DeletedAt = field.NewTime(table, "deleted_at")
 	d.Balance = field.NewFloat64(table, "balance")
 	d.Pic = field.NewString(table, "pic")
 	d.Name = field.NewString(table, "name")
 	d.Password = field.NewString(table, "password")
+	d.PasswordSalt = field.NewString(table, "password_salt")
 	d.Mobile = field.NewString(table, "mobile")
 	d.IDCard = field.NewString(table, "id_card")
 	d.Role = field.NewInt(table, "role")
@@ -150,7 +157,9 @@ func (d *driver) updateTableName(table string) *driver {
 	d.CarID = field.NewString(table, "car_id")
 	d.PlatformID = field.NewInt64(table, "platform_id")
 	d.IsAuth = field.NewBool(table, "is_auth")
-	d.Location = field.NewString(table, "location")
+	d.Address = field.NewString(table, "address")
+	d.Longitude = field.NewString(table, "longitude")
+	d.Latitude = field.NewString(table, "latitude")
 
 	d.fillFieldMap()
 
@@ -167,7 +176,7 @@ func (d *driver) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (d *driver) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 19)
+	d.fieldMap = make(map[string]field.Expr, 22)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["created_at"] = d.CreatedAt
 	d.fieldMap["updated_at"] = d.UpdatedAt
@@ -176,6 +185,7 @@ func (d *driver) fillFieldMap() {
 	d.fieldMap["pic"] = d.Pic
 	d.fieldMap["name"] = d.Name
 	d.fieldMap["password"] = d.Password
+	d.fieldMap["password_salt"] = d.PasswordSalt
 	d.fieldMap["mobile"] = d.Mobile
 	d.fieldMap["id_card"] = d.IDCard
 	d.fieldMap["role"] = d.Role
@@ -183,7 +193,9 @@ func (d *driver) fillFieldMap() {
 	d.fieldMap["car_id"] = d.CarID
 	d.fieldMap["platform_id"] = d.PlatformID
 	d.fieldMap["is_auth"] = d.IsAuth
-	d.fieldMap["location"] = d.Location
+	d.fieldMap["address"] = d.Address
+	d.fieldMap["longitude"] = d.Longitude
+	d.fieldMap["latitude"] = d.Latitude
 
 }
 
@@ -348,7 +360,7 @@ type driverHasManyDriverOrderForms struct {
 
 	field.RelationField
 
-	ProductInfo struct {
+	ProductInfos struct {
 		field.RelationField
 	}
 }

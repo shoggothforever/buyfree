@@ -43,7 +43,7 @@ func init() {
 	//	//MaxRetries:   3,
 	//})
 	rdb = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs:           []string{":7006", ":7001", ":7002", ":7003", ":7004", ":7005"},
+		Addrs:           []string{":7001", ":7002", ":7003"},
 		MaxIdleConns:    16,
 		PoolSize:        64,
 		ReadTimeout:     time.Millisecond * time.Duration(500),

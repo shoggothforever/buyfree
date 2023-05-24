@@ -25,12 +25,13 @@ var (
 	DriverOrderForm    *driverOrderForm
 	Factory            *factory
 	FactoryProduct     *factoryProduct
+	FundInfo           *fundInfo
 	LoginInfo          *loginInfo
 	OrderProduct       *orderProduct
 	Passenger          *passenger
 	PassengerCart      *passengerCart
 	PassengerOrderForm *passengerOrderForm
-	Platform           *platform
+	User               *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -43,19 +44,19 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	DriverOrderForm = &Q.DriverOrderForm
 	Factory = &Q.Factory
 	FactoryProduct = &Q.FactoryProduct
+	FundInfo = &Q.FundInfo
 	LoginInfo = &Q.LoginInfo
 	OrderProduct = &Q.OrderProduct
 	Passenger = &Q.Passenger
 	PassengerCart = &Q.PassengerCart
 	PassengerOrderForm = &Q.PassengerOrderForm
-	Platform = &Q.Platform
+	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:            db,
-		Advertisement: newAdvertisement(db, opts...),
-
+		db:                 db,
+		Advertisement:      newAdvertisement(db, opts...),
 		Device:             newDevice(db, opts...),
 		DeviceProduct:      newDeviceProduct(db, opts...),
 		Driver:             newDriver(db, opts...),
@@ -63,20 +64,20 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		DriverOrderForm:    newDriverOrderForm(db, opts...),
 		Factory:            newFactory(db, opts...),
 		FactoryProduct:     newFactoryProduct(db, opts...),
+		FundInfo:           newFundInfo(db, opts...),
 		LoginInfo:          newLoginInfo(db, opts...),
 		OrderProduct:       newOrderProduct(db, opts...),
 		Passenger:          newPassenger(db, opts...),
 		PassengerCart:      newPassengerCart(db, opts...),
 		PassengerOrderForm: newPassengerOrderForm(db, opts...),
-		Platform:           newPlatform(db, opts...),
+		User:               newUser(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Advertisement advertisement
-
+	Advertisement      advertisement
 	Device             device
 	DeviceProduct      deviceProduct
 	Driver             driver
@@ -84,12 +85,13 @@ type Query struct {
 	DriverOrderForm    driverOrderForm
 	Factory            factory
 	FactoryProduct     factoryProduct
+	FundInfo           fundInfo
 	LoginInfo          loginInfo
 	OrderProduct       orderProduct
 	Passenger          passenger
 	PassengerCart      passengerCart
 	PassengerOrderForm passengerOrderForm
-	Platform           platform
+	User               user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -105,12 +107,13 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		DriverOrderForm:    q.DriverOrderForm.clone(db),
 		Factory:            q.Factory.clone(db),
 		FactoryProduct:     q.FactoryProduct.clone(db),
+		FundInfo:           q.FundInfo.clone(db),
 		LoginInfo:          q.LoginInfo.clone(db),
 		OrderProduct:       q.OrderProduct.clone(db),
 		Passenger:          q.Passenger.clone(db),
 		PassengerCart:      q.PassengerCart.clone(db),
 		PassengerOrderForm: q.PassengerOrderForm.clone(db),
-		Platform:           q.Platform.clone(db),
+		User:               q.User.clone(db),
 	}
 }
 
@@ -133,12 +136,13 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		DriverOrderForm:    q.DriverOrderForm.replaceDB(db),
 		Factory:            q.Factory.replaceDB(db),
 		FactoryProduct:     q.FactoryProduct.replaceDB(db),
+		FundInfo:           q.FundInfo.replaceDB(db),
 		LoginInfo:          q.LoginInfo.replaceDB(db),
 		OrderProduct:       q.OrderProduct.replaceDB(db),
 		Passenger:          q.Passenger.replaceDB(db),
 		PassengerCart:      q.PassengerCart.replaceDB(db),
 		PassengerOrderForm: q.PassengerOrderForm.replaceDB(db),
-		Platform:           q.Platform.replaceDB(db),
+		User:               q.User.replaceDB(db),
 	}
 }
 
@@ -151,12 +155,13 @@ type queryCtx struct {
 	DriverOrderForm    IDriverOrderFormDo
 	Factory            IFactoryDo
 	FactoryProduct     IFactoryProductDo
+	FundInfo           IFundInfoDo
 	LoginInfo          ILoginInfoDo
 	OrderProduct       IOrderProductDo
 	Passenger          IPassengerDo
 	PassengerCart      IPassengerCartDo
 	PassengerOrderForm IPassengerOrderFormDo
-	Platform           IPlatformDo
+	User               IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
@@ -169,12 +174,13 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		DriverOrderForm:    q.DriverOrderForm.WithContext(ctx),
 		Factory:            q.Factory.WithContext(ctx),
 		FactoryProduct:     q.FactoryProduct.WithContext(ctx),
+		FundInfo:           q.FundInfo.WithContext(ctx),
 		LoginInfo:          q.LoginInfo.WithContext(ctx),
 		OrderProduct:       q.OrderProduct.WithContext(ctx),
 		Passenger:          q.Passenger.WithContext(ctx),
 		PassengerCart:      q.PassengerCart.WithContext(ctx),
 		PassengerOrderForm: q.PassengerOrderForm.WithContext(ctx),
-		Platform:           q.Platform.WithContext(ctx),
+		User:               q.User.WithContext(ctx),
 	}
 }
 

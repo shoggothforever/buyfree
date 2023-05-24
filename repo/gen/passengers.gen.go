@@ -30,11 +30,12 @@ func newPassenger(db *gorm.DB, opts ...gen.DOOption) passenger {
 	_passenger.ID = field.NewInt64(tableName, "id")
 	_passenger.CreatedAt = field.NewTime(tableName, "created_at")
 	_passenger.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_passenger.DeletedAt = field.NewField(tableName, "deleted_at")
+	_passenger.DeletedAt = field.NewTime(tableName, "deleted_at")
 	_passenger.Balance = field.NewFloat64(tableName, "balance")
 	_passenger.Pic = field.NewString(tableName, "pic")
 	_passenger.Name = field.NewString(tableName, "name")
 	_passenger.Password = field.NewString(tableName, "password")
+	_passenger.PasswordSalt = field.NewString(tableName, "password_salt")
 	_passenger.Mobile = field.NewString(tableName, "mobile")
 	_passenger.IDCard = field.NewString(tableName, "id_card")
 	_passenger.Role = field.NewInt(tableName, "role")
@@ -55,10 +56,10 @@ func newPassenger(db *gorm.DB, opts ...gen.DOOption) passenger {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("OrderForms", "model.PassengerOrderForm"),
-		ProductInfo: struct {
+		ProductInfos: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("OrderForms.ProductInfo", "model.OrderProduct"),
+			RelationField: field.NewRelation("OrderForms.ProductInfos", "model.OrderProduct"),
 		},
 	}
 
@@ -70,21 +71,22 @@ func newPassenger(db *gorm.DB, opts ...gen.DOOption) passenger {
 type passenger struct {
 	passengerDo
 
-	ALL       field.Asterisk
-	ID        field.Int64
-	CreatedAt field.Time
-	UpdatedAt field.Time
-	DeletedAt field.Field
-	Balance   field.Float64
-	Pic       field.String
-	Name      field.String
-	Password  field.String
-	Mobile    field.String
-	IDCard    field.String
-	Role      field.Int
-	Level     field.Int
-	Score     field.Int64
-	Cart      passengerHasOneCart
+	ALL          field.Asterisk
+	ID           field.Int64
+	CreatedAt    field.Time
+	UpdatedAt    field.Time
+	DeletedAt    field.Time
+	Balance      field.Float64
+	Pic          field.String
+	Name         field.String
+	Password     field.String
+	PasswordSalt field.String
+	Mobile       field.String
+	IDCard       field.String
+	Role         field.Int
+	Level        field.Int
+	Score        field.Int64
+	Cart         passengerHasOneCart
 
 	OrderForms passengerHasOneOrderForms
 
@@ -106,11 +108,12 @@ func (p *passenger) updateTableName(table string) *passenger {
 	p.ID = field.NewInt64(table, "id")
 	p.CreatedAt = field.NewTime(table, "created_at")
 	p.UpdatedAt = field.NewTime(table, "updated_at")
-	p.DeletedAt = field.NewField(table, "deleted_at")
+	p.DeletedAt = field.NewTime(table, "deleted_at")
 	p.Balance = field.NewFloat64(table, "balance")
 	p.Pic = field.NewString(table, "pic")
 	p.Name = field.NewString(table, "name")
 	p.Password = field.NewString(table, "password")
+	p.PasswordSalt = field.NewString(table, "password_salt")
 	p.Mobile = field.NewString(table, "mobile")
 	p.IDCard = field.NewString(table, "id_card")
 	p.Role = field.NewInt(table, "role")
@@ -132,7 +135,7 @@ func (p *passenger) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *passenger) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 15)
+	p.fieldMap = make(map[string]field.Expr, 16)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
@@ -141,6 +144,7 @@ func (p *passenger) fillFieldMap() {
 	p.fieldMap["pic"] = p.Pic
 	p.fieldMap["name"] = p.Name
 	p.fieldMap["password"] = p.Password
+	p.fieldMap["password_salt"] = p.PasswordSalt
 	p.fieldMap["mobile"] = p.Mobile
 	p.fieldMap["id_card"] = p.IDCard
 	p.fieldMap["role"] = p.Role
@@ -234,7 +238,7 @@ type passengerHasOneOrderForms struct {
 
 	field.RelationField
 
-	ProductInfo struct {
+	ProductInfos struct {
 		field.RelationField
 	}
 }

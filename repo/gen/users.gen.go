@@ -7,6 +7,7 @@ package gen
 import (
 	"buyfree/repo/model"
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -29,11 +30,12 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 	_user.ID = field.NewInt64(tableName, "id")
 	_user.CreatedAt = field.NewTime(tableName, "created_at")
 	_user.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_user.DeletedAt = field.NewField(tableName, "deleted_at")
+	_user.DeletedAt = field.NewTime(tableName, "deleted_at")
 	_user.Balance = field.NewFloat64(tableName, "balance")
 	_user.Pic = field.NewString(tableName, "pic")
 	_user.Name = field.NewString(tableName, "name")
 	_user.Password = field.NewString(tableName, "password")
+	_user.PasswordSalt = field.NewString(tableName, "password_salt")
 	_user.Mobile = field.NewString(tableName, "mobile")
 	_user.IDCard = field.NewString(tableName, "id_card")
 	_user.Role = field.NewInt(tableName, "role")
@@ -47,19 +49,20 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 type user struct {
 	userDo
 
-	ALL       field.Asterisk
-	ID        field.Int64
-	CreatedAt field.Time
-	UpdatedAt field.Time
-	DeletedAt field.Field
-	Balance   field.Float64
-	Pic       field.String
-	Name      field.String
-	Password  field.String
-	Mobile    field.String
-	IDCard    field.String
-	Role      field.Int
-	Level     field.Int
+	ALL          field.Asterisk
+	ID           field.Int64
+	CreatedAt    field.Time
+	UpdatedAt    field.Time
+	DeletedAt    field.Time
+	Balance      field.Float64
+	Pic          field.String
+	Name         field.String
+	Password     field.String
+	PasswordSalt field.String
+	Mobile       field.String
+	IDCard       field.String
+	Role         field.Int
+	Level        field.Int
 
 	fieldMap map[string]field.Expr
 }
@@ -79,11 +82,12 @@ func (u *user) updateTableName(table string) *user {
 	u.ID = field.NewInt64(table, "id")
 	u.CreatedAt = field.NewTime(table, "created_at")
 	u.UpdatedAt = field.NewTime(table, "updated_at")
-	u.DeletedAt = field.NewField(table, "deleted_at")
+	u.DeletedAt = field.NewTime(table, "deleted_at")
 	u.Balance = field.NewFloat64(table, "balance")
 	u.Pic = field.NewString(table, "pic")
 	u.Name = field.NewString(table, "name")
 	u.Password = field.NewString(table, "password")
+	u.PasswordSalt = field.NewString(table, "password_salt")
 	u.Mobile = field.NewString(table, "mobile")
 	u.IDCard = field.NewString(table, "id_card")
 	u.Role = field.NewInt(table, "role")
@@ -104,7 +108,7 @@ func (u *user) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (u *user) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 12)
+	u.fieldMap = make(map[string]field.Expr, 13)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
@@ -113,6 +117,7 @@ func (u *user) fillFieldMap() {
 	u.fieldMap["pic"] = u.Pic
 	u.fieldMap["name"] = u.Name
 	u.fieldMap["password"] = u.Password
+	u.fieldMap["password_salt"] = u.PasswordSalt
 	u.fieldMap["mobile"] = u.Mobile
 	u.fieldMap["id_card"] = u.IDCard
 	u.fieldMap["role"] = u.Role
@@ -190,6 +195,39 @@ type IUserDo interface {
 	Returning(value interface{}, columns ...string) IUserDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	GetByID(id int64) (result model.User, err error)
+	GetByName(name string) (result model.User, err error)
+}
+
+// SELECT * FROM @@table WHERE id=@id
+func (u userDo) GetByID(id int64) (result model.User, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM users WHERE id=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = u.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE name=@name
+func (u userDo) GetByName(name string) (result model.User, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM users WHERE name=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = u.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (u userDo) Debug() IUserDo {

@@ -27,9 +27,7 @@ func newDriverCart(db *gorm.DB, opts ...gen.DOOption) driverCart {
 
 	tableName := _driverCart.driverCartDo.TableName()
 	_driverCart.ALL = field.NewAsterisk(tableName)
-	_driverCart.DriverID = field.NewString(tableName, "driver_id")
-	_driverCart.FactoryName = field.NewString(tableName, "factory_name")
-	_driverCart.Distance = field.NewInt64(tableName, "distance")
+	_driverCart.DriverID = field.NewInt64(tableName, "driver_id")
 	_driverCart.CartID = field.NewInt64(tableName, "cart_id")
 	_driverCart.TotalCount = field.NewInt64(tableName, "total_count")
 	_driverCart.TotalAmount = field.NewFloat64(tableName, "total_amount")
@@ -48,9 +46,7 @@ type driverCart struct {
 	driverCartDo
 
 	ALL         field.Asterisk
-	DriverID    field.String
-	FactoryName field.String
-	Distance    field.Int64
+	DriverID    field.Int64
 	CartID      field.Int64
 	TotalCount  field.Int64
 	TotalAmount field.Float64
@@ -71,9 +67,7 @@ func (d driverCart) As(alias string) *driverCart {
 
 func (d *driverCart) updateTableName(table string) *driverCart {
 	d.ALL = field.NewAsterisk(table)
-	d.DriverID = field.NewString(table, "driver_id")
-	d.FactoryName = field.NewString(table, "factory_name")
-	d.Distance = field.NewInt64(table, "distance")
+	d.DriverID = field.NewInt64(table, "driver_id")
 	d.CartID = field.NewInt64(table, "cart_id")
 	d.TotalCount = field.NewInt64(table, "total_count")
 	d.TotalAmount = field.NewFloat64(table, "total_amount")
@@ -93,10 +87,8 @@ func (d *driverCart) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (d *driverCart) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 7)
+	d.fieldMap = make(map[string]field.Expr, 5)
 	d.fieldMap["driver_id"] = d.DriverID
-	d.fieldMap["factory_name"] = d.FactoryName
-	d.fieldMap["distance"] = d.Distance
 	d.fieldMap["cart_id"] = d.CartID
 	d.fieldMap["total_count"] = d.TotalCount
 	d.fieldMap["total_amount"] = d.TotalAmount

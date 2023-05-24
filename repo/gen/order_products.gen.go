@@ -29,7 +29,7 @@ func newOrderProduct(db *gorm.DB, opts ...gen.DOOption) orderProduct {
 	_orderProduct.ALL = field.NewAsterisk(tableName)
 	_orderProduct.CartRefer = field.NewInt64(tableName, "cart_refer")
 	_orderProduct.FactoryID = field.NewInt64(tableName, "factory_id")
-	_orderProduct.OrderRefer = field.NewString(tableName, "order_refer")
+	_orderProduct.OrderRefer = field.NewInt64(tableName, "order_refer")
 	_orderProduct.IsChosen = field.NewBool(tableName, "is_chosen")
 	_orderProduct.Name = field.NewString(tableName, "name")
 	_orderProduct.Sku = field.NewString(tableName, "sku")
@@ -49,7 +49,7 @@ type orderProduct struct {
 	ALL        field.Asterisk
 	CartRefer  field.Int64
 	FactoryID  field.Int64
-	OrderRefer field.String
+	OrderRefer field.Int64
 	IsChosen   field.Bool
 	Name       field.String
 	Sku        field.String
@@ -75,7 +75,7 @@ func (o *orderProduct) updateTableName(table string) *orderProduct {
 	o.ALL = field.NewAsterisk(table)
 	o.CartRefer = field.NewInt64(table, "cart_refer")
 	o.FactoryID = field.NewInt64(table, "factory_id")
-	o.OrderRefer = field.NewString(table, "order_refer")
+	o.OrderRefer = field.NewInt64(table, "order_refer")
 	o.IsChosen = field.NewBool(table, "is_chosen")
 	o.Name = field.NewString(table, "name")
 	o.Sku = field.NewString(table, "sku")
