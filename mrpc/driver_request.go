@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,7 @@ import (
 //var Orderchannel chan *model.CountRequest = make(chan *model.CountRequest)
 //退款通道
 //var Refundchannel chan *model.CountRequest = make(chan *model.CountRequest)
+var mu sync.Mutex
 
 func practice() {
 	PlatFormService = NewWorkerPool(WORKERNUMS)
@@ -126,7 +128,7 @@ func NewOrderRequest(fid, oid int64, fname string, products *[]*model.OrderProdu
 //}
 
 func (o *CountRequest) Handle() {
-	o.ReplyChan <- true
+	o.ReplyChan <- false
 	//fmt.Println("管道大小", len(o.ReplyChan))
 }
 func (s *ScanRequest) Handle() {
@@ -238,25 +240,6 @@ func (o *OrderRequest) Handle() {
 }
 
 // ------------------------------------------------------------------------------------------------------------------------
-// 实现每个Req的接口定义
-func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
-	ticker := time.NewTicker(TimeOut)
-	defer ticker.Stop()
-	//实现运行时多态
-	handle()
-	select {
-	case val := <-c.ReplyChan:
-		fmt.Println("HandleReq res:", val)
-		close(c.ReplyChan)
-		exitchan <- val
-		return
-	case <-ticker.C:
-		fmt.Println("time out")
-		close(c.ReplyChan)
-		exitchan <- false
-		return
-	}
-}
 
 //func (o *CountRequest) Do(exitChan ReplyQueue) {
 //	ticker := time.NewTicker(TimeOut / 100)

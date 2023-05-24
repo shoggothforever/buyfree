@@ -28,6 +28,7 @@ func newFactoryProduct(db *gorm.DB, opts ...gen.DOOption) factoryProduct {
 	tableName := _factoryProduct.factoryProductDo.TableName()
 	_factoryProduct.ALL = field.NewAsterisk(tableName)
 	_factoryProduct.FactoryName = field.NewString(tableName, "factory_name")
+	_factoryProduct.IsOnShelf = field.NewBool(tableName, "is_on_shelf")
 	_factoryProduct.ID = field.NewInt64(tableName, "id")
 	_factoryProduct.FactoryID = field.NewInt64(tableName, "factory_id")
 	_factoryProduct.Sku = field.NewString(tableName, "sku")
@@ -37,12 +38,11 @@ func newFactoryProduct(db *gorm.DB, opts ...gen.DOOption) factoryProduct {
 	_factoryProduct.Type = field.NewString(tableName, "type")
 	_factoryProduct.BuyPrice = field.NewFloat64(tableName, "buy_price")
 	_factoryProduct.SupplyPrice = field.NewFloat64(tableName, "supply_price")
-	_factoryProduct.DailySales = field.NewFloat64(tableName, "daily_sales")
-	_factoryProduct.WeeklySales = field.NewFloat64(tableName, "weekly_sales")
-	_factoryProduct.MonthlySales = field.NewFloat64(tableName, "monthly_sales")
-	_factoryProduct.AnnuallySales = field.NewFloat64(tableName, "annually_sales")
-	_factoryProduct.TotalSales = field.NewFloat64(tableName, "total_sales")
-	_factoryProduct.IsOnShelf = field.NewBool(tableName, "is_on_shelf")
+	_factoryProduct.DailySales = field.NewString(tableName, "daily_sales")
+	_factoryProduct.WeeklySales = field.NewString(tableName, "weekly_sales")
+	_factoryProduct.MonthlySales = field.NewString(tableName, "monthly_sales")
+	_factoryProduct.AnnuallySales = field.NewString(tableName, "annually_sales")
+	_factoryProduct.TotalSales = field.NewString(tableName, "total_sales")
 
 	_factoryProduct.fillFieldMap()
 
@@ -54,6 +54,7 @@ type factoryProduct struct {
 
 	ALL           field.Asterisk
 	FactoryName   field.String
+	IsOnShelf     field.Bool
 	ID            field.Int64
 	FactoryID     field.Int64
 	Sku           field.String
@@ -63,12 +64,11 @@ type factoryProduct struct {
 	Type          field.String
 	BuyPrice      field.Float64
 	SupplyPrice   field.Float64
-	DailySales    field.Float64
-	WeeklySales   field.Float64
-	MonthlySales  field.Float64
-	AnnuallySales field.Float64
-	TotalSales    field.Float64
-	IsOnShelf     field.Bool
+	DailySales    field.String
+	WeeklySales   field.String
+	MonthlySales  field.String
+	AnnuallySales field.String
+	TotalSales    field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -86,6 +86,7 @@ func (f factoryProduct) As(alias string) *factoryProduct {
 func (f *factoryProduct) updateTableName(table string) *factoryProduct {
 	f.ALL = field.NewAsterisk(table)
 	f.FactoryName = field.NewString(table, "factory_name")
+	f.IsOnShelf = field.NewBool(table, "is_on_shelf")
 	f.ID = field.NewInt64(table, "id")
 	f.FactoryID = field.NewInt64(table, "factory_id")
 	f.Sku = field.NewString(table, "sku")
@@ -95,12 +96,11 @@ func (f *factoryProduct) updateTableName(table string) *factoryProduct {
 	f.Type = field.NewString(table, "type")
 	f.BuyPrice = field.NewFloat64(table, "buy_price")
 	f.SupplyPrice = field.NewFloat64(table, "supply_price")
-	f.DailySales = field.NewFloat64(table, "daily_sales")
-	f.WeeklySales = field.NewFloat64(table, "weekly_sales")
-	f.MonthlySales = field.NewFloat64(table, "monthly_sales")
-	f.AnnuallySales = field.NewFloat64(table, "annually_sales")
-	f.TotalSales = field.NewFloat64(table, "total_sales")
-	f.IsOnShelf = field.NewBool(table, "is_on_shelf")
+	f.DailySales = field.NewString(table, "daily_sales")
+	f.WeeklySales = field.NewString(table, "weekly_sales")
+	f.MonthlySales = field.NewString(table, "monthly_sales")
+	f.AnnuallySales = field.NewString(table, "annually_sales")
+	f.TotalSales = field.NewString(table, "total_sales")
 
 	f.fillFieldMap()
 
@@ -119,6 +119,7 @@ func (f *factoryProduct) GetFieldByName(fieldName string) (field.OrderExpr, bool
 func (f *factoryProduct) fillFieldMap() {
 	f.fieldMap = make(map[string]field.Expr, 16)
 	f.fieldMap["factory_name"] = f.FactoryName
+	f.fieldMap["is_on_shelf"] = f.IsOnShelf
 	f.fieldMap["id"] = f.ID
 	f.fieldMap["factory_id"] = f.FactoryID
 	f.fieldMap["sku"] = f.Sku
@@ -133,7 +134,6 @@ func (f *factoryProduct) fillFieldMap() {
 	f.fieldMap["monthly_sales"] = f.MonthlySales
 	f.fieldMap["annually_sales"] = f.AnnuallySales
 	f.fieldMap["total_sales"] = f.TotalSales
-	f.fieldMap["is_on_shelf"] = f.IsOnShelf
 }
 
 func (f factoryProduct) clone(db *gorm.DB) factoryProduct {

@@ -34,16 +34,16 @@ func newDriverOrderForm(db *gorm.DB, opts ...gen.DOOption) driverOrderForm {
 	_driverOrderForm.CarID = field.NewString(tableName, "car_id")
 	_driverOrderForm.Comment = field.NewString(tableName, "comment")
 	_driverOrderForm.GetTime = field.NewTime(tableName, "get_time")
-	_driverOrderForm.OrderID = field.NewString(tableName, "order_id")
-	_driverOrderForm.Cost = field.NewInt64(tableName, "cost")
+	_driverOrderForm.OrderID = field.NewInt64(tableName, "order_id")
+	_driverOrderForm.Cost = field.NewFloat64(tableName, "cost")
 	_driverOrderForm.State = field.NewInt(tableName, "state")
 	_driverOrderForm.Location = field.NewString(tableName, "location")
 	_driverOrderForm.PlaceTime = field.NewTime(tableName, "place_time")
 	_driverOrderForm.PayTime = field.NewTime(tableName, "pay_time")
-	_driverOrderForm.ProductInfo = driverOrderFormHasManyProductInfo{
+	_driverOrderForm.ProductInfos = driverOrderFormHasManyProductInfos{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("ProductInfo", "model.OrderProduct"),
+		RelationField: field.NewRelation("ProductInfos", "model.OrderProduct"),
 	}
 
 	_driverOrderForm.fillFieldMap()
@@ -54,20 +54,20 @@ func newDriverOrderForm(db *gorm.DB, opts ...gen.DOOption) driverOrderForm {
 type driverOrderForm struct {
 	driverOrderFormDo
 
-	ALL         field.Asterisk
-	FactoryID   field.Int64
-	FactoryName field.String
-	DriverID    field.Int64
-	CarID       field.String
-	Comment     field.String
-	GetTime     field.Time
-	OrderID     field.String
-	Cost        field.Int64
-	State       field.Int
-	Location    field.String
-	PlaceTime   field.Time
-	PayTime     field.Time
-	ProductInfo driverOrderFormHasManyProductInfo
+	ALL          field.Asterisk
+	FactoryID    field.Int64
+	FactoryName  field.String
+	DriverID     field.Int64
+	CarID        field.String
+	Comment      field.String
+	GetTime      field.Time
+	OrderID      field.Int64
+	Cost         field.Float64
+	State        field.Int
+	Location     field.String
+	PlaceTime    field.Time
+	PayTime      field.Time
+	ProductInfos driverOrderFormHasManyProductInfos
 
 	fieldMap map[string]field.Expr
 }
@@ -90,8 +90,8 @@ func (d *driverOrderForm) updateTableName(table string) *driverOrderForm {
 	d.CarID = field.NewString(table, "car_id")
 	d.Comment = field.NewString(table, "comment")
 	d.GetTime = field.NewTime(table, "get_time")
-	d.OrderID = field.NewString(table, "order_id")
-	d.Cost = field.NewInt64(table, "cost")
+	d.OrderID = field.NewInt64(table, "order_id")
+	d.Cost = field.NewFloat64(table, "cost")
 	d.State = field.NewInt(table, "state")
 	d.Location = field.NewString(table, "location")
 	d.PlaceTime = field.NewTime(table, "place_time")
@@ -138,13 +138,13 @@ func (d driverOrderForm) replaceDB(db *gorm.DB) driverOrderForm {
 	return d
 }
 
-type driverOrderFormHasManyProductInfo struct {
+type driverOrderFormHasManyProductInfos struct {
 	db *gorm.DB
 
 	field.RelationField
 }
 
-func (a driverOrderFormHasManyProductInfo) Where(conds ...field.Expr) *driverOrderFormHasManyProductInfo {
+func (a driverOrderFormHasManyProductInfos) Where(conds ...field.Expr) *driverOrderFormHasManyProductInfos {
 	if len(conds) == 0 {
 		return &a
 	}
@@ -157,22 +157,22 @@ func (a driverOrderFormHasManyProductInfo) Where(conds ...field.Expr) *driverOrd
 	return &a
 }
 
-func (a driverOrderFormHasManyProductInfo) WithContext(ctx context.Context) *driverOrderFormHasManyProductInfo {
+func (a driverOrderFormHasManyProductInfos) WithContext(ctx context.Context) *driverOrderFormHasManyProductInfos {
 	a.db = a.db.WithContext(ctx)
 	return &a
 }
 
-func (a driverOrderFormHasManyProductInfo) Model(m *model.DriverOrderForm) *driverOrderFormHasManyProductInfoTx {
-	return &driverOrderFormHasManyProductInfoTx{a.db.Model(m).Association(a.Name())}
+func (a driverOrderFormHasManyProductInfos) Model(m *model.DriverOrderForm) *driverOrderFormHasManyProductInfosTx {
+	return &driverOrderFormHasManyProductInfosTx{a.db.Model(m).Association(a.Name())}
 }
 
-type driverOrderFormHasManyProductInfoTx struct{ tx *gorm.Association }
+type driverOrderFormHasManyProductInfosTx struct{ tx *gorm.Association }
 
-func (a driverOrderFormHasManyProductInfoTx) Find() (result []*model.OrderProduct, err error) {
+func (a driverOrderFormHasManyProductInfosTx) Find() (result []*model.OrderProduct, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a driverOrderFormHasManyProductInfoTx) Append(values ...*model.OrderProduct) (err error) {
+func (a driverOrderFormHasManyProductInfosTx) Append(values ...*model.OrderProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -180,7 +180,7 @@ func (a driverOrderFormHasManyProductInfoTx) Append(values ...*model.OrderProduc
 	return a.tx.Append(targetValues...)
 }
 
-func (a driverOrderFormHasManyProductInfoTx) Replace(values ...*model.OrderProduct) (err error) {
+func (a driverOrderFormHasManyProductInfosTx) Replace(values ...*model.OrderProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -188,7 +188,7 @@ func (a driverOrderFormHasManyProductInfoTx) Replace(values ...*model.OrderProdu
 	return a.tx.Replace(targetValues...)
 }
 
-func (a driverOrderFormHasManyProductInfoTx) Delete(values ...*model.OrderProduct) (err error) {
+func (a driverOrderFormHasManyProductInfosTx) Delete(values ...*model.OrderProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -196,11 +196,11 @@ func (a driverOrderFormHasManyProductInfoTx) Delete(values ...*model.OrderProduc
 	return a.tx.Delete(targetValues...)
 }
 
-func (a driverOrderFormHasManyProductInfoTx) Clear() error {
+func (a driverOrderFormHasManyProductInfosTx) Clear() error {
 	return a.tx.Clear()
 }
 
-func (a driverOrderFormHasManyProductInfoTx) Count() int64 {
+func (a driverOrderFormHasManyProductInfosTx) Count() int64 {
 	return a.tx.Count()
 }
 

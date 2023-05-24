@@ -28,6 +28,8 @@ func newLoginInfo(db *gorm.DB, opts ...gen.DOOption) loginInfo {
 	tableName := _loginInfo.loginInfoDo.TableName()
 	_loginInfo.ALL = field.NewAsterisk(tableName)
 	_loginInfo.UserID = field.NewInt64(tableName, "user_id")
+	_loginInfo.UserName = field.NewString(tableName, "user_name")
+	_loginInfo.ROLE = field.NewInt64(tableName, "role")
 	_loginInfo.Password = field.NewString(tableName, "password")
 	_loginInfo.Salt = field.NewString(tableName, "salt")
 	_loginInfo.Jwt = field.NewString(tableName, "jwt")
@@ -42,6 +44,8 @@ type loginInfo struct {
 
 	ALL      field.Asterisk
 	UserID   field.Int64
+	UserName field.String
+	ROLE     field.Int64
 	Password field.String
 	Salt     field.String
 	Jwt      field.String
@@ -62,6 +66,8 @@ func (l loginInfo) As(alias string) *loginInfo {
 func (l *loginInfo) updateTableName(table string) *loginInfo {
 	l.ALL = field.NewAsterisk(table)
 	l.UserID = field.NewInt64(table, "user_id")
+	l.UserName = field.NewString(table, "user_name")
+	l.ROLE = field.NewInt64(table, "role")
 	l.Password = field.NewString(table, "password")
 	l.Salt = field.NewString(table, "salt")
 	l.Jwt = field.NewString(table, "jwt")
@@ -81,8 +87,10 @@ func (l *loginInfo) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (l *loginInfo) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 4)
+	l.fieldMap = make(map[string]field.Expr, 6)
 	l.fieldMap["user_id"] = l.UserID
+	l.fieldMap["user_name"] = l.UserName
+	l.fieldMap["role"] = l.ROLE
 	l.fieldMap["password"] = l.Password
 	l.fieldMap["salt"] = l.Salt
 	l.fieldMap["jwt"] = l.Jwt

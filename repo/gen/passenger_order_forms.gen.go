@@ -30,16 +30,16 @@ func newPassengerOrderForm(db *gorm.DB, opts ...gen.DOOption) passengerOrderForm
 	_passengerOrderForm.ALL = field.NewAsterisk(tableName)
 	_passengerOrderForm.PassengerID = field.NewInt64(tableName, "passenger_id")
 	_passengerOrderForm.DriverCarID = field.NewString(tableName, "driver_car_id")
-	_passengerOrderForm.OrderID = field.NewString(tableName, "order_id")
-	_passengerOrderForm.Cost = field.NewInt64(tableName, "cost")
+	_passengerOrderForm.OrderID = field.NewInt64(tableName, "order_id")
+	_passengerOrderForm.Cost = field.NewFloat64(tableName, "cost")
 	_passengerOrderForm.State = field.NewInt(tableName, "state")
 	_passengerOrderForm.Location = field.NewString(tableName, "location")
 	_passengerOrderForm.PlaceTime = field.NewTime(tableName, "place_time")
 	_passengerOrderForm.PayTime = field.NewTime(tableName, "pay_time")
-	_passengerOrderForm.ProductInfo = passengerOrderFormHasManyProductInfo{
+	_passengerOrderForm.ProductInfos = passengerOrderFormHasManyProductInfos{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("ProductInfo", "model.OrderProduct"),
+		RelationField: field.NewRelation("ProductInfos", "model.OrderProduct"),
 	}
 
 	_passengerOrderForm.fillFieldMap()
@@ -50,16 +50,16 @@ func newPassengerOrderForm(db *gorm.DB, opts ...gen.DOOption) passengerOrderForm
 type passengerOrderForm struct {
 	passengerOrderFormDo
 
-	ALL         field.Asterisk
-	PassengerID field.Int64
-	DriverCarID field.String
-	OrderID     field.String
-	Cost        field.Int64
-	State       field.Int
-	Location    field.String
-	PlaceTime   field.Time
-	PayTime     field.Time
-	ProductInfo passengerOrderFormHasManyProductInfo
+	ALL          field.Asterisk
+	PassengerID  field.Int64
+	DriverCarID  field.String
+	OrderID      field.Int64
+	Cost         field.Float64
+	State        field.Int
+	Location     field.String
+	PlaceTime    field.Time
+	PayTime      field.Time
+	ProductInfos passengerOrderFormHasManyProductInfos
 
 	fieldMap map[string]field.Expr
 }
@@ -78,8 +78,8 @@ func (p *passengerOrderForm) updateTableName(table string) *passengerOrderForm {
 	p.ALL = field.NewAsterisk(table)
 	p.PassengerID = field.NewInt64(table, "passenger_id")
 	p.DriverCarID = field.NewString(table, "driver_car_id")
-	p.OrderID = field.NewString(table, "order_id")
-	p.Cost = field.NewInt64(table, "cost")
+	p.OrderID = field.NewInt64(table, "order_id")
+	p.Cost = field.NewFloat64(table, "cost")
 	p.State = field.NewInt(table, "state")
 	p.Location = field.NewString(table, "location")
 	p.PlaceTime = field.NewTime(table, "place_time")
@@ -122,13 +122,13 @@ func (p passengerOrderForm) replaceDB(db *gorm.DB) passengerOrderForm {
 	return p
 }
 
-type passengerOrderFormHasManyProductInfo struct {
+type passengerOrderFormHasManyProductInfos struct {
 	db *gorm.DB
 
 	field.RelationField
 }
 
-func (a passengerOrderFormHasManyProductInfo) Where(conds ...field.Expr) *passengerOrderFormHasManyProductInfo {
+func (a passengerOrderFormHasManyProductInfos) Where(conds ...field.Expr) *passengerOrderFormHasManyProductInfos {
 	if len(conds) == 0 {
 		return &a
 	}
@@ -141,22 +141,22 @@ func (a passengerOrderFormHasManyProductInfo) Where(conds ...field.Expr) *passen
 	return &a
 }
 
-func (a passengerOrderFormHasManyProductInfo) WithContext(ctx context.Context) *passengerOrderFormHasManyProductInfo {
+func (a passengerOrderFormHasManyProductInfos) WithContext(ctx context.Context) *passengerOrderFormHasManyProductInfos {
 	a.db = a.db.WithContext(ctx)
 	return &a
 }
 
-func (a passengerOrderFormHasManyProductInfo) Model(m *model.PassengerOrderForm) *passengerOrderFormHasManyProductInfoTx {
-	return &passengerOrderFormHasManyProductInfoTx{a.db.Model(m).Association(a.Name())}
+func (a passengerOrderFormHasManyProductInfos) Model(m *model.PassengerOrderForm) *passengerOrderFormHasManyProductInfosTx {
+	return &passengerOrderFormHasManyProductInfosTx{a.db.Model(m).Association(a.Name())}
 }
 
-type passengerOrderFormHasManyProductInfoTx struct{ tx *gorm.Association }
+type passengerOrderFormHasManyProductInfosTx struct{ tx *gorm.Association }
 
-func (a passengerOrderFormHasManyProductInfoTx) Find() (result []*model.OrderProduct, err error) {
+func (a passengerOrderFormHasManyProductInfosTx) Find() (result []*model.OrderProduct, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a passengerOrderFormHasManyProductInfoTx) Append(values ...*model.OrderProduct) (err error) {
+func (a passengerOrderFormHasManyProductInfosTx) Append(values ...*model.OrderProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -164,7 +164,7 @@ func (a passengerOrderFormHasManyProductInfoTx) Append(values ...*model.OrderPro
 	return a.tx.Append(targetValues...)
 }
 
-func (a passengerOrderFormHasManyProductInfoTx) Replace(values ...*model.OrderProduct) (err error) {
+func (a passengerOrderFormHasManyProductInfosTx) Replace(values ...*model.OrderProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -172,7 +172,7 @@ func (a passengerOrderFormHasManyProductInfoTx) Replace(values ...*model.OrderPr
 	return a.tx.Replace(targetValues...)
 }
 
-func (a passengerOrderFormHasManyProductInfoTx) Delete(values ...*model.OrderProduct) (err error) {
+func (a passengerOrderFormHasManyProductInfosTx) Delete(values ...*model.OrderProduct) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -180,11 +180,11 @@ func (a passengerOrderFormHasManyProductInfoTx) Delete(values ...*model.OrderPro
 	return a.tx.Delete(targetValues...)
 }
 
-func (a passengerOrderFormHasManyProductInfoTx) Clear() error {
+func (a passengerOrderFormHasManyProductInfosTx) Clear() error {
 	return a.tx.Clear()
 }
 
-func (a passengerOrderFormHasManyProductInfoTx) Count() int64 {
+func (a passengerOrderFormHasManyProductInfosTx) Count() int64 {
 	return a.tx.Count()
 }
 
