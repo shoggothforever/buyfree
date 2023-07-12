@@ -36,6 +36,9 @@ func (s *SalesController) GetScreenData(c *gin.Context) {
 		return
 	}
 	admin := iadmin.(model.Platform)
+
+	s.rwm.RLock()
+	defer s.rwm.RUnlock()
 	//name := admin.Name
 	curve := utils.SalesOf7Days(c, rdb, utils.Ranktype1, utils.PTNAME)
 	//fmt.Println(name)
@@ -104,6 +107,8 @@ func (s *SalesController) GetNearbyDriver(c *gin.Context) {
 	//lgt := c.Param("longitude")
 	//lat := c.Param("latitude")
 	rdb := dal.Getrdb()
+	s.rwm.RLock()
+	defer s.rwm.RUnlock()
 	res, err := utils.LocRadiusWithCoord(c, rdb, utils.DRIVERLOCATION, "120", "30", "10000000", "km")
 	if err != nil {
 		logger.Loger.Info(err)
@@ -176,6 +181,8 @@ func (s *SalesController) GetSales(c *gin.Context) {
 	salesinfo.MonthlySales = info[2]
 	salesinfo.AnnuallySales = info[3]
 	salesinfo.TotalSales = info[4]
+	s.rwm.RLock()
+	defer s.rwm.RUnlock()
 	ranklist, err := utils.GetRankList(c, rdb, utils.Ranktype1, utils.PTNAME, int(mode))
 	if err != nil {
 		s.Error(c, 400, "获取排名信息失败")

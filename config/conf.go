@@ -13,8 +13,6 @@ const (
 	Redisaddr     string = "addr"
 	Redispassword string = "password"
 	UploadPath    string = ""
-	ACCESS_KEY    string = "******EA09VCy5EfN_*******************"
-	SECRET_KEY    string = "******-yvwcYwImN6F*******************"
 	BUCKET        string = "bucket"
 	OK            int    = 200
 	BAD           int    = 500
@@ -63,7 +61,6 @@ var D = flag.Bool("D", false, "默认为release，true为debug")
 
 func init() {
 	flag.Parse()
-
 	gin.SetMode(gin.ReleaseMode)
 	Mcfg.GRANTTYPE = "authorization_code"
 	Reader = viper.New()

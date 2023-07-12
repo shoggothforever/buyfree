@@ -3,10 +3,11 @@ package passenger
 import (
 	"buyfree/service/response"
 	"github.com/gin-gonic/gin"
+	"sync"
 )
 
 type BasePaController struct {
-	ctx *gin.Context
+	rwm sync.RWMutex
 }
 
 func (b *BasePaController) Ping(c *gin.Context) {

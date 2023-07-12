@@ -3,10 +3,11 @@ package driverapp
 import (
 	"buyfree/service/response"
 	"github.com/gin-gonic/gin"
+	"sync"
 )
 
 type BaseDrController struct {
-	ctx *gin.Context
+	rwm sync.RWMutex
 }
 
 func (b *BaseDrController) Ping(c *gin.Context) {

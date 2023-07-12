@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/repo/model"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -53,39 +54,71 @@ func AuthJwt() gin.HandlerFunc {
 				})
 				return
 			}
-			if authjwt == model.PASSENGER {
-				//logger.Loger.Info("验证乘客信息")
+			switch authjwt {
+			case model.PASSENGER:
 				var passenger []model.Passenger
 				dal.Getdb().Model(&model.Passenger{}).Where("id=?", id).First(&passenger)
 				if len(passenger) != 0 {
 					c.Set(PAADMIN, passenger[0])
 					c.Next()
 				}
-			} else if authjwt == model.PLATFORMADMIN {
-				//logger.Loger.Info("验证平台信息")
+			case model.PLATFORMADMIN:
 				var ptadmin []model.Platform
 				dal.Getdb().Model(&model.Platform{}).Where("id=?", id).First(&ptadmin)
 				if len(ptadmin) != 0 {
 					c.Set(PTADMIN, ptadmin[0])
 					c.Next()
 				}
-			} else if authjwt == model.DRIVER {
-				//logger.Loger.Info("验证车主信息")
+			case model.DRIVER:
 				var dradmin []model.Driver
 				dal.Getdb().Model(&model.Driver{}).Where("id=?", id).First(&dradmin)
 				if len(dradmin) != 0 {
 					c.Set(DRADMIN, dradmin[0])
 					c.Next()
 				}
-			} else if authjwt == model.FACTORYADMIN {
-				//logger.Loger.Info("验证场站信息")
+			case model.FACTORYADMIN:
 				var fadmin []model.Factory
 				dal.Getdb().Model(&model.Factory{}).Where("id=?", id).First(&fadmin)
 				if len(fadmin) != 0 {
 					c.Set(FADMIN, fadmin[0])
 					c.Next()
 				}
+			default:
+				logger.Loger.Info("用户角色未定义")
 			}
+			//if authjwt == model.PASSENGER {
+			//	//logger.Loger.Info("验证乘客信息")
+			//	var passenger []model.Passenger
+			//	dal.Getdb().Model(&model.Passenger{}).Where("id=?", id).First(&passenger)
+			//	if len(passenger) != 0 {
+			//		c.Set(PAADMIN, passenger[0])
+			//		c.Next()
+			//	}
+			//} else if authjwt == model.PLATFORMADMIN {
+			//	//logger.Loger.Info("验证平台信息")
+			//	var ptadmin []model.Platform
+			//	dal.Getdb().Model(&model.Platform{}).Where("id=?", id).First(&ptadmin)
+			//	if len(ptadmin) != 0 {
+			//		c.Set(PTADMIN, ptadmin[0])
+			//		c.Next()
+			//	}
+			//} else if authjwt == model.DRIVER {
+			//	//logger.Loger.Info("验证车主信息")
+			//	var dradmin []model.Driver
+			//	dal.Getdb().Model(&model.Driver{}).Where("id=?", id).First(&dradmin)
+			//	if len(dradmin) != 0 {
+			//		c.Set(DRADMIN, dradmin[0])
+			//		c.Next()
+			//	}
+			//} else if authjwt == model.FACTORYADMIN {
+			//	//logger.Loger.Info("验证场站信息")
+			//	var fadmin []model.Factory
+			//	dal.Getdb().Model(&model.Factory{}).Where("id=?", id).First(&fadmin)
+			//	if len(fadmin) != 0 {
+			//		c.Set(FADMIN, fadmin[0])
+			//		c.Next()
+			//	}
+			//}
 		}
 		c.Next()
 	}

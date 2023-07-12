@@ -125,10 +125,6 @@ func (p *SnowFlakeIdWorker) timeGen() int64 {
 	return time.Now().UnixNano() / 1e6
 }
 
-//func init() {
-//
-//}
-
 func GetSnowFlake() int64 {
 	IDWorker = SnowFlakeIdWorker{}
 	IDWorker.Init(0, 1)

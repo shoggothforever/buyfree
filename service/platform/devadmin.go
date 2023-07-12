@@ -81,35 +81,38 @@ func (d *DevadminController) GetdevBystate(c *gin.Context) {
 	//		d.Error(c, 400, "获取设备信息失败")
 	//	}
 	//}
-	if mode == "1" {
+	d.rwm.RLock()
+	defer d.rwm.RUnlock()
+	switch mode {
+	case "1":
 		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", true).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取在线设备信息失败")
 			return
 		}
-	} else if mode == "2" {
+	case "2":
 		err = dal.Getdb().Model(&model.Device{}).Where("is_online = ?", false).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取离线设备信息失败")
 			return
 		}
-	} else if mode == "3" {
+	case "3":
 		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", true).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取激活设备信息失败")
 			return
 		}
-	} else if mode == "4" {
+	case "4":
 		err = dal.Getdb().Model(&model.Device{}).Where("is_activated = ?", false).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			logger.Loger.Info(err)
 			d.Error(c, 400, "获取未激活设备信息失败")
 			return
 		}
-	} else {
+	default:
 		err = dal.Getdb().Model(&model.Device{}).Offset((page - 1) * 20).Limit(20).Find(&devs).Error
 		if err != nil {
 			d.Error(c, 400, "获取设备信息失败")
@@ -222,6 +225,8 @@ func (d *DevadminController) LsInfo(c *gin.Context) {
 	dev := model.Device{}
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	//查找设备
+	d.rwm.RLock()
+	defer d.rwm.RUnlock()
 	err = dal.Getdb().Model(&model.Device{}).Where("id=?", id).First(&dev).Error
 	if err != nil {
 		c.JSON(200, response.Response{
@@ -299,18 +304,20 @@ func (d *DevadminController) LsInfo(c *gin.Context) {
 // @Success 200 {object} response.ADLaunchResponse
 // @Failure 400 {object} response.Response
 // @Router /pt/dev-admin/launch/{dev_id} [post]
-func (a *DevadminController) Launch(c *gin.Context) {
+func (d *DevadminController) Launch(c *gin.Context) {
 	var lrsponse response.ADLaunchResponse
 	lrsponse.Response = response.Response{200, "广告成功上线"}
 	var ad_ids []int64
 	err := c.ShouldBind(&ad_ids)
 	fmt.Println(ad_ids)
 	if err != nil {
-		a.Error(c, 400, "获取广告列表失败")
+		d.Error(c, 400, "获取广告列表失败")
 		return
 	}
 	dev_id := c.Param("dev_id")
 	db := dal.Getdb()
+	d.rwm.Lock()
+	defer d.rwm.Unlock()
 	err = db.Transaction(func(tx *gorm.DB) error {
 		for _, ad_id := range ad_ids {
 			var id int64
@@ -318,14 +325,14 @@ func (a *DevadminController) Launch(c *gin.Context) {
 			ferr := db.Model(&model.Device{}).Select("owner_id").Where("id = ?", dev_id).First(&id).Error
 			if ferr != nil {
 				logger.Loger.Info(ferr)
-				a.Error(c, 400, "获取用户信息失败")
+				d.Error(c, 400, "获取用户信息失败")
 				return ferr
 			}
 			var ids []int64
 			ferr = db.Model(&model.Device{}).Select("id").Where("owner_id = ?", id).Find(&ids).Error
 			if ferr != nil {
 				logger.Loger.Info(ferr)
-				a.Error(c, 400, "获取设备信息失败")
+				d.Error(c, 400, "获取设备信息失败")
 				return ferr
 			}
 			var ads model.Ad_Device

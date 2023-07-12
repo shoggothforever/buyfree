@@ -266,7 +266,7 @@ func GetRankList(c context.Context, rdb *redis.ClusterClient, adp, queryname str
 	for _, v := range res {
 		ranklist = append(ranklist, model.ProductRank(v))
 	}
-	fmt.Println(ranklist)
+	//fmt.Println(ranklist)
 	return ranklist, nil
 }
 
@@ -290,7 +290,6 @@ func GetSalesInfo(c context.Context, rdb *redis.ClusterClient, adp, uname string
 
 // 依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
 func GetHomeStatic(c context.Context, rdb *redis.ClusterClient, uname string) ([]float64, error) {
-	//var arr []float64
 	ret := rdb.EvalSha(c, SHASET.GetHomeStatic, GetDriverSalesKeys(uname))
 	res, err := ret.Float64Slice()
 	if err != nil {

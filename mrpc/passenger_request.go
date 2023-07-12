@@ -27,7 +27,7 @@ func NewHomeScanReq(id int64) *HomeScanReq {
 }
 func (h *HomeScanReq) Handle() {
 	fmt.Println("HomeScanHandler Begin...")
-	ids := []int64{}
+	var ids []int64
 	db := dal.Getdb()
 	err := db.Transaction(func(tx *gorm.DB) error {
 		terr := db.Raw("select advertisement_id from ad_devices where device_id = ?", h.DeviceID).Find(&ids).Error

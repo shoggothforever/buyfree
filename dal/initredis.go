@@ -30,6 +30,7 @@ var Ptimers sync.Pool
 
 func init() {
 	readRedisInfo()
+	//单机部署
 	//rdb = redis.NewClient(&redis.Options{
 	//	Addr:         addr,
 	//	Password:     password,
@@ -42,6 +43,8 @@ func init() {
 	//	PoolFIFO:     true,
 	//	//MaxRetries:   3,
 	//})
+
+	//集群方式部署
 	rdb = redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs:           []string{":7001", ":7002", ":7003"},
 		MaxIdleConns:    16,
