@@ -180,7 +180,6 @@ func (p *PayRequest) Handle() {
 func (o *OrderRequest) Handle() {
 	//TODO 业务逻辑
 	//处理一个场站的订单
-
 	//查询场站商品库存信息，有一个商品库存不满足就直接判定为结算失败
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for k, _ := range *o.ProductInfos {
@@ -212,7 +211,6 @@ func (o *OrderRequest) Handle() {
 			}
 		}
 		//fmt.Println("订单编号：", o.OrderID)
-		//TODO更新榜单信息
 		rdb := dal.Getrdb()
 		ctx := context.Background()
 		for k, _ := range *o.ProductInfos {

@@ -39,6 +39,8 @@ func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 		sf = false
 	}
 	var infos []response.FactoryProductsInfo
+	o.rwm.RLock()
+	defer o.rwm.RUnlock()
 	if fname != "all" {
 		if mode == "0" || mode == "1" {
 			err := dal.Getdb().Raw("select * from factory_products where factory_name = ? and is_on_shelf = ?", fname, sf).Find(&infos).Error
@@ -106,6 +108,8 @@ func (o *GoodsController) PGetGoodsInfo(c *gin.Context) {
 	factoryName := c.Param("factory_name")
 	productName := c.Param("product_name")
 	var product model.FactoryProduct
+	o.rwm.RLock()
+	defer o.rwm.RUnlock()
 	err := dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ?", factoryName, productName).First(&product).Error
 	if err == gorm.ErrRecordNotFound {
 		logrus.Info(err)
@@ -140,6 +144,8 @@ func (o *GoodsController) TurnOver(c *gin.Context) {
 		return
 	}
 	var pr model.FactoryProduct
+	o.rwm.RLock()
+	defer o.rwm.RUnlock()
 	err = dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ?", info.FactoryName, info.ProductName).UpdateColumn("is_on_shelf", gorm.Expr("not is_on_shelf")).First(&pr).Error
 	var msg string
 	if err == nil {
