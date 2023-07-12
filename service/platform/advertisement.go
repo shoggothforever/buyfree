@@ -19,6 +19,8 @@ type ADController struct {
 	BasePtController
 }
 
+const minioPublicUrl = "https://minio.shoggothy.xyz/buyfree/l"
+
 // TODO:swagger
 // @Summary 获取该平台的所有广告信息
 // @Description
@@ -39,6 +41,8 @@ func (a *ADController) GetADList(c *gin.Context) {
 	//}
 	//admin := iadmin.(model.Platform)
 	var ads []model.Advertisement
+	a.rwm.RLock()
+	defer a.rwm.RUnlock()
 	//dal.Getdb().Model(model.Advertisement{}).Limit(20).Where("platform_id = ? ", admin.ID).Offset(int((page - 1) * 20)).Find(&ads)
 	//err := dal.Getdb().Raw("select * from advertisements inner join "+
 	//	"(select id from advertisements where platform_id = ? order by profit desc limit 20 offset ?  )as lim using (id)", admin.ID, (int((page - 1) * 20))).Find(&ads).Error
@@ -78,10 +82,12 @@ func (a *ADController) AddAD(c *gin.Context) {
 	admin := iadmin.(model.Platform)
 	rdb := dal.Getrdb()
 	ctx := context.Background()
+	a.rwm.Lock()
+	defer a.rwm.Unlock()
 	utils.ModifySales(ctx, rdb, utils.Ranktype2, utils.PTNAME, strconv.FormatFloat(ad.InvestFund, 'f', 2, 64))
 	ad.ID = utils.GetSnowFlake()
 	ad.PlatformID = admin.ID
-	ad.PlayUrl = "https://minio.shoggothy.xyz/buyfree/l" + ad.PlayUrl
+	ad.PlayUrl = minioPublicUrl + ad.PlayUrl
 	//ad.ExpireAt = time.Now().AddDate(1, 0, 0)
 	err := dal.Getdb().Model(model.Advertisement{}).Create(&ad).Error
 	ad.Profit = 0
@@ -113,6 +119,8 @@ func (a *ADController) GetADContent(c *gin.Context) {
 	//TODO:交给前端吧
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	var ad model.Advertisement
+	a.rwm.RLock()
+	defer a.rwm.RUnlock()
 	err := dal.Getdb().Model(&model.Advertisement{}).Where("id=?", id).First(&ad).Error
 	if err != nil {
 		a.Error(c, 400, "获取广告信息失败")
@@ -146,6 +154,8 @@ func (a *ADController) GetADEfficient(c *gin.Context) {
 	//获取所有投放该广告的设备
 	//err := dal.Getdb().Raw("select * from devices as d where d.id in (select device_id from ad_devices where advertisement_id = ?)", id).Find(&devices).Error
 	// 使用in可能会产生性能问题，
+	a.rwm.RLock()
+	defer a.rwm.RUnlock()
 	err := dal.Getdb().Raw("select * from devices as d where exists (select d.id from ad_devices where advertisement_id = ? and device_id = d.id)", id).Find(&devices).Error
 	fmt.Println(devices, err)
 	if err != nil || devices == nil || len(devices) == 0 {
@@ -198,6 +208,8 @@ func (a *ADController) Shelf(c *gin.Context) {
 	id := c.Param("ad_id")
 	var adv model.Advertisement
 	db := dal.Getdb()
+	a.rwm.Lock()
+	defer a.rwm.Unlock()
 	err := db.Model(&model.Advertisement{}).Where("id=?", id).First(&adv).Error
 	if err != nil {
 		a.Error(c, 400, "获取广告信息失败")

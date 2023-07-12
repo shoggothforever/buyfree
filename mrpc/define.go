@@ -20,9 +20,7 @@ func init() {
 }
 
 type ReplyQueue chan bool
-type DealWithOrderForm func(o *CountRequest)
 
-var sem = make(chan bool, MAXBUFFER)
 var TimeOut = time.Duration(5000 * time.Millisecond)
 var GlobalCnt int64 = 0
 
@@ -133,9 +131,7 @@ func (w *Worker) Run() {
 					req.Do(w.ReplyChan, req.Handle)
 				}
 			}
-
 		}
-
 	}()
 }
 func (p *WorkerPool) PutReq(r Req) {

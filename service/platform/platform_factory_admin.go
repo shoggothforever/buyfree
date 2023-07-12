@@ -124,12 +124,15 @@ func (f *FactoryadminController) PAdd(c *gin.Context) {
 	//fmt.Println(products)
 	fname := c.Param("factory_name")
 	var fid int64
+	f.rwm.RLock()
 	err = dal.Getdb().Model(&model.Factory{}).Select("id").Where("name = ? ", fname).First(&fid).Error
 	if err != nil {
 		logrus.Info(err)
 		f.Error(c, 400, "获取场站信息失败")
+		f.rwm.RUnlock()
 		return
 	}
+	f.rwm.RUnlock()
 	//n := len(product)
 	//fpros := make([]model.FactoryProduct, n)
 	//for k, v := range product {
@@ -162,8 +165,8 @@ func (f *FactoryadminController) PAdd(c *gin.Context) {
 	//	}
 	//	return nil
 	//})
-
-	//fmt.Println(fpros[k])
+	f.rwm.Lock()
+	defer f.rwm.Unlock()
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, product.Name).First(&product.ID).Error
 		if terr != nil && terr != gorm.ErrRecordNotFound {
@@ -217,6 +220,8 @@ func (f *FactoryadminController) PAddInv(c *gin.Context) {
 	fname := c.Param("factory_name")
 	pname := c.Param("product_name")
 	var pro model.FactoryProduct
+	f.rwm.Lock()
+	defer f.rwm.Unlock()
 	err := dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ? ", fname, pname).UpdateColumn("inventory", gorm.Expr("inventory + ?", inv)).First(&pro).Error
 	if err != nil {
 		logrus.Info(err)
@@ -261,39 +266,10 @@ func (f *FactoryadminController) Add(c *gin.Context) {
 	}
 	fname := admin.Name
 	fid := admin.ID
-	//n := len(products)
-	//fpros := make([]model.FactoryProduct, n)
-	//for k, v := range products {
-	//	fpros[k].Set(utils.GetSnowFlake(), fid, fname, &v)
-	//}
-	//err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
-	//	var id int64
-	//	for k, v := range fpros {
-	//		terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, v.Name).First(&id).Error
-	//		if terr != nil && terr != gorm.ErrRecordNotFound {
-	//			logrus.Info(terr)
-	//			f.Error(c, 400, "查找商品信息失败")
-	//			return terr
-	//		} else if terr == gorm.ErrRecordNotFound {
-	//			cerr := tx.Model(&model.FactoryProducts{}).Create(&v).Error
-	//			if cerr != nil {
-	//				logrus.Info(cerr)
-	//				f.Error(c, 400, "添加商品信息失败")
-	//				return cerr
-	//			}
-	//		} else {
-	//			fpros[k].Product.ID = id
-	//			uerr := tx.Model(&model.FactoryProducts{}).Select("inventory").Where("id = ?", id).UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).First(&fpros[k].Product.Inventory).Error
-	//			if uerr != nil {
-	//				logrus.Info(uerr)
-	//				f.Error(c, 400, "更新商品信息失败")
-	//				return uerr
-	//			}
-	//		}
-	//	}
-	//	return nil
-	//})
 	product.Set(utils.GetSnowFlake(), fid, fname, &product)
+
+	f.rwm.Lock()
+	defer f.rwm.Unlock()
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		var id int64
 		terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, product.Name).First(&id).Error
@@ -349,6 +325,8 @@ func (f *FactoryadminController) AddInv(c *gin.Context) {
 	inv := c.Param("inv")
 	pname := c.Param("product_name")
 	var pro model.FactoryProduct
+	f.rwm.Lock()
+	defer f.rwm.Unlock()
 	err := dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ? ", admin.Name, pname).UpdateColumn("inventory", gorm.Expr("inventory + ?", inv)).First(&pro).Error
 	if err != nil {
 		logrus.Info(err)
@@ -386,6 +364,8 @@ func (f *FactoryadminController) GetAllProducts(c *gin.Context) {
 		sf = false
 	}
 	var infos []response.FactoryProductsInfo
+	f.rwm.RLock()
+	defer f.rwm.RUnlock()
 	if len(fname) != 0 && (mode == "0" || mode == "1") {
 		err := dal.Getdb().Raw("select * from factory_products where factory_name = ? and is_on_shelf = ?", fname, sf).Find(&infos).Error
 		if err != nil {
@@ -449,6 +429,8 @@ func (f *FactoryadminController) GetGoodsInfo(c *gin.Context) {
 	factoryName := admin.Name
 	productName := c.Param("product_name")
 	var product model.FactoryProduct
+	f.rwm.RLock()
+	defer f.rwm.RUnlock()
 	err := dal.Getdb().Model(&model.FactoryProduct{}).Where("factory_name = ? and name = ?", factoryName, productName).First(&product).Error
 	if err == gorm.ErrRecordNotFound {
 		logrus.Info(err)
@@ -579,6 +561,8 @@ func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
 	}
 	fid := admin.ID
 	var dofs []*model.DriverOrderForm
+	o.rwm.RLock()
+	defer o.rwm.RUnlock()
 	if mode == "0" || mode == "1" || mode == "2" {
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("factory_id = ? and state = ?", fid, mode).Offset((page - 1) * 20).Limit(20).Find(&dofs).Error
 		if err != nil {
@@ -593,7 +577,7 @@ func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
 		}
 	}
 	n := len(dofs)
-	fmt.Printf("获取到%d条订单信息\n", n)
+	//fmt.Printf("获取到%d条订单信息\n", n)
 	ords := make([]response.FactoryOrderInfo, n)
 	for i := 0; i < n; i++ {
 		//products, err := gen.OrderProduct.GetAllOrderProductReferDOrder(dofs[i].OrderID)
@@ -611,7 +595,6 @@ func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
 			return
 		}
 		ords[i].OrderID = dofs[i].OrderID
-
 		ords[i].DriverInfo.Name = dr.Name
 		ords[i].DriverInfo.Mobile = dr.Mobile
 		ords[i].DriverInfo.CarID = dr.CarID
