@@ -3,9 +3,11 @@ package platform
 import (
 	"buyfree/service/response"
 	"github.com/gin-gonic/gin"
+	"sync"
 )
 
 type BasePtController struct {
+	rwm sync.RWMutex
 }
 
 func (con BasePtController) Success(c *gin.Context, code int64, msg string, Res ...interface{}) {

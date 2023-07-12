@@ -15,9 +15,12 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-#never!
 # **/config.*
 **/.idea
 **/templates
 **/config.*
-main*
+**/main
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml

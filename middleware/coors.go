@@ -18,11 +18,9 @@ func Cors() gin.HandlerFunc {
 			c.Header("Access-Control-Max-Age", "86400")
 			c.Set("content-type", "application/json")
 		}
-
 		if method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 		}
-
 		c.Next()
 	}
 }
