@@ -31,7 +31,9 @@ func (d *DeviceController) Scan(c *gin.Context) {
 	}
 	fmt.Println(admin.ID)
 	var id int64
-	var req *mrpc.ScanRequest = mrpc.NewScanRequest(admin.ID, &id)
+	d.rwm.Lock()
+	defer d.rwm.Unlock()
+	var req = mrpc.NewScanRequest(admin.ID, &id)
 	//mrpc.PlatFormService.ReqChan <- req
 	//<-req.DoneChan
 	mrpc.PutDriverReq(req)
@@ -66,9 +68,12 @@ func (d *DeviceController) BindDevice(c *gin.Context) {
 		d.Error(c, 400, "获取司机信息失败")
 		return
 	}
+
 	var req = mrpc.NewDeviceAuthRequest(admin.ID, info.DeviceID, info.Name, info.Mobile)
 	//mrpc.PlatFormService.ReqChan <- req
 	//<-req.DoneChan
+	d.rwm.Lock()
+	defer d.rwm.Unlock()
 	mrpc.PutDriverReq(req)
 	if req.Result() != true {
 		d.Error(c, 400, "绑定用户信息失败")

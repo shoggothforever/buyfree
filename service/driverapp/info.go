@@ -31,6 +31,8 @@ func (i *InfoController) Getdevice(c *gin.Context) {
 	}
 	var res response.DriverDeviceResponse
 	res.Response = response.Response{200, "获取信息成功"}
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	err := dal.Getdb().Raw("select * from devices where owner_id =?", admin.ID).Find(&res.Devices).Error
 	if err != nil {
 		i.Error(c, 400, "获取设备信息失败")
@@ -68,6 +70,8 @@ func (it *InfoController) GetOrders(c *gin.Context) {
 		return
 	}
 	var dofs []model.DriverOrderForm
+	it.rwm.RLock()
+	defer it.rwm.RUnlock()
 	if mode == "0" || mode == "1" || mode == "2" {
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("driver_id = ? and state = ?", admin.ID, mode).Find(&dofs).Error
 		if err != nil {
@@ -130,7 +134,8 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 	var mobile string
 	var distance string
 	rdb := dal.Getrdb()
-
+	i.rwm.RLock()
+	defer i.rwm.RUnlock()
 	err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("order_id = ?", id).First(&odinfos).Error
 	if err != nil {
 		logger.Loger.Info(err)
@@ -211,6 +216,8 @@ func (i *InfoController) Withdraw(c *gin.Context) {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	var ids []int64
 	err := dal.Getdb().Raw("select id from devices where owner_id = ?", admin.ID).Find(&ids).Error
 	if err != nil {

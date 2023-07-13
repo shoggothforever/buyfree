@@ -45,6 +45,8 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 	}
 	rdb := dal.Getrdb()
 	db := dal.Getdb()
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	//更新车主位置信息
 	rdb.Do(c, "geoadd", utils.DRIVERLOCATION, locinfo.Longitude, locinfo.Latitude, admin.CarID)
 	ires, err := utils.LocRadiusWithDist(c, rdb, utils.LOCATION, locinfo.Longitude, locinfo.Latitude, "1000", "km")
@@ -99,6 +101,8 @@ func (i *FactoryController) Detail(c *gin.Context) {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
+	i.rwm.RLock()
+	defer i.rwm.RUnlock()
 	var fa response.FactoryDetail
 	{
 		err = dal.Getdb().Model(&model.Factory{}).Select("id", "address", "description").Where("name=?", disinfo.FactoryName).First(&fa).Error
@@ -108,7 +112,6 @@ func (i *FactoryController) Detail(c *gin.Context) {
 			return
 		}
 	}
-	fmt.Println(fa)
 	var details []*response.FactoryProductDetail
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		//err = dal.Getdb().Raw("select fp.name,inventory,"+
@@ -177,6 +180,8 @@ func (i *FactoryController) Modify(c *gin.Context) {
 		i.Error(c, 400, "获取用户信息失败")
 		return
 	}
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	//获取购物车编号
 	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cr).Error
 	if err != nil {
@@ -319,6 +324,8 @@ func (i *FactoryController) Choose(c *gin.Context) {
 		i.Error(c, 400, "获取用户信息失败")
 		return
 	}
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	//获取购物车编号
 	err = dal.Getdb().Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
 	fmt.Println("购物车编号", cartrefer)
@@ -395,6 +402,8 @@ func (i *FactoryController) Submit(c *gin.Context) {
 	var om model.DriverOrderForm
 	om.OrderID = utils.IDWorker.NextId()
 	var cartrefer, fid int64
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	//获取购物车编号
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		err = tx.Model(&model.DriverCart{}).Select("cart_id").Where("driver_id = ?", admin.ID).First(&cartrefer).Error
@@ -492,6 +501,8 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	var oms []model.DriverOrderForm
 	var cartrefer int64
 	//获取购物车编号
@@ -611,7 +622,8 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	//TODO 订单处理逻辑
 	ordreq := make([]mrpc.OrderRequest, n)
 	fmt.Println("共有", n, "条订单")
-
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	var wg sync.WaitGroup
 	var state int64 = 0
 	//确保找到的订单状态为0
@@ -715,6 +727,8 @@ func (i *FactoryController) Load(c *gin.Context) {
 	}
 	drid = admin.ID
 	var orderform model.DriverOrderForm
+	i.rwm.Lock()
+	defer i.rwm.Unlock()
 	err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", id).First(&orderform).Error
 	if err != nil {
 		i.Error(c, 400, "获取订单信息失败")

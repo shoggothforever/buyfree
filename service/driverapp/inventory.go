@@ -5,7 +5,6 @@ import (
 	"buyfree/middleware"
 	"buyfree/repo/model"
 	"buyfree/service/response"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -35,8 +34,9 @@ func (i *InventoryController) GetInventory(c *gin.Context) {
 		i.Error(c, 400, "获取车主信息失败")
 		return
 	}
-	fmt.Println(admin)
 	var dev_ids []int64
+	i.rwm.RLock()
+	defer i.rwm.RUnlock()
 	err := db.Model(&model.Device{}).Select("id").Where("owner_id = ?", admin.ID).Find(&dev_ids).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		logrus.Info("获取用户设备信息失败", err)
@@ -65,6 +65,8 @@ func (i *InventoryController) GetDeviceByScan(c *gin.Context) {
 	dev_id := c.Param("device_id")
 	db := dal.Getdb()
 	var products []model.DeviceProduct
+	i.rwm.RLock()
+	defer i.rwm.RUnlock()
 	err := db.Model(&model.DeviceProduct{}).Where("device_id = ?", dev_id).Find(&products).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		logrus.Info("获取用户设备商品信息失败", err)
