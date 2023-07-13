@@ -72,9 +72,9 @@ func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 		return
 	}
 }
-func (c *Communicator) Send(sig bool) {
-	c.ReplyChan <- sig
-	c.Res = sig
+func (c *Communicator) Send(signal bool) {
+	c.ReplyChan <- signal
+	c.Res = signal
 	c.DoneChan <- struct{}{}
 }
 func (c *Communicator) Done() {

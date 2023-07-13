@@ -31,6 +31,8 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 	}
 	//fmt.Println(admin)
 	rdb := dal.Getrdb()
+	h.rwm.RLock()
+	defer h.rwm.RUnlock()
 	array, err := utils.GetHomeStatic(c, rdb, admin.Name)
 	fmt.Println(array, err)
 	if err != nil {
@@ -114,6 +116,8 @@ func (h *HomePageController) Ping(c *gin.Context) {
 		return
 	}
 	rdb := dal.Getrdb()
+	h.rwm.Lock()
+	defer h.rwm.Unlock()
 	_, err = rdb.Do(c, "geoadd", utils.DRIVERLOCATION, info.Longitude, info.Latitude, admin.Name).Result()
 	if err != nil {
 		h.Error(c, 400, "更新车主位置信息失败")

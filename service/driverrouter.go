@@ -56,7 +56,6 @@ func Driverrouter() {
 		dr.POST("/register", auth.DriverRegister)
 		dr.POST("/login", auth.DriverLogin)
 		dr.POST("/userinfo", auth.DriverUserInfo)
-
 	}
 	dr.GET("/inventory/:device_id", it.GetDeviceByScan)
 

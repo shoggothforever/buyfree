@@ -30,6 +30,8 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 		ct.Error(c, 400, "获取车主信息失败")
 		return
 	}
+	ct.rwm.Lock()
+	defer ct.rwm.Unlock()
 	var cart model.DriverCart
 	err := dal.Getdb().Model(&model.DriverCart{}).Where("driver_id = ?", admin.ID).First(&cart).Error
 	if err != nil {
