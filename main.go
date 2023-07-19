@@ -1,6 +1,7 @@
 package main
 
 import (
+	"buyfree/config"
 	"buyfree/dal"
 	"buyfree/mrpc"
 	"buyfree/service"
@@ -8,7 +9,6 @@ import (
 	"context"
 	_ "net/http/pprof"
 	"os"
-	"sync"
 )
 
 // @title           Swagger Example API
@@ -30,13 +30,7 @@ import (
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
-var once sync.Once
 
-//	func Exit() {
-//		//意外关闭的时候要注意将管道中的数据做持久化处理
-//		close(utils.Refundchannel)
-//		close(utils.Orderchannel)
-//	}
 func init() {
 	//cmd := exec.Command("swag", "init")
 	//err := cmd.Run()
@@ -70,11 +64,11 @@ func SalesCounter() {
 	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "4b", 12345)
 }
 func main() {
-	//defer Exit()
-	//go service.Factoryrouter()
-	//go func() {
-	//	logger.Loger.Info(http.ListenAndServe(":6060", nil))
-	//}()
+	if *config.D {
+		//go func() {
+		//	logger.Loger.Info(http.ListenAndServe(":6060", nil))
+		//}()
+	}
 	mrpc.PlatFormService.Run()
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()
