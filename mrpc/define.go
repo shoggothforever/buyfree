@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+type ReplyQueue chan bool
+type Handler func()
+
 const (
 	MAXBUFFER     int           = 2048
 	WORKERTIMEOUT time.Duration = 3e9
@@ -19,20 +22,20 @@ func init() {
 	DriverService = NewWorkerPool(WORKERNUMS)
 }
 
-type ReplyQueue chan bool
-
 var TimeOut = time.Duration(5000 * time.Millisecond)
 var GlobalCnt int64 = 0
 
-type Handler func()
 type Req interface {
-	//Refund()
+	//Rollback()
 	//exitChan 向Worker传递工作处理结束的信息,handle传递工作的处理方法
 	Do(exitChan ReplyQueue, handle Handler)
 	//Handle() 由decorator实现
-	Handle()
 	Done()
 	Result() bool
+	SpecReq
+}
+type SpecReq interface {
+	Handle()
 }
 
 // 装饰着模式中的 Component
@@ -40,7 +43,7 @@ type Communicator struct {
 	//客户端验证结果
 	Res bool
 	//通知worker工作处理结果
-	ReplyChan ReplyQueue
+	replyChan ReplyQueue
 	//客户端通信管道，告知任务完成
 	DoneChan chan struct{}
 }
@@ -48,9 +51,17 @@ type Communicator struct {
 func NewCommunicator() Communicator {
 	return Communicator{
 		Res:       *new(bool),
-		ReplyChan: make(ReplyQueue, 1),
+		replyChan: make(ReplyQueue, 1),
 		DoneChan:  make(chan struct{}, 1),
 	}
+}
+
+func WrapCommunicator(req SpecReq) Req {
+	type newReq struct {
+		SpecReq
+		Communicator
+	}
+	return &newReq{SpecReq: req, Communicator: NewCommunicator()}
 }
 
 // 实现每个Req的接口定义
@@ -60,20 +71,20 @@ func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 	//实现运行时多态
 	handle()
 	select {
-	case val := <-c.ReplyChan:
+	case val := <-c.replyChan:
 		fmt.Println("HandleReq res:", val)
-		close(c.ReplyChan)
+		close(c.replyChan)
 		exitchan <- val
 		return
 	case <-ticker.C:
 		fmt.Println("time out")
-		close(c.ReplyChan)
+		close(c.replyChan)
 		exitchan <- false
 		return
 	}
 }
 func (c *Communicator) Send(signal bool) {
-	c.ReplyChan <- signal
+	c.replyChan <- signal
 	c.Res = signal
 	c.DoneChan <- struct{}{}
 }

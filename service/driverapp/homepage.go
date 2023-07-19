@@ -74,7 +74,7 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 	err = db.Where("device_id in ?", ids).Order("monthly_sales DESC").Limit(2).Find(&static.ProductRankList).Error
 	if err != gorm.ErrRecordNotFound && err != nil {
 		logrus.Info(err)
-		h.Error(c, 400, "无法获取车主端商品排行信息")
+		
 	} else if err == gorm.ErrRecordNotFound {
 		static.ProductRankList = make([]model.DeviceProduct, 1)
 		static.ProductRankList[0] = model.DeviceProduct{-1, -1, model.Product{
