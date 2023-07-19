@@ -128,7 +128,7 @@ func NewOrderRequest(fid, oid int64, fname string, products *[]*model.OrderProdu
 //}
 
 func (o *CountRequest) Handle() {
-	o.ReplyChan <- false
+	o.replyChan <- false
 	//fmt.Println("管道大小", len(o.ReplyChan))
 }
 func (s *ScanRequest) Handle() {
