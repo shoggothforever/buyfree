@@ -645,7 +645,6 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				//mrpc.PlatFormService.PutReq(&ordreq[j])
 				//ordreq[j].Done()
 				mrpc.PutDriverReq(&ordreq[j])
-				//fmt.Println(j)
 			}(j, &wg)
 		}
 	}

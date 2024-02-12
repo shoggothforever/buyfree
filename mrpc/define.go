@@ -56,14 +56,6 @@ func NewCommunicator() Communicator {
 	}
 }
 
-func WrapCommunicator(req SpecReq) Req {
-	type newReq struct {
-		SpecReq
-		Communicator
-	}
-	return &newReq{SpecReq: req, Communicator: NewCommunicator()}
-}
-
 // 实现每个Req的接口定义
 func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 	ticker := time.NewTicker(TimeOut)
@@ -72,7 +64,7 @@ func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
 	handle()
 	select {
 	case val := <-c.replyChan:
-		fmt.Println("HandleReq res:", val)
+		//fmt.Println("HandleReq res:", val)
 		close(c.replyChan)
 		exitchan <- val
 		return
@@ -112,7 +104,6 @@ type WorkerPool struct {
 	PoolSize   int
 	ReqChan    ReqQueue
 	WorkerChan WorkerQueue
-	ReplyChan  ReplyQueue
 }
 
 // 定义WorkerPool 的Reqchan 的缓冲为Worker的数量
@@ -121,7 +112,6 @@ func NewWorkerPool(size int) *WorkerPool {
 		PoolSize:   size,
 		ReqChan:    make(ReqQueue, size),
 		WorkerChan: make(WorkerQueue, size),
-		ReplyChan:  make(ReplyQueue, 1),
 	}
 }
 func (w *Worker) Run() {
@@ -136,9 +126,6 @@ func (w *Worker) Run() {
 						w.ReplyChan <- false
 						return
 					}
-					//fmt.Println(ok)
-					//atomic.AddInt64(&GlobalCnt, 1)
-					//fmt.Println("第", GloabalCnt, "号任务开始执行")
 					req.Do(w.ReplyChan, req.Handle)
 				}
 			}
@@ -155,7 +142,6 @@ func (p *WorkerPool) Run() {
 		p.WorkerChan <- worker
 		worker.Run()
 	}
-	//var cnt int64
 	go func() {
 		for {
 			select {
@@ -167,14 +153,11 @@ func (p *WorkerPool) Run() {
 					go func(worker *Worker, p *WorkerPool) {
 						res := <-worker.ReplyChan
 						if res == true {
-							//p.ReplyChan <- true
 							p.WorkerChan <- worker
 						} else {
 							//工人系统异常关闭工人的发送管道,工人的线程也会随之关闭,将执行失败的任务再次送回管道（可以设定重试次数）
 							close(worker.ReqChan)
 							<-worker.ReplyChan
-							//p.ReplyChan <- false
-							//p.ReqChan <- req
 							worker = nil
 							newworker := NewWorker()
 							p.WorkerChan <- newworker

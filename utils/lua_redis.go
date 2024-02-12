@@ -45,7 +45,7 @@ func init() {
 // 加锁lua脚本,设置过期时间 ExLock
 func luaLock() *redis.Script {
 	return redis.NewScript(`
-	local user,dur = ARGV[1],tonumber(ARGV[2])A
+	local user,dur = ARGV[1],tonumber(ARGV[2])
 	local ok= redis.call("set",KEYS[1],user)
 	if ok~=nil then
 		redis.call("expire",KEYS[1],dur)

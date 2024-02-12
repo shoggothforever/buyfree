@@ -9,8 +9,10 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"math/rand"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -128,8 +130,11 @@ func NewOrderRequest(fid, oid int64, fname string, products *[]*model.OrderProdu
 //}
 
 func (o *CountRequest) Handle() {
-	o.replyChan <- false
-	//fmt.Println("管道大小", len(o.ReplyChan))
+	ok := rand.Int()%2 == 1
+	if ok {
+		atomic.AddInt64(&GlobalCnt, 1)
+	}
+	o.replyChan <- ok
 }
 func (s *ScanRequest) Handle() {
 	var id int64

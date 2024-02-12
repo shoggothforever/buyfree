@@ -60,7 +60,7 @@ var Mcfg MConfigs
 var D = flag.Bool("D", false, "默认为release，true为debug")
 
 func init() {
-	flag.Parse()
+	//flag.Parse()
 	gin.SetMode(gin.ReleaseMode)
 	Mcfg.GRANTTYPE = "authorization_code"
 	Reader = viper.New()

@@ -24,6 +24,7 @@ func Passengerrouter() {
 	} else {
 		r = gin.Default()
 	}
+	//r := gin.Default()
 	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{
