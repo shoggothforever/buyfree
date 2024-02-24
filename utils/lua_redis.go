@@ -199,9 +199,8 @@ func ChangeTodaySales(c context.Context, rdb *redis.ClusterClient, key []string,
 func SalesOf7Days(c context.Context, rdb *redis.ClusterClient, adp, uname string, val ...string) [7]string {
 
 	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(adp, uname), val)
-	//fmt.Println(GetAllTimeKeys(adp, uname))
+	fmt.Println(GetAllTimeKeys(adp, uname))
 	res, err := ret.Float64Slice()
-	fmt.Println(res, err)
 	var sales [7]string
 	if err != nil {
 		logrus.Info("获取七天销量数据失败")

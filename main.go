@@ -3,10 +3,12 @@ package main
 import (
 	"buyfree/config"
 	"buyfree/dal"
+	"buyfree/logger"
 	"buyfree/mrpc"
 	"buyfree/service"
 	"buyfree/utils"
 	"context"
+	"net/http"
 	_ "net/http/pprof"
 	"os"
 )
@@ -32,14 +34,10 @@ import (
 // @externalDocs.url          https://swagger.io/resources/open-api/
 
 func init() {
-	//cmd := exec.Command("swag", "init")
-	//err := cmd.Run()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println("swagger.json生成成功")
+
 	path, _ := os.Getwd()
 	os.Setenv("cfgPATH", path)
+
 }
 func SalesCounter() {
 	var uname string = utils.PTNAME
@@ -65,16 +63,15 @@ func SalesCounter() {
 }
 func main() {
 	if *config.D {
-		//go func() {
-		//	logger.Loger.Info(http.ListenAndServe(":6060", nil))
-		//}()
+		go func() {
+			logger.Loger.Info(http.ListenAndServe(":6060", nil))
+		}()
 	}
 	mrpc.PlatFormService.Run()
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()
 	//go service.Factoryrouter()
 	go service.Driverrouter()
-	//SalesCounter()
 	service.PlatFormrouter()
 
 }

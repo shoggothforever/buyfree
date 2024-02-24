@@ -6,6 +6,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -40,7 +41,6 @@ func PlatformRegister(c *gin.Context) {
 				},
 				logininfo.UserID,
 				logininfo.Jwt})
-			//c.Set("Authorization", "Bearer:"+logininfo.Jwt)
 		} else {
 			logger.Loger.Info(err)
 			c.JSON(200, response.LoginResponse{
@@ -67,13 +67,15 @@ func PlatformRegister(c *gin.Context) {
 // @Failure			500 {object} response.LoginResponse
 // @Router			/pt/login [post]
 func PlatformLogin(c *gin.Context) {
+	fmt.Println(c.Request.URL)
+	fmt.Println(c.Request.Method)
 	var l []model.LoginInfo
 	var info model.LoginInfo
 	var linfo model.LoginInfo
 	//输入昵称，密码 需要用户id和盐
 	c.ShouldBind(&info)
 	var password = info.Password
-	err := dal.Getdb().Raw("select user_id,password,salt from login_infos where user_name = ? and role = ?", info.UserName, model.PLATFORMADMIN).First(&linfo).Error
+	err := dal.Getdb().Raw("select user_id,password,salt from login_infos where user_name = (?) and role = (?)", info.UserName, model.PLATFORMADMIN).First(&linfo).Error
 	if err != nil {
 		logger.Loger.Info(err)
 		c.JSON(200, response.LoginResponse{

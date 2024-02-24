@@ -95,6 +95,9 @@ func Driverrouter() {
 		pr.GET("/withdraw", dft.Withdraw)
 
 	}
+	//for _, route := range r.Routes() {
+	//	dal.GetCasbinModel().Enforcer.AddPolicy(strconv.Itoa(int(model.DRIVER)), route.Path, route.Method)
+	//}
 	QuitDriverChan = make(chan os.Signal)
 	signal.Notify(QuitDriverChan, os.Interrupt)
 	<-QuitDriverChan

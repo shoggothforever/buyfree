@@ -92,9 +92,7 @@ func init() {
 	minioinfo := Reader.GetStringMapString("minio")
 	Mcfg.Mendpoint = minioinfo["endpoint"]
 	Mcfg.MAccessKeyID = minioinfo["accessKeyID"]
-	Mcfg.MSecretAccessKey = minioinfo["secreatAccessKey"]
+	Mcfg.MSecretAccessKey = minioinfo["secretAccessKey"]
 
 	//dsminfo := Reader.GetStringMapString("minio_user")
-
-	//logger.Loger.Info(Mcfg)
 }

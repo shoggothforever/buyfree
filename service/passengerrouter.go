@@ -60,6 +60,10 @@ func Passengerrouter() {
 		mir.GET("/orders", ht.GetOrders)
 		mir.GET("/:id/orders", ht.GetOrders)
 	}
+
+	//for _, route := range r.Routes() {
+	//	dal.GetCasbinModel().Enforcer.AddPolicy(strconv.Itoa(int(model.PASSENGER)), route.Path, route.Method)
+	//}
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
