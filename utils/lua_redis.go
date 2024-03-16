@@ -24,7 +24,7 @@ type ScriptSha struct {
 
 var SHASET ScriptSha
 
-func loadsha(f func() *redis.Script, c context.Context, rdb *redis.ClusterClient) string {
+func loadsha(f func() *redis.Script, c context.Context, rdb *redis.Client) string {
 	sha, _ := f().Load(c, rdb).Result()
 	return sha
 }
@@ -180,23 +180,23 @@ func getHomeStatic() *redis.Script {
 `)
 }
 
-func Lualock(c context.Context, rdb *redis.ClusterClient, key []string, val ...string) {
+func Lualock(c context.Context, rdb *redis.Client, key []string, val ...string) {
 	ret := rdb.EvalSha(c, SHASET.LockSHA, []string{"lock"}, val)
 	res, err := ret.Result()
 	fmt.Println("加锁结果", res, err)
 }
-func Luaunlock(c context.Context, rdb *redis.ClusterClient, key []string, val ...string) {
+func Luaunlock(c context.Context, rdb *redis.Client, key []string, val ...string) {
 	res, err := rdb.EvalSha(c, SHASET.UnlockSHA, []string{"lock"}, val).Result()
 	fmt.Println("解锁结果", res, err)
 }
-func ChangeTodaySales(c context.Context, rdb *redis.ClusterClient, key []string, val ...string) {
+func ChangeTodaySales(c context.Context, rdb *redis.Client, key []string, val ...string) {
 	ret := rdb.EvalSha(c, SHASET.ListPopPushSHA, key, val)
 	res, err := ret.Result()
 	fmt.Println("列表长度", res, err)
 }
 
 // adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID）
-func SalesOf7Days(c context.Context, rdb *redis.ClusterClient, adp, uname string, val ...string) [7]string {
+func SalesOf7Days(c context.Context, rdb *redis.Client, adp, uname string, val ...string) [7]string {
 
 	ret := rdb.EvalSha(c, SHASET.SalesOf7daysSSHA, GetAllTimeKeys(adp, uname), val)
 	fmt.Println(GetAllTimeKeys(adp, uname))
@@ -212,7 +212,7 @@ func SalesOf7Days(c context.Context, rdb *redis.ClusterClient, adp, uname string
 	}
 	return sales
 }
-func ChangeAnalySalesList(c context.Context, rdb *redis.ClusterClient, keys []string, val ...string) {
+func ChangeAnalySalesList(c context.Context, rdb *redis.Client, keys []string, val ...string) {
 
 	ret := rdb.EvalSha(c, SHASET.ListPopPushSHA, []string{"testlist"}, val)
 	res, _ := ret.Result()
@@ -220,10 +220,9 @@ func ChangeAnalySalesList(c context.Context, rdb *redis.ClusterClient, keys []st
 }
 
 // 改变销量信息的lua脚本
-func ModifySales(c context.Context, rdb *redis.ClusterClient, adp, uname string, val ...string) ([]string, error) {
+func ModifySales(c context.Context, rdb *redis.Client, adp, uname string, val ...string) ([]string, error) {
 
 	ret := rdb.EvalSha(c, SHASET.ModifySalesSHA, GetAllTimeKeys(adp, uname), val)
-	//fmt.Println(GetAllTimeKeys(adp, uname))
 	res, err := ret.Float64Slice()
 	if err != nil {
 		fmt.Println("ERROR HAPPENS while modifying Sales", err)
@@ -237,18 +236,17 @@ func ModifySales(c context.Context, rdb *redis.ClusterClient, adp, uname string,
 }
 
 // adp：rank类型，uname：所属用户（场站ID,车主ID，广告ID,设备ID） sku/id：唯一标志符 sales:销售额，用于更改zset的分数
-func ModifyTypeRanks(c context.Context, rdb *redis.ClusterClient, adp, uname, identification string, sales float64) {
+func ModifyTypeRanks(c context.Context, rdb *redis.Client, adp, uname, identification string, sales float64) {
 	ret := rdb.EvalSha(c, SHASET.ModifyRanksSHA, GetAllTypeRankKeys(adp, uname), identification, sales) //KEYS,SKU(FIELD),SALES(SCORE)
 	_, err := ret.Result()
 	if err != nil {
 		logrus.Info("ERROR HAPPENS ", err)
 	}
-	//fmt.Println(res)
 }
 
 // 获取平台广告或者商品的排行
 // adp: rank类型 queryname:填入广告或者商品的唯一标志符，广告的ID，商品的SKU
-func GetRankList(c context.Context, rdb *redis.ClusterClient, adp, queryname string, mode int) ([]model.ProductRank, error) {
+func GetRankList(c context.Context, rdb *redis.Client, adp, queryname string, mode int) ([]model.ProductRank, error) {
 	if mode < 0 || mode > 5 {
 		mode = 0
 	}
@@ -260,20 +258,17 @@ func GetRankList(c context.Context, rdb *redis.ClusterClient, adp, queryname str
 		logrus.Info("get rank list error while getting rank list", err)
 		return []model.ProductRank{}, err
 	}
-	//fmt.Println(res)
 	var ranklist = []model.ProductRank{}
 	for _, v := range res {
 		ranklist = append(ranklist, model.ProductRank(v))
 	}
-	//fmt.Println(ranklist)
 	return ranklist, nil
 }
 
 // 获取平台销量信息
-func GetSalesInfo(c context.Context, rdb *redis.ClusterClient, adp, uname string) ([]string, error) {
+func GetSalesInfo(c context.Context, rdb *redis.Client, adp, uname string) ([]string, error) {
 	ret := rdb.EvalSha(c, SHASET.GetSalesInfoSHA, GetAllTimeKeys(adp, uname))
 	res, err := ret.Float64Slice()
-	//fmt.Println("获得的浮点数数据", res)
 	var array []string
 	if err != nil {
 		logrus.Info("ERROR HAPPENS while getting sales info", err)
@@ -283,23 +278,17 @@ func GetSalesInfo(c context.Context, rdb *redis.ClusterClient, adp, uname string
 	for _, v := range res {
 		array = append(array, strconv.FormatFloat(v, 'f', 2, 64))
 	}
-	//fmt.Println("获得的字符串数据", array)
 	return array, nil
 }
 
 // 依次返回返回今日销售额，昨日销售额，本周销售额，上周销售额，本月销售额，今日广告收入
-func GetHomeStatic(c context.Context, rdb *redis.ClusterClient, uname string) ([]float64, error) {
+func GetHomeStatic(c context.Context, rdb *redis.Client, uname string) ([]float64, error) {
 	ret := rdb.EvalSha(c, SHASET.GetHomeStatic, GetDriverSalesKeys(uname))
 	res, err := ret.Float64Slice()
 	if err != nil {
 		logrus.Info("获取车主端首页数据失败")
 		return []float64{0, 0, 0, 0, 0}, err
 	}
-	//fmt.Println(res, err)
-	//for _, v := range res.([]interface{}) {
-	//	arr = append(arr, float64(v.(int64)))
-	//}
-	//fmt.Println(arr, err)
 	for i, _ := range res {
 		res[i] = math.Trunc(res[i]/0.01) * 0.01
 	}

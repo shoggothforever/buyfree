@@ -6,6 +6,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -90,7 +91,7 @@ func (it *InfoController) GetOrders(c *gin.Context) {
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for i := 0; i < n; i++ {
 			terr := tx.Model(&model.OrderProduct{}).Where("order_refer = ?", dofs[i].OrderID).Find(&dofs[i].ProductInfos).Error
-			if terr != nil && terr != gorm.ErrRecordNotFound {
+			if terr != nil && !errors.Is(terr, gorm.ErrRecordNotFound) {
 				return terr
 			}
 		}
@@ -99,11 +100,11 @@ func (it *InfoController) GetOrders(c *gin.Context) {
 
 	if err == nil {
 		c.JSON(200, response.DriverOrderFormResponse{
-			response.Response{
-				200,
-				fmt.Sprintf("成功获取到%d条订单信息", len(dofs)),
+			Response: response.Response{
+				Code: 200,
+				Msg:  fmt.Sprintf("成功获取到%d条订单信息", len(dofs)),
 			},
-			dofs,
+			OrderInfos: dofs,
 		})
 	} else {
 		it.Error(c, 400, "获取订单信息失败")
@@ -158,7 +159,7 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 			distance = idistance.(string)
 		}
 		c.JSON(200, response.DriverOrderDetailResponse{
-			Response:       response.Response{200, "成功获取订单信息"},
+			Response:       response.Response{Code: 200, Msg: "成功获取订单信息"},
 			FactoryAddress: faddress,
 			Distance:       distance,
 			ReserveMobile:  mobile,
@@ -253,6 +254,6 @@ func (i *InfoController) Withdraw(c *gin.Context) {
 		i.Error(c, 400, "获取账户余额失败")
 	} else {
 		sum = sum1 + sum2
-		c.JSON(200, response.BalanceResponse{response.Response{200, "提现成功"}, sum})
+		c.JSON(200, response.BalanceResponse{Response: response.Response{Code: 200, Msg: "提现成功"}, Fund: sum})
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,6 @@ type CartController struct {
 // @Failure 400 {object} response.Response
 // @Router /dr/factory/cart [get]
 func (ct *CartController) OpenCart(c *gin.Context) {
-	//TODO:可以获取
 	admin, ok := utils.GetDriveInfo(c)
 	if ok != true {
 		ct.Error(c, 400, "获取车主信息失败")
@@ -66,7 +66,7 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 				sum += float64(gv.Count) * gv.Price
 			}
 			//fmt.Println(gs)
-		} else if err != gorm.ErrRecordNotFound {
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 			fmt.Println(err)
 			ct.Error(c, 400, "获取购物车商品信息失败")
 			return
@@ -82,9 +82,9 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 		return
 	} else {
 		c.JSON(200, response.CartResponse{
-			response.Response{200, "获取购物车信息成功"},
-			sum,
-			cnt,
-			gs})
+			Response:    response.Response{Code: 200, Msg: "获取购物车信息成功"},
+			TotalAmount: sum,
+			TotalCount:  cnt,
+			Groups:      gs})
 	}
 }
