@@ -3,6 +3,8 @@ package dal
 import (
 	"buyfree/config"
 	"buyfree/repo/model"
+	"github.com/casbin/casbin/v2"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -14,8 +16,18 @@ import (
 
 var dB *gorm.DB
 
+type casbinModel struct {
+	Enforcer *casbin.Enforcer
+	Adapter  *gormadapter.Adapter
+}
+
+var casbinmodel casbinModel
+
 func Getdb() *gorm.DB {
 	return dB
+}
+func GetCasbinModel() *casbinModel {
+	return &casbinmodel
 }
 
 var dsn string
@@ -23,14 +35,10 @@ var dsn string
 func ReadPostgresSQLlinfo() {
 	info := config.Reader.GetStringMapString("postgresql")
 	dsn = info[config.Sqldsn]
-	if dsn == "" {
-		dsn = "host=localhost port=5432 user=root dbname=root password=nyarlak  sslmode=disable  TimeZone=Asia/Shanghai"
-	}
 }
 
 func init() {
 	ReadPostgresSQLlinfo()
-	//fmt.Println(dsn)
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer 日志输出的目标，前缀和日志包含的内容
 		logger.Config{
@@ -48,10 +56,31 @@ func init() {
 		Logger:                 newLogger,
 	})
 	if err != nil {
-		logrus.WithFields(logrus.Fields{"error": err}).Error("Open PostgresSQL failed")
-	} else {
-		logrus.Info("Open postgresSQL successfully")
+		logrus.WithFields(logrus.Fields{"error": err}).Error("Open PostgresSQL")
+		return
 	}
+
+	casbinmodel.Adapter, err = gormadapter.NewAdapterByDB(dB)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"error": err}).Error("load RABC model")
+		return
+	}
+	casbinmodel.Enforcer, err = casbin.NewEnforcer("repo/model/design/rbac_model.conf", casbinmodel.Adapter)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"error": err}).Error("load RBAC model")
+		return
+	}
+	err = casbinmodel.Adapter.SavePolicy(casbinmodel.Enforcer.GetModel())
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"error": err}).Error("save policy")
+		return
+	}
+	err = casbinmodel.Adapter.LoadPolicy(casbinmodel.Enforcer.GetModel())
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"error": err}).Error("load policy")
+		return
+	}
+	casbinmodel.Enforcer.LoadPolicy()
 	//Create TABLES
 	{
 		dB.AutoMigrate(
@@ -75,12 +104,5 @@ func init() {
 		)
 
 	}
-	// Attach Cache Option
-	//opt := gcache.DefaultOption{}
-	//opt.Expires = 300
-	//opt.Level = option.LevelSearch
-	//opt.AsyncWrite = false
-	//opt.PenetrationSafe = false
-	//gcache.AttachDB(DB, &opt, &option.RedisOption{Addr: "localhost:6379"})
 
 }

@@ -5,6 +5,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -29,7 +30,6 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		h.Error(c, 400, "获取车主信息失败")
 		return
 	}
-	//fmt.Println(admin)
 	rdb := dal.Getrdb()
 	h.rwm.RLock()
 	defer h.rwm.RUnlock()
@@ -39,7 +39,6 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		h.Error(c, 400, "获取车主端首页信息失败")
 		return
 	}
-	//fmt.Println(array)
 	var static response.HomeStatic
 	static.ADDailySales = array[5]
 	static.MonthlySales = array[4]
@@ -56,26 +55,22 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 		static.WeeklyRatio = (array[2] - array[3]) / array[3]
 	}
 	var ids []int64
-	//fmt.Println(admin.ID)
 	db := dal.Getdb()
-	err = db.Raw("select id from devices where owner_id = ? ", admin.ID).Find(&ids).Error
-	if err != gorm.ErrRecordNotFound && err != nil {
-		fmt.Println(err)
+	err = db.Raw("select id from devices where owner_id = (?) ", admin.ID).Find(&ids).Error
+	if !errors.Is(err, gorm.ErrRecordNotFound) && err != nil {
 		h.Error(c, 400, "没有绑定设备信息")
 	}
-	//fmt.Println(ids)
 	if len(ids) != 0 {
-		err = db.Raw("select sum(play_times),sum(profit) from ad_devices where device_id in ?", ids).Row().Scan(&static.ADPlayTimes, &static.ADDailySales)
-		if err != gorm.ErrRecordNotFound && err != nil {
+		err = db.Raw("select sum(play_times),sum(profit) from ad_devices where device_id in (?)", ids).Row().Scan(&static.ADPlayTimes, &static.ADDailySales)
+		if !errors.Is(err, gorm.ErrRecordNotFound) && err != nil {
 			logrus.Info(err)
-			//h.Error(c, 400, "无法获取车主端广告信息")
 		}
 	}
-	err = db.Where("device_id in ?", ids).Order("monthly_sales DESC").Limit(2).Find(&static.ProductRankList).Error
-	if err != gorm.ErrRecordNotFound && err != nil {
+	err = db.Where("device_id in (?)", ids).Order("monthly_sales DESC").Limit(2).Find(&static.ProductRankList).Error
+	if !errors.Is(err, gorm.ErrRecordNotFound) && err != nil {
 		logrus.Info(err)
-		
-	} else if err == gorm.ErrRecordNotFound {
+
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
 		static.ProductRankList = make([]model.DeviceProduct, 1)
 		static.ProductRankList[0] = model.DeviceProduct{-1, -1, model.Product{
 			ID:          0,
@@ -90,8 +85,7 @@ func (h *HomePageController) GetStatic(c *gin.Context) {
 			SalesData:   model.SalesData{},
 		}}
 	}
-	//fmt.Println(static)
-	c.JSON(200, response.HomePageResponse{response.Response{200, "首页信息:"}, static})
+	c.JSON(200, response.HomePageResponse{Response: response.Response{Code: 200, Msg: "首页信息:"}, HomeStatic: static})
 }
 
 // @Summary 实时更新车主地理位置信息
@@ -122,6 +116,6 @@ func (h *HomePageController) Ping(c *gin.Context) {
 	if err != nil {
 		h.Error(c, 400, "更新车主位置信息失败")
 	} else {
-		c.JSON(200, response.Response{200, "更新车主位置信息成功"})
+		c.JSON(200, response.Response{Code: 200, Msg: "更新车主位置信息成功"})
 	}
 }

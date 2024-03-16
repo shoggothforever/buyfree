@@ -6,6 +6,7 @@ import (
 	"buyfree/service/auth"
 	"buyfree/service/driverapp"
 	"context"
+	"flag"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	swaggerfiles "github.com/swaggo/files"
@@ -21,7 +22,7 @@ var QuitDriverChan chan os.Signal
 var DriverSrv http.Server
 
 func Driverrouter() {
-	//flag.Parse()
+	flag.Parse()
 	var r *gin.Engine
 	if *config.D == false {
 		gin.SetMode(gin.ReleaseMode)
@@ -94,6 +95,9 @@ func Driverrouter() {
 		pr.GET("/withdraw", dft.Withdraw)
 
 	}
+	//for _, route := range r.Routes() {
+	//	dal.GetCasbinModel().Enforcer.AddPolicy(strconv.Itoa(int(model.DRIVER)), route.Path, route.Method)
+	//}
 	QuitDriverChan = make(chan os.Signal)
 	signal.Notify(QuitDriverChan, os.Interrupt)
 	<-QuitDriverChan

@@ -93,8 +93,8 @@ func (o *GoodsController) PGetAllProducts(c *gin.Context) {
 	}
 }
 
-// @Summary  平台获取场站获取商品信息
-// @Description 传如对应场站名以及商品名
+// @Summary  平台获取场站的商品信息
+// @Description 传入对应场站名以及商品名
 // @Tags Products
 // @Accept json
 // @Accept mpfd

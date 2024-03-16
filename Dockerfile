@@ -1,4 +1,4 @@
-FROM golang:1.20
+FROM golang:1.20 as builder
 WORKDIR usr/src/app
 ENV GOOS=linux
 ENV CGO_ENABLED=0
@@ -11,4 +11,6 @@ RUN go mod download && go mod verify
 COPY . .
 RUN go build -o /bf
 
-CMD ["/bf"]
+FROM scrapy
+COPY --from=builder bf /bf
+CMD ["./bf"]

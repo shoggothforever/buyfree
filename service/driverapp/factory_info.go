@@ -7,6 +7,7 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -62,19 +63,19 @@ func (i *FactoryController) FactoryOverview(c *gin.Context) {
 		views[k].FactoryName = v[0].(string)
 		views[k].Distance = v[1].(string)
 		err := db.Raw("select pic,name from factory_products where factory_name = ? and is_on_shelf = true", views[k].FactoryName).Limit(5).Find(&views[k].ProductViews).Error
-		if err != gorm.ErrRecordNotFound && err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) && err != nil {
 			logrus.Info("获取"+views[k].FactoryName+"的商品信息失败", err)
 			continue
 		}
 		if len(views[k].ProductViews) == 0 {
-			defaultfp := response.FactoryProductOverview{"void", "void"}
+			defaultfp := response.FactoryProductOverview{Pic: "void", Name: "void"}
 			views[k].ProductViews = []response.FactoryProductOverview{defaultfp}
 		}
 		fmt.Println(views[k].ProductViews)
 	}
 	c.JSON(200, response.FactoryInfoResponse{
-		response.Response{200, "成功获取附近场站信息"},
-		views,
+		Response:     response.Response{Code: 200, Msg: "成功获取附近场站信息"},
+		FactoryInfos: views,
 	})
 	c.Next()
 }
@@ -528,7 +529,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 				"order_refer": om.OrderID,
 				"is_chosen":   false,
 			}).Error
-			if terr != nil && terr != gorm.ErrRecordNotFound {
+			if terr != nil && !errors.Is(terr, gorm.ErrRecordNotFound) {
 				logger.Loger.Info(err)
 				return terr
 			} else if len(om.ProductInfos) == 0 {
@@ -549,7 +550,7 @@ func (i *FactoryController) SubmitMany(c *gin.Context) {
 			oms = append(oms, om)
 			return nil
 		})
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			fmt.Println(err)
 			i.Error(c, 400, "订单提交失败:获取商品信息失败")
 			return
@@ -615,18 +616,12 @@ func (i *FactoryController) Pay(c *gin.Context) {
 	}
 	n := len(forms.FactoriesDistance)
 	var cnt = n
-	//for i := 0; i < n; i++ {
-	//	fmt.Println(fmt.Sprintf("第%d条订单场站信息", i), forms.FactoriesDistance[i])
-	//	fmt.Println(fmt.Sprintf("第%d条订单信息", i), forms.OrderInfos[i])
-	//}
-	//TODO 订单处理逻辑
 	ordreq := make([]mrpc.OrderRequest, n)
 	fmt.Println("共有", n, "条订单")
 	i.rwm.Lock()
 	defer i.rwm.Unlock()
 	var wg sync.WaitGroup
 	var state int64 = 0
-	//确保找到的订单状态为0
 	for j := 0; j < n; j++ {
 		err := dal.Getdb().Model(&model.DriverOrderForm{}).Select("state").Where("order_id = ?", forms.OrderInfos[j].OrderID).First(&state).Error
 		if err != nil {
@@ -641,11 +636,7 @@ func (i *FactoryController) Pay(c *gin.Context) {
 				oinfo := forms.OrderInfos[j]
 				dal.Getdb().Model(&model.OrderProduct{}).Where("order_refer = ?", oinfo.OrderID).Find(&oinfo.ProductInfos)
 				ordreq[j] = *mrpc.NewOrderRequest(disinfo.FactoryID, oinfo.OrderID, disinfo.FactoryName, &oinfo.ProductInfos)
-				//TODO:待测试
-				//mrpc.PlatFormService.PutReq(&ordreq[j])
-				//ordreq[j].Done()
 				mrpc.PutDriverReq(&ordreq[j])
-				//fmt.Println(j)
 			}(j, &wg)
 		}
 	}
@@ -663,14 +654,10 @@ func (i *FactoryController) Pay(c *gin.Context) {
 			fmt.Println("编号", forms.OrderInfos[j].OrderID, "号订单处理成功")
 		}
 	}
-	//fmt.Println("需要支付", forms.Cash)
 	go func(ok *bool, group *sync.WaitGroup) {
 		wg.Add(1)
 		defer group.Done()
 		payreq := mrpc.NewPayRequest(admin.PlatformID, forms.Cash)
-		//TODO:待测试
-		//mrpc.PlatFormService.ReqChan <- payreq
-		//<-payreq.DoneChan
 		mrpc.PutDriverReq(payreq)
 		*ok = payreq.Result()
 	}(&ok, &wg)

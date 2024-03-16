@@ -31,8 +31,6 @@ func PlatFormrouter() {
 	} else {
 		r = gin.Default()
 	}
-	//r = gin.Default()
-	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	PlatFormSrv = http.Server{
 		Addr:    ":9003",
@@ -126,6 +124,9 @@ func PlatFormrouter() {
 		ads.PATCH("/modify/:ad_id", adct.Shelf)
 
 	}
+	//for _, route := range r.Routes() {
+	//	dal.GetCasbinModel().Enforcer.AddPolicy(strconv.Itoa(int(model.PLATFORMADMIN)), route.Path, route.Method)
+	//}
 	QuitPlatformChan = make(chan os.Signal)
 	time.Sleep(5 * time.Second)
 	signal.Notify(QuitPlatformChan, os.Interrupt)
@@ -137,4 +138,5 @@ func PlatFormrouter() {
 		log.Fatal("PlatForm Server Shutdown:", err)
 	}
 	log.Println("Plat Form Server exiting")
+
 }
