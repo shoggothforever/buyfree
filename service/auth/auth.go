@@ -6,8 +6,10 @@ import (
 	"buyfree/repo/model"
 	"buyfree/service/response"
 	"buyfree/utils"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type RegisterInfo struct {
@@ -271,21 +273,31 @@ func DriverUserInfo(c *gin.Context) {
 	}
 	var ids []int64
 	err = dal.Getdb().Raw("select id from devices where owner_id = ?", admin.ID).Find(&ids).Error
-	if err != nil {
-		c.JSON(400, "获取设备信息失败")
+	if err != nil && !errors.Is(gorm.ErrRecordNotFound, err) {
+		c.JSON(400, "获取设备信息失败 err:"+err.Error())
 		return
 	}
 	var sum1, sum2, sum float64
-	err = dal.Getdb().Raw("select sum(profit) from devices where owner_id = ?", admin.ID).First(&sum1).Error
-	if err != nil {
-		c.JSON(400, "获取设备收益信息失败")
+	sess := dal.Getdb().Raw("select sum(profit) from devices where owner_id = ?", admin.ID)
+	if sess.Error == nil {
+		sess.Scan(&sum1)
+	} else if errors.Is(gorm.ErrRecordNotFound, err) {
+		sum1 = 0
+	} else {
+		c.JSON(400, "获取设备收益信息失败 err:"+err.Error())
 		return
 	}
-	err = dal.Getdb().Raw("select sum(profit) from ad_devices where device_id in ?", ids).First(&sum2).Error
-	if err != nil {
-		c.JSON(400, "获取广告收益信息失败")
+
+	sess = dal.Getdb().Raw("select sum(profit) from ad_devices where device_id in ?", ids)
+	if sess.Error == nil {
+		sess.Scan(&sum2)
+	} else if errors.Is(gorm.ErrRecordNotFound, err) {
+		sum2 = 0
+	} else {
+		c.JSON(400, "获取广告收益信息失败 err:"+err.Error())
 		return
 	}
+
 	sum = sum1 + sum2
 	admin.Balance = sum
 	dal.Getdb().Model(&model.Driver{}).Where("id = ?", admin.ID).Update("balance", sum)

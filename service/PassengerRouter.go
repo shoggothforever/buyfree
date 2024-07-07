@@ -24,7 +24,6 @@ func Passengerrouter() {
 	} else {
 		r = gin.Default()
 	}
-	//r.Static("/static", "./public")
 	r.Use(middleware.Cors())
 	srv := http.Server{
 		Addr:    ":9005",
@@ -51,7 +50,6 @@ func Passengerrouter() {
 	{
 		home.GET("/:id", ht.GetStatic)
 		home.POST("/pay", ht.Pay)
-
 	}
 	mir := r.Group("infos")
 	{

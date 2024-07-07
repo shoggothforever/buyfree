@@ -82,7 +82,7 @@ func (it *InfoController) GetOrders(c *gin.Context) {
 		}
 	}
 	n := len(dofs)
-	logger.Loger.Info("获取到%d条订单信息\n", n)
+	logger.Loger.Infof("获取到%d条订单信息\n", n)
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for i := 0; i < n; i++ {
 			terr := tx.Model(&model.OrderProduct{}).Where("order_refer = ?", dofs[i].OrderID).Find(&dofs[i].ProductInfos).Error
@@ -154,41 +154,6 @@ func (i *InfoController) GetOrder(c *gin.Context) {
 		})
 	}
 }
-
-//// @Summary 获取余额信息
-//// @Description 余额组成:未结算广告收入+未体现设备收入
-//// @Tags Driver/balance
-//// @Accept json
-//// @Produce json
-//// @Success 200 {object} response.BalanceResponse
-//// @Failure 400 {object} response.Response
-//// @Router /dr/infos/balance [get]
-//func (i *InfoController) GetBalance(c *gin.Context) {
-//	admin, ok := utils.GetDriveInfo(c)
-//	if ok != true {
-//		i.Error(c, 400, "获取车主信息失败")
-//		return
-//	}
-//	var ids []int64
-//	err := dal.Getdb().Raw("select id from devices where owner_id = ?", admin.ID).Find(&ids).Error
-//	if err != nil {
-//		i.Error(c, 400, "获取设备信息失败")
-//		return
-//	}
-//	var sum1, sum2, sum float64
-//	err = dal.Getdb().Raw("select sum(profit) from devices where owner_id = ?", admin.ID).First(&sum1).Error
-//	if err != nil {
-//		i.Error(c, 400, "获取设备收益信息失败")
-//		return
-//	}
-//	err = dal.Getdb().Raw("select sum(profit) from ad_devices where device_id in ?", ids).First(&sum2).Error
-//	if err != nil {
-//		i.Error(c, 400, "获取广告收益信息失败")
-//		return
-//	}
-//	sum = sum1 + sum2
-//	c.JSON(200, response.BalanceResponse{response.Response{200, "获取账户余额成功"}, sum})
-//}
 
 // @Summary 提取余额信息（只支持全部提现)
 // @Description 余额组成:未结算广告收入+未体现设备收入

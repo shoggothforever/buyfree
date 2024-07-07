@@ -32,8 +32,6 @@ func PlatFormrouter() {
 	} else {
 		r = gin.Default()
 	}
-	//r := gin.Default()
-	//r.Static("/static", "../public")
 	r.Use(middleware.Cors())
 	PlatFormSrv = http.Server{
 		Addr:    ":9003",

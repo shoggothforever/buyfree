@@ -15,7 +15,7 @@ func (b *BaseDrController) Ping(c *gin.Context) {
 	c.Set("hello", "How are you?")
 	c.Next()
 }
-func (con BaseDrController) Success(c *gin.Context, code int64, msg string, Res ...interface{}) {
+func (b BaseDrController) Success(c *gin.Context, code int64, msg string, Res ...interface{}) {
 	c.JSON(200, gin.H{
 		"code": code,
 		"msg":  msg,
@@ -23,6 +23,6 @@ func (con BaseDrController) Success(c *gin.Context, code int64, msg string, Res 
 	})
 }
 
-func (con BaseDrController) Error(c *gin.Context, code int64, msg string) {
+func (b BaseDrController) Error(c *gin.Context, code int64, msg string) {
 	c.JSON(200, response.Response{Code: code, Msg: msg})
 }

@@ -1,3 +1,0 @@
-syntax="prpto3";
-package grpc_gen.auth;
-option go_package="./auth";

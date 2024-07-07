@@ -64,6 +64,26 @@ func (c *Communicator) Result() bool {
 	return c.Res
 }
 
+// ------------------------------------------------------------------------------------------------------------------------
+// 实现每个Req的接口定义
+func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
+	ticker := time.NewTicker(TimeOut)
+	defer ticker.Stop()
+	handle()
+	select {
+	case val := <-c.ReplyChan:
+		fmt.Println("HandleReq res:", val)
+		close(c.ReplyChan)
+		exitchan <- val
+		return
+	case <-ticker.C:
+		fmt.Println("time out")
+		close(c.ReplyChan)
+		exitchan <- false
+		return
+	}
+}
+
 // 定义worker，用于处理请求
 type ReqQueue chan Req
 type Worker struct {

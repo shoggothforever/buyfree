@@ -113,7 +113,6 @@ func (f *FactoryadminController) PAdd(c *gin.Context) {
 		f.Error(c, 400, "传入数据格式错误")
 		return
 	}
-	//fmt.Println(products)
 	fname := c.Param("factory_name")
 	var fid int64
 	err = dal.Getdb().Model(&model.Factory{}).Select("id").Where("name = ? ", fname).First(&fid).Error
@@ -126,7 +125,6 @@ func (f *FactoryadminController) PAdd(c *gin.Context) {
 	fpros := make([]model.FactoryProduct, n)
 	for k, v := range products {
 		fpros[k].Set(utils.GetSnowFlake(), fid, fname, &v)
-		//fmt.Println(fpros[k])
 	}
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		var id int64
@@ -217,38 +215,6 @@ func (f *FactoryadminController) Add(c *gin.Context) {
 	}
 	fname := admin.Name
 	fid := admin.ID
-	//n := len(products)
-	//fpros := make([]model.FactoryProduct, n)
-	//for k, v := range products {
-	//	fpros[k].Set(utils.GetSnowFlake(), fid, fname, &v)
-	//}
-	//err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
-	//	var id int64
-	//	for k, v := range fpros {
-	//		terr := tx.Model(&model.FactoryProduct{}).Select("id").Where("factory_name = ? and name = ?", fname, v.Name).First(&id).Error
-	//		if terr != nil && terr != gorm.ErrRecordNotFound {
-	//			logrus.Info(terr)
-	//			f.Error(c, 400, "查找商品信息失败")
-	//			return terr
-	//		} else if terr == gorm.ErrRecordNotFound {
-	//			cerr := tx.Model(&model.FactoryProducts{}).Create(&v).Error
-	//			if cerr != nil {
-	//				logrus.Info(cerr)
-	//				f.Error(c, 400, "添加商品信息失败")
-	//				return cerr
-	//			}
-	//		} else {
-	//			fpros[k].Product.ID = id
-	//			uerr := tx.Model(&model.FactoryProducts{}).Select("inventory").Where("id = ?", id).UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).First(&fpros[k].Product.Inventory).Error
-	//			if uerr != nil {
-	//				logrus.Info(uerr)
-	//				f.Error(c, 400, "更新商品信息失败")
-	//				return uerr
-	//			}
-	//		}
-	//	}
-	//	return nil
-	//})
 	product.Set(utils.GetSnowFlake(), fid, fname, &product)
 	err = dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		var id int64
@@ -421,94 +387,6 @@ func (f *FactoryadminController) GetGoodsInfo(c *gin.Context) {
 		product,
 	})
 }
-
-//// @Summary 获取车主订单信息(车主在该场站下的订单)
-//// @Description	传入字段mode，获取对应订单信息
-//// @Tags	Orderform
-//// @Accept json
-//// @Accept mpfd
-//// @Produce json
-//// @Param factory_name path string true "场站名"
-//// @Param mode path int true "按照不同模式获取订单信息，mode={0:未支付,1:未完成,2:完成,传入其他任意数值代表获取全部订单信息}"
-//// @Param page path int true "默认第一页，一页20个数据"
-//// @Success 200 {object} response.OrderResponse
-//// @Failure 400 {object} response.Response
-//// @Router /pt/fa-admin/{factory_name}/orders/{mode}/{page} [get]
-//func (o *FactoryadminController) GetDriverOrders(c *gin.Context) {
-//	page := c.Param("page")
-//	factory_name := c.Param("factory_name")
-//	//mode =2-已完成 1-待取货 0-未支付 else 全部
-//	mode := c.Param("mode")
-//	var dofs []*model.DriverOrderForm
-//	if mode == "0" || mode == "1" || mode == "2" {
-//		err := dal.Getdb().Model(&model.DriverOrderForm{}).Where("state = ?", mode).Find(&dofs).Error
-//		if err != nil {
-//			o.Error(c, 400, "获取订单信息失败 1")
-//			return
-//		}
-//	} else {
-//		err := dal.Getdb().Model(&model.DriverOrderForm{}).Find(&dofs).Error
-//		if err != nil {
-//			o.Error(c, 400, "获取订单信息失败 1")
-//			return
-//		}
-//	}
-//	n := len(dofs)
-//	fmt.Printf("获取到%d条订单信息\n", n)
-//	ords := []response.FactoryProductsInfo{}
-//	for i := 0; i < n; i++ {
-//		var products []model.OrderProduct
-//		//products, err := gen.OrderProduct.GetAllOrderProductReferDOrder(dofs[i].OrderID)
-//		err := dal.Getdb().Raw("select * from order_products where order_refer =? limit 3", dofs[i].OrderID).Find(&products).Error
-//		if err != nil {
-//			o.Error(c, 400, "获取订单信息失败 2")
-//			return
-//		}
-//		k := len(products)
-//		fmt.Printf("获取到%d条货品信息\n", k)
-//		factoryname := dofs[i].FactoryName
-//		infos := make([]response.FactoryProductsInfo, k)
-//		for j := 0; j < k; j++ {
-//			var info response.FactoryProductsInfo
-//			infos[j].FactoryName = factoryname
-//			infos[j].Name = products[j].Name
-//			infos[j].Sku = products[j].Sku
-//			infos[j].Pic = products[j].Pic
-//			infos[j].Type = products[j].Type
-//			//TODO:展示在首页和上架就交给前端吧,获取订单中的商品在场站的上下架状态，根据factoryID 和 商品SKU在场站的商品表中查询对应的状态信息
-//			infos[j].IsOnShelf = products[j].IsChosen
-//			//saleinfo, _ := gen.FactoryProduct.GetBySkuAndFName(info.Sku, info.FactoryName)
-//			var saleinfo model.FactoryProduct
-//			err := dal.Getdb().Model(&model.FactoryProduct{}).Select("total_sales").Where("sku = ? and factory_name = ?", info.Sku, info.FactoryName).First(&saleinfo.TotalSales).Error
-//			if err != gorm.ErrRecordNotFound && err != nil {
-//				o.Error(c, 400, "获取订单信息失败 2")
-//				return
-//			}
-//			infos[j].TotalSales = saleinfo.TotalSales
-//			infos[j].Inventory = saleinfo.Inventory
-//		}
-//		ords = append(ords, infos...)
-//	}
-//	if len(ords) != 0 {
-//		c.JSON(200, response.OrderResponse{
-//			response.Response{
-//				200,
-//				"成功获取所有订单信息",
-//			},
-//			ords,
-//		})
-//	} else {
-//		c.JSON(200, response.OrderResponse{
-//			response.Response{
-//				200,
-//				"暂无相关订单信息",
-//			},
-//			ords,
-//		})
-//	}
-//	c.Set("Orders", ords)
-//	c.Next()
-//}
 
 // @Summary 获取车主订单信息(车主在该场站下的订单)
 // @Description	传入字段mode，获取对应订单信息

@@ -1,16 +1,12 @@
 package main
 
 import (
-	"buyfree/dal"
 	"buyfree/logger"
 	"buyfree/mrpc"
 	"buyfree/service"
-	"buyfree/utils"
-	"context"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
-	"sync"
 )
 
 // @title           Swagger Example API
@@ -32,44 +28,10 @@ import (
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
-var once sync.Once
 
-//	func Exit() {
-//		//意外关闭的时候要注意将管道中的数据做持久化处理
-//		close(utils.Refundchannel)
-//		close(utils.Orderchannel)
-//	}
 func init() {
-	//cmd := exec.Command("swag", "init")
-	//err := cmd.Run()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println("swagger.json生成成功")
 	path, _ := os.Getwd()
 	os.Setenv("cfgPATH", path)
-}
-func SalesCounter() {
-	var uname string = utils.PTNAME
-	rdb := dal.Getrdb()
-	ctx := context.TODO()
-	utils.ModifySales(ctx, rdb, utils.Ranktype1, uname, "1")
-	utils.ModifySales(ctx, rdb, utils.Ranktype2, uname, "1")
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "yith", 123)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "9e", 12)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "2a", 123)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "3s", 1234)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype2, uname, "4b", 12345)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "yith", 123)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "9e", 12)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "2a", 123)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "3s", 1234)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype1, uname, "4b", 12345)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "yith", 123)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "9e", 12)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "2a", 123)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "3s", 1234)
-	utils.ModifyTypeRanks(ctx, rdb, utils.Ranktype3, uname, "4b", 12345)
 }
 func main() {
 	//defer Exit()
@@ -77,18 +39,10 @@ func main() {
 	go func() {
 		logger.Loger.Info(http.ListenAndServe(":6060", nil))
 	}()
-	go func() {
-		logger.Loger.Info(http.ListenAndServe(":9090", nil))
-	}()
-	go func() {
-		logger.Loger.Info(http.ListenAndServe(":9000", nil))
-	}()
 	mrpc.PlatFormService.Run()
 	mrpc.DriverService.Run()
 	go service.Passengerrouter()
-	//go service.Factoryrouter()
 	go service.Driverrouter()
-	SalesCounter()
 	service.PlatFormrouter()
 
 }

@@ -18,6 +18,7 @@
 #never!
 # **/config.*
 **/.idea
+**/*.zip
 **/templates
 **/config.*
 main*

@@ -24,7 +24,6 @@ type CartController struct {
 // @Failure 400 {object} response.Response
 // @Router /dr/factory/cart [get]
 func (ct *CartController) OpenCart(c *gin.Context) {
-	//TODO:可以获取
 	admin, ok := utils.GetDriveInfo(c)
 	if ok != true {
 		ct.Error(c, 400, "获取车主信息失败")
@@ -63,7 +62,6 @@ func (ct *CartController) OpenCart(c *gin.Context) {
 				cnt++
 				sum += float64(gv.Count) * gv.Price
 			}
-			//fmt.Println(gs)
 		} else if err != gorm.ErrRecordNotFound {
 			fmt.Println(err)
 			ct.Error(c, 400, "获取购物车商品信息失败")

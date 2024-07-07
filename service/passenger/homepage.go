@@ -124,7 +124,7 @@ func (h *HomePageController) GetOrders(c *gin.Context) {
 		}
 	}
 	n := len(dofs)
-	logrus.Info("获取到%d条订单信息", n)
+	logrus.Infof("获取到%d条订单信息", n)
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for i := 0; i < n; i++ {
 			terr := tx.Model(&model.OrderProduct{}).Where("order_refer = ?", dofs[i].OrderID).Find(&dofs[i].ProductInfos).Error

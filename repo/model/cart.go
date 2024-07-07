@@ -17,7 +17,7 @@ type Cart struct {
 	Products []*OrderProduct `gorm:"foreignKey:CartRefer"`
 }
 
-//需要创建OrderProudct表
+// 需要创建OrderProudct表
 type PassengerCart struct {
 	PassengerID int64 `json:"passenger_id" form:"passenger_id"`
 	Cart
@@ -27,7 +27,7 @@ type DriverCart struct {
 	Cart
 }
 
-//计算购物车中商品总价(可以与AllIn合并)
+// 计算购物车中商品总价(可以与AllIn合并)
 func (c *Cart) Account() float64 {
 
 	c.TotalCount = int64(len(c.Products))
@@ -39,7 +39,7 @@ func (c *Cart) Account() float64 {
 	return c.TotalAmount
 }
 
-//计算购物车中选中的商品总价
+// 计算购物车中选中的商品总价
 func (c *Cart) AccountWithChoose() float64 {
 	var sum float64 = 0
 	for _, v := range c.Products {
@@ -55,23 +55,3 @@ func (c *Cart) AllIn() {
 	}
 	c.Account()
 }
-
-// Account Chosen Products
-//func (c *PassengerCart) Account() int64 {
-//	var sum int64 = 0
-//	for _, v := range c.Products {
-//		if v.IsChoose {
-//			sum += v.BuyPrize
-//		}
-//	}
-//	return sum
-//}
-//func (c *DriverCart) Account() int64 {
-//	var sum int64 = 0
-//	for _, v := range c.Products {
-//		if v.IsChoose {
-//			sum += v.SupplyPrize
-//		}
-//	}
-//	return sum
-//}

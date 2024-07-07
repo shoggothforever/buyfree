@@ -9,59 +9,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strconv"
-	"time"
 )
 
-/*
-设计订单接口，使用装饰模式鉴别是购货订单还是退货订单
-设计设备激活order
-设计车主激活order
-*/
 //购物通道|补货通道
 //var Orderchannel chan *model.CountRequest = make(chan *model.CountRequest)
 //退款通道
 //var Refundchannel chan *model.CountRequest = make(chan *model.CountRequest)
-
-func practice() {
-	PlatFormService = NewWorkerPool(WORKERNUMS)
-	for i := 0; i < WORKERNUMS; i++ {
-		worker := NewWorker()
-		worker.Run()
-	}
-	go func() {
-		for {
-			select {
-			case req := <-PlatFormService.ReqChan:
-				{
-					worker := <-PlatFormService.WorkerChan
-					worker.ReqChan <- req
-					if val := <-worker.ReplyChan; val == true {
-						PlatFormService.WorkerChan <- worker
-					} else {
-						close(worker.ReqChan)
-						close(worker.ReplyChan)
-						worker = nil
-						newworker := NewWorker()
-						PlatFormService.WorkerChan <- newworker
-						newworker.Run()
-
-					}
-				}
-
-			}
-		}
-	}()
-}
-
-type CountRequest struct {
-	Iterator int64 `json:"iterator"`
-	Communicator
-}
-
-func NewCountRequest(it int64) *CountRequest {
-	req := &CountRequest{Iterator: it, Communicator: NewCommunicator()}
-	return req
-}
 
 type ScanRequest struct {
 	DriverID int64  `json:"driver_id"`
@@ -76,7 +29,7 @@ func NewScanRequest(driver_id int64, pid *int64) *ScanRequest {
 type DeviceAuthRequest struct {
 	// 车主ID
 	DriverID int64 `json:"driver_id,omitempty"`
-	//
+	//车主设备ID
 	DeviceID   int64  `json:"device_id"`
 	DriverName string `json:"driver_name,omitempty"`
 	Mobile     string `json:"mobile,omitempty"`
@@ -104,7 +57,6 @@ func NewPayRequest(ptid int64, cash float64) *PayRequest {
 }
 
 type OrderRequest struct {
-	//TODO:添加相关项
 	FactoryID   int64  `json:"factory_id,omitempty"`
 	OrderID     int64  `json:"order_id,omitempty"`
 	FactoryName string `json:"factory_name,omitempty"`
@@ -117,17 +69,23 @@ func NewOrderRequest(fid, oid int64, fname string, products *[]*model.OrderProdu
 	return &OrderRequest{FactoryID: fid, OrderID: oid, FactoryName: fname, ProductInfos: products, Communicator: NewCommunicator()}
 }
 
+type PassengerPayRequest struct {
+	DriverID  int64
+	DeviceID  int64
+	ProductID int64
+}
+
+func NewPassengerPayRequest() *PassengerPayRequest {
+	return &PassengerPayRequest{
+		DeviceID:  0,
+		ProductID: 0,
+	}
+}
+
 //------------------------------------------------------------------------------------------------------------------------
 //封装每个req下的DO方法的操作
 //对redis数据库进行操作,考虑退款操作
-//func (r *Communicator) Handle() {
-//
-//}
 
-func (o *CountRequest) Handle() {
-	o.ReplyChan <- true
-	//fmt.Println("管道大小", len(o.ReplyChan))
-}
 func (s *ScanRequest) Handle() {
 	var id int64
 	dal.Getdb().Model(&model.Platform{}).Select("id").Take(&id)
@@ -175,14 +133,12 @@ func (p *PayRequest) Handle() {
 	}
 }
 func (o *OrderRequest) Handle() {
-	//TODO 业务逻辑
 	//处理一个场站的订单
 
 	//查询场站商品库存信息，有一个商品库存不满足就直接判定为结算失败
 	err := dal.Getdb().Transaction(func(tx *gorm.DB) error {
 		for k, _ := range *o.ProductInfos {
 			v := *(*o.ProductInfos)[k]
-			fmt.Println(v)
 			var fp model.FactoryProduct
 			terr := tx.Model(&model.FactoryProduct{}).Where(
 				"factory_id = ? and name = ? and is_on_shelf =true and inventory>=?", v.FactoryID, v.Name, v.Count).First(&fp).UpdateColumn(
@@ -209,7 +165,6 @@ func (o *OrderRequest) Handle() {
 				return merr
 			}
 		}
-		//fmt.Println("订单编号：", o.OrderID)
 		//TODO更新榜单信息
 		rdb := dal.Getrdb()
 		ctx := rdb.Context()
@@ -233,120 +188,3 @@ func (o *OrderRequest) Handle() {
 		o.Send(true)
 	}
 }
-
-// ------------------------------------------------------------------------------------------------------------------------
-// 实现每个Req的接口定义
-func (c *Communicator) Do(exitchan ReplyQueue, handle Handler) {
-	ticker := time.NewTicker(TimeOut)
-	defer ticker.Stop()
-	handle()
-	select {
-	case val := <-c.ReplyChan:
-		fmt.Println("HandleReq res:", val)
-		close(c.ReplyChan)
-		exitchan <- val
-		return
-	case <-ticker.C:
-		fmt.Println("time out")
-		close(c.ReplyChan)
-		exitchan <- false
-		return
-	}
-}
-
-//func (o *CountRequest) Do(exitChan ReplyQueue) {
-//	ticker := time.NewTicker(TimeOut / 100)
-//	defer ticker.Stop()
-//	o.Handle()
-//	select {
-//	case val := <-o.ReplyChan:
-//		//fmt.Println("HandleCounter res:", val)
-//		//o.ReplyChan <- val
-//		close(o.ReplyChan)
-//		exitChan <- val
-//		return
-//	case <-ticker.C:
-//		fmt.Println("time out")
-//		close(o.ReplyChan)
-//		exitChan <- false
-//		return
-//	}
-//}
-//func (s *ScanRequest) Do(exitChan ReplyQueue) {
-//	ticker := time.NewTicker(TimeOut)
-//	defer ticker.Stop()
-//	s.Handle()
-//	select {
-//	case val := <-s.ReplyChan:
-//		fmt.Println("HandleScan res:", val)
-//		close(s.ReplyChan)
-//		exitChan <- val
-//		return
-//	case <-ticker.C:
-//		close(s.ReplyChan)
-//		exitChan <- false
-//		return
-//	}
-//}
-
-//func (d *DeviceAuthRequest) Do(exitChan ReplyQueue) {
-//	ticker := time.NewTicker(TimeOut)
-//	defer ticker.Stop()
-//	d.Handle()
-//	select {
-//	case val := <-d.ReplyChan:
-//		fmt.Println("HandleDeviceAuth res:", val)
-//		d.ReplyChan <- val
-//		close(d.ReplyChan)
-//		exitChan <- val
-//		return
-//	case <-ticker.C:
-//		//fmt.Println("time out")
-//		d.ReplyChan <- false
-//		close(d.ReplyChan)
-//		exitChan <- false
-//		return
-//	}
-//}
-//func (p *PayRequest) Do(exitChan ReplyQueue) {
-//	ticker := time.NewTicker(TimeOut)
-//	defer ticker.Stop()
-//	p.Handle()
-//	select {
-//	case val := <-p.ReplyChan:
-//		//fmt.Println("HandlePay res:", val)
-//		//p.ReplyChan <- val
-//		close(p.ReplyChan)
-//		//fmt.Println("管道大小", len(p.ReplyChan))
-//		exitChan <- val
-//		return
-//	case <-ticker.C:
-//		//fmt.Println("time out")
-//		//p.ReplyChan <- false
-//		close(p.ReplyChan)
-//		fmt.Println("超时管道大小", len(p.ReplyChan))
-//		exitChan <- false
-//		return
-//	}
-//}
-//func (o *OrderRequest) Do(exitChan ReplyQueue) {
-//	ticker := time.NewTicker(TimeOut)
-//	defer ticker.Stop()
-//	o.Handle()
-//	select {
-//	case val := <-o.ReplyChan:
-//		fmt.Println("HandleOrderFormRequest res:", val)
-//		//o.ReplyChan <- val
-//		//fmt.Println(o.OrderID, "管道大小", len(o.ReplyChan))
-//		close(o.ReplyChan)
-//		exitChan <- val
-//		return
-//	case <-ticker.C:
-//		//fmt.Println("time out")
-//		close(o.ReplyChan)
-//		exitChan <- false
-//		return
-//	}
-//}
-
-//----------------------------------------------------------------------------------------------------------------------
