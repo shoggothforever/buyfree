@@ -750,7 +750,7 @@ func (i *FactoryController) Load(c *gin.Context) {
 			for k, v := range productInfos {
 				terr := tx.Model(&model.FactoryProduct{}).Select("buy_price").Where("factory_id = ? and name = ?", v.FactoryID, v.Name).First(&buyprice).Error
 				if terr != nil {
-					logrus.Info(fmt.Sprintf("获取%d场站%s商品零售价失败", v.FactoryID, v.Name))
+					logrus.Errorf("获取%d场站%s商品零售价失败", v.FactoryID, v.Name)
 					return terr
 				}
 				time.Sleep(time.Nanosecond) //太快了导致雪花算法生成不了不同的值
@@ -758,14 +758,14 @@ func (i *FactoryController) Load(c *gin.Context) {
 			}
 			for _, v := range devpros {
 				var name string
-				if terr := tx.Model(&model.DeviceProduct{}).Select("name").Where("name = ?", v.Name).First(&name).Error; terr == gorm.ErrRecordNotFound {
+				if terr := tx.Model(&model.DeviceProduct{}).Select("name").Where("device_id = ? AND name = ?", devid, v.Name).First(&name).Error; terr == gorm.ErrRecordNotFound {
 					terr = tx.Model(&model.DeviceProduct{}).Create(&v).Error
 					if terr != nil {
 						logrus.Info("添加设备信息失败", terr)
 						return terr
 					}
 				} else {
-					terr = tx.Model(&model.DeviceProduct{}).Where("name = ?", v.Name).Omit("id").UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).Error
+					terr = tx.Model(&model.DeviceProduct{}).Where("device_id = ? AND name = ?", devid, v.Name).Omit("id").UpdateColumn("inventory", gorm.Expr("inventory + ?", v.Inventory)).Error
 					if terr != nil {
 						logrus.Info("更新库存信息失败", terr)
 						return terr
@@ -773,7 +773,6 @@ func (i *FactoryController) Load(c *gin.Context) {
 				}
 			}
 			terr := tx.Model(&model.DriverOrderForm{}).Where("order_id = ?", id).UpdateColumns(map[string]interface{}{"state": 2, "get_time": time.Now()}).Error
-			logrus.Info(terr)
 			if terr != nil {
 				logrus.Info("更新订单信息失败", terr)
 				return terr
