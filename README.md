@@ -1,4 +1,4 @@
-# 开发问题
+# 开发方案
 
 - [订单问题](#订单问题）
 - [资金问题](#资金问题)
@@ -11,7 +11,6 @@
 - [资源投放](#资源投放)
 - [服务迁移](#服务迁移)
 - [部署脚本](#部署脚本)
-- [TODO](#TODO)
 
 ## 订单问题
 场站端和平台端的商品详情存在重复
@@ -338,5 +337,3 @@ docker run -p 9000:9000 -p 9090:9090 --name minio -v ~/minio/data:/data -e "MINI
 8. -address: 9000 minio服务api端口
 9. 忘记密码直接查看MINIO_ROOT_USER && MINIO_ROOT_PASSWORD
 ```
-### RabbitMQ
-
